@@ -3,7 +3,8 @@ name: Deploy to GitHub Pages
 on:
   # Trigger the workflow every time you push to the "main" branch
   push:
-    branches: [main]
+    branches:
+      - main
   # Allows you to run this workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
 
@@ -19,6 +20,12 @@ jobs:
     steps:
       - name: Checkout your repository using git
         uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
       - name: Install, build, and upload your site
         uses: withastro/action@v1
         # with:
@@ -46,27 +53,27 @@ jobs:
             VERSION=$(echo "$INPUT_PM" | grep -o '@.*' | sed 's/^@//')
             # Set default VERSION if not provided
             if [ -z "$VERSION" ]; then
-                VERSION="latest"
+              VERSION="latest"
             fi
             echo "PACKAGE_MANAGER=$PACKAGE_MANAGER" >> $GITHUB_ENV
           elif [ -e "pnpm-lock.yaml" ]; then
-              echo "PACKAGE_MANAGER=pnpm" >> $GITHUB_ENV
-              echo "LOCKFILE=pnpm-lock.yaml" >> $GITHUB_ENV
+            echo "PACKAGE_MANAGER=pnpm" >> $GITHUB_ENV
+            echo "LOCKFILE=pnpm-lock.yaml" >> $GITHUB_ENV
           elif [ -e "yarn.lock" ]; then 
-              echo "PACKAGE_MANAGER=yarn" >> $GITHUB_ENV
-              echo "LOCKFILE=yarn.lock" >> $GITHUB_ENV
+            echo "PACKAGE_MANAGER=yarn" >> $GITHUB_ENV
+            echo "LOCKFILE=yarn.lock" >> $GITHUB_ENV
           elif [ -e "package-lock.json" ]; then 
-              VERSION="latest"
-              echo "PACKAGE_MANAGER=npm" >> $GITHUB_ENV
-              echo "LOCKFILE=package-lock.json" >> $GITHUB_ENV
+            VERSION="latest"
+            echo "PACKAGE_MANAGER=npm" >> $GITHUB_ENV
+            echo "LOCKFILE=package-lock.json" >> $GITHUB_ENV
           elif [ -e "bun.lockb" ]; then 
-              VERSION="latest"
-              echo "PACKAGE_MANAGER=bun" >> $GITHUB_ENV
-              echo "LOCKFILE=bun.lockb" >> $GITHUB_ENV
+            VERSION="latest"
+            echo "PACKAGE_MANAGER=bun" >> $GITHUB_ENV
+            echo "LOCKFILE=bun.lockb" >> $GITHUB_ENV
           else
-              echo "No lockfile found.
-           Please specify your preferred 'package-manager' in the action configuration."
-              exit 1
+            echo "No lockfile found.
+            Please specify your preferred 'package-manager' in the action configuration."
+            exit 1
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
         shell: bash
