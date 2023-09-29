@@ -1,14 +1,10 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Trigger the workflow every time you push to the `main` branch
-  # Using a different branch name? Replace `main` with your branch’s name
   push:
-    branches: [ main ]
-  # Allows you to run this workflow manually from the Actions tab on GitHub.
+    branches: [main]
   workflow_dispatch:
 
-# Allow this job to clone the repo and create a page deployment
 permissions:
   contents: read
   pages: write
@@ -18,14 +14,14 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout your repository using git
+      - name: Checkout de votre dépôt avec git
         uses: actions/checkout@v3
-      - name: Install, build, and upload your site
+      - name: Installer, construire et téléverser votre site
         uses: withastro/action@v1
         # with:
-          # path: . # The root location of your Astro project inside the repository. (optional)
-          # node-version: 18 # The specific version of Node that should be used to build your site. Defaults to 18. (optional)
-          # package-manager: pnpm@latest # The Node package manager that should be used to install dependencies and build your site. Automatically detected based on your lockfile. (optional)
+        #   path: . # L'emplacement racine de votre projet Astro à l'intérieur du dépôt. (facultatif)
+        #   node-version: 18 # La version spécifique de Node à utiliser pour construire votre site. Par défaut, 18. (facultatif)
+        #   package-manager: pnpm@latest # Le gestionnaire de paquets Node à utiliser pour installer les dépendances et construire votre site. Détecté automatiquement en fonction de votre fichier de verrouillage. (facultatif)
 
   deploy:
     needs: build
@@ -34,6 +30,42 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy to GitHub Pages
+      - name: Déployer sur GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
+
+      # Ajout d'une étape pour déterminer le gestionnaire de paquets
+      - name: Déterminer le gestionnaire de paquets
+        run: |
+          len=$(echo $INPUT_PM | wc -c)
+          if [ $len -gt 1 ]; then
+            PACKAGE_MANAGER=$(echo "$INPUT_PM" | grep -o '^[^@]*')
+            VERSION=$(echo "$INPUT_PM" | grep -o '@.*' | sed 's/^@//')
+            # Définir VERSION par défaut si non fourni
+            if [ -z "$VERSION" ]; then
+                VERSION="latest"
+            fi
+            echo "PACKAGE_MANAGER=$PACKAGE_MANAGER" >> $GITHUB_ENV
+          elif [ -e "pnpm-lock.yaml" ]; then
+              echo "PACKAGE_MANAGER=pnpm" >> $GITHUB_ENV
+              echo "LOCKFILE=pnpm-lock.yaml" >> $GITHUB_ENV
+          elif [ -e "yarn.lock" ]; then 
+              echo "PACKAGE_MANAGER=yarn" >> $GITHUB_ENV
+              echo "LOCKFILE=yarn.lock" >> $GITHUB_ENV
+          elif [ -e "package-lock.json" ]; then 
+              VERSION="latest"
+              echo "PACKAGE_MANAGER=npm" >> $GITHUB_ENV
+              echo "LOCKFILE=package-lock.json" >> $GITHUB_ENV
+          elif [ -e "bun.lockb" ]; then 
+              VERSION="latest"
+              echo "PACKAGE_MANAGER=bun" >> $GITHUB_ENV
+              echo "LOCKFILE=bun.lockb" >> $GITHUB_ENV
+          else
+              echo "Aucun fichier de verrouillage trouvé.
+  Veuillez spécifier votre "package-manager" préféré dans la configuration de l'action."
+              exit 1
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+        shell: bash
+        env:
+          INPUT_PM: ${{ github.event.inputs.package_manager }}
