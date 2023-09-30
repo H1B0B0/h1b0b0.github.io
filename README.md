@@ -34,7 +34,7 @@ Coming soon.
 2. Navigate to the repository.
 
    ```bash
-      cd your-repo
+      cd portfolio
    ```
 3. Install the dependencies.
 
