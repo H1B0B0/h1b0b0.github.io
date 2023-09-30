@@ -8,7 +8,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import CallToAction from '../components/CallToAction.astro';
 import Grid from '../components/Grid.astro';
 import Hero from '../components/Hero.astro';
-import Icon from 'astro-icon';
+import { Icon } from 'astro-icon';
 import Pill from '../components/Pill.astro';
 import PortfolioPreview from '../components/PortfolioPreview.astro';
 
@@ -16,7 +16,6 @@ import PortfolioPreview from '../components/PortfolioPreview.astro';
 import ContactCTA from '../components/ContactCTA.astro';
 import Skills from '../components/Skills.astro';
 import { slide } from 'astro:transitions';
-import { fade } from 'astro:transitions';
 
 // Content Fetching: List four most recent work projects
 const projects = (await getCollection('work'))
@@ -34,7 +33,7 @@ const projects = (await getCollection('work'))
 					tagline="I'm Epitech student in pre msc."
 					align="start"
 				>
-					<div class="roles"   transition:animate={slide({ duration: '0.2s' })}>
+					<div class="roles" transition:animate={slide({ duration: '0.2s' })}>
 						<Pill><Icon name="ant-design:code-filled" size="1.33em" /> Developer</Pill>
 						<Pill><Icon name="ph:music-note-fill" size="1.33em" /> Musician</Pill>
 					</div>
@@ -45,7 +44,7 @@ const projects = (await getCollection('work'))
 					width="400"
 					height="800"
 					src="/assets/picture.jpg"
-					transition:animate={fade({ duration: '0.5s' })}
+					transition:animate={slide({ duration: '0.4s' })}
 				/>
 			</header>
 
