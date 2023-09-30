@@ -1,7 +1,7 @@
 ---
 title: Hangman-game
 publishDate: 2019-12-01 00:00:00
-img: /assets/hangman.PNG
+img: ./assets/hangman.PNG
 img_alt: screen shot of the interface
 description: |
   Python Hangman game. Guess words, earn points, and enjoy classic word-guessing fun. 

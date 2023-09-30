@@ -1,7 +1,7 @@
 ---
 title: Twitch Viewer-BOT
 publishDate: 2023-03-21 00:00:00
-img: /assets/twitchbot.PNG
+img: ./assets/twitchbot.PNG
 img_alt: screen shot of the interface
 description: |
   Tools with a graphical interface to create fictitious viewers on your live streams!
