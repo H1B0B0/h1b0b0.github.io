@@ -1,7 +1,7 @@
 ---
 title: Kick Viewer-Bot
 publishDate: 2023-03-04 00:00:00
-img: ./assets/kickbot.png
+img: /portfolio/assets/kickbot.png
 img_alt: screen shot of the interface
 description: |
   Tools with a graphical interface to create fictitious viewers on your live streams!
