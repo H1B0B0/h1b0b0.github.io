@@ -21,7 +21,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  BUILD_PATH: "dist" # Le chemin vers le dossier de sortie de votre projet Astro
+  BUILD_PATH: "." # default value when not using subfolders
+  # BUILD_PATH: subfolder
 
 jobs:
   build:
@@ -63,12 +64,15 @@ jobs:
         run: |
           ${{ steps.detect-package-manager.outputs.runner }} astro build \
             --site "${{ steps.pages.outputs.origin }}" \
-            --base "./"
+            --base "${{ steps.pages.outputs.base_path }}"
+        working-directory: ${{ env.BUILD_PATH }}
+      - name: Copy CSS to Build Directory
+        run: cp src/styles/global.css public/styles/global.css
         working-directory: ${{ env.BUILD_PATH }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: ${{ env.BUILD_PATH }}
+          path: ${{ env.BUILD_PATH }}/dist
 
   deploy:
     environment:
