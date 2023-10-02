@@ -11,7 +11,7 @@ tags:
   - Python
 ---
 
-# Twitch Vewer-Bot
+# Twitch Viewer-Bot
 
 > This is a Python script for generating Twitch views using proxies. It is implemented as a GUI application with the help of the tkinter module.
 
