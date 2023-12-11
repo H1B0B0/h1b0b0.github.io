@@ -65,7 +65,6 @@ jobs:
           ${{ steps.detect-package-manager.outputs.runner }} astro build \
             --site "${{ steps.pages.outputs.origin }}" \
             --base "${{ steps.pages.outputs.base_path }}"
-          echo "BASEPATH: ${{ steps.pages.outputs.base_path }}"
         working-directory: ${{ env.BUILD_PATH }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
@@ -75,7 +74,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: "${{ steps.pages.outputs.origin }}"
     needs: build
     runs-on: ubuntu-latest
     name: Deploy
@@ -83,5 +82,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v2
-      - name: Display Deployed URL
-        run: echo "Deployed URL: ${{ steps.deployment.outputs.page_url }}"
