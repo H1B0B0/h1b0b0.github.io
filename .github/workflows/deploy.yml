@@ -63,7 +63,7 @@ jobs:
       - name: Build with Astro
         run: |
           ${{ steps.detect-package-manager.outputs.runner }} astro build \
-            --site "${{ steps.pages.outputs.origin }}" \
+            --site "https://h1b0b0.github.io/" \
             --base "/"
         working-directory: ${{ env.BUILD_PATH }}
       - name: Upload artifact
@@ -75,6 +75,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+      echo: ${{ steps.deployment.outputs.page_url }}
     needs: build
     runs-on: ubuntu-latest
     name: Deploy
