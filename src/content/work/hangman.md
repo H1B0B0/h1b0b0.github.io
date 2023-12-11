@@ -1,10 +1,10 @@
 ---
 title: Hangman-game
 publishDate: 2019-12-01 00:00:00
-img: /portfolio/assets/hangman.PNG
+img: /assets/hangman.PNG
 img_alt: screen shot of the interface
 description: |
-  Python Hangman game. Guess words, earn points, and enjoy classic word-guessing fun. 
+  Python Hangman game. Guess words, earn points, and enjoy classic word-guessing fun.
 tags:
   - Game
   - Dev
@@ -38,23 +38,24 @@ To run the Hangman game, follow these steps:
 
 1. Clone the repository:
 
-    ````git clone https://github.com/H1B0B0/hangman-game````
+   `git clone https://github.com/H1B0B0/hangman-game`
 
 2. Navigate to the project directory:
 
-    ````cd hangman-game````
+   `cd hangman-game`
 
 3. Install the required Python packages:
 
-    ````pip install openai click````
+   `pip install openai click`
 
 4. Set up your OpenAI API key as an environment variable:
-    - Linux: ````export OPENAI=your-api-key````
-    - Windows: ````setx OPENAI "Variable value"````
+
+   - Linux: `export OPENAI=your-api-key`
+   - Windows: `setx OPENAI "Variable value"`
 
 5. Run the game:
-    - Linux: ````python3 hangman.py````
-    - Windows: ````py -3 hangman.py````
+   - Linux: `python3 hangman.py`
+   - Windows: `py -3 hangman.py`
 
 ## Usage
 

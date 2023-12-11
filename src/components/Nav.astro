@@ -6,9 +6,9 @@ import type { iconPaths } from "./IconPaths";
 
 /** Main menu items */
 const textLinks: { label: string; href: string }[] = [
-  { label: "Home", href: "/portfolio/" },
-  { label: "Work", href: "/portfolio/work/" },
-  { label: "About", href: "/portfolio/about/" },
+  { label: "Home", href: "/" },
+  { label: "Work", href: "/work" },
+  { label: "About", href: "/about" },
 ];
 
 /** Icon links to social media — edit these with links to your profiles! */
@@ -28,7 +28,7 @@ const iconLinks: {
 
 <nav transition:animate="initial">
   <div class="menu-header">
-    <a href="/portfolio/" class="site-title">
+    <a href="/" class="site-title">
       <Iconastro
         name="octicon:rocket-16"
         color="var(--accent-regular)"

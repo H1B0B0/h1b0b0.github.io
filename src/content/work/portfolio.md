@@ -1,7 +1,7 @@
 ---
 title: Portfolio Site
 publishDate: 2023-09-29 00:00:00
-img: /portfolio/assets/my_portfolio.png
+img: /assets/my_portfolio.png
 img_alt: screen shot of the interface
 description: |
   Tools with a graphical interface to create fictitious viewers on your live streams!

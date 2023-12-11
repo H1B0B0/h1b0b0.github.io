@@ -1,7 +1,7 @@
 ---
 title: Rogue-like in JAVA
 publishDate: 2022-12-01 00:00:00
-img: /portfolio/assets/Pedagoquest.png
+img: /assets/Pedagoquest.png
 img_alt: screen shot of the menu
 description: |
   Crafted in two weeks, this immersive game features dynamic maps for endless adventure.

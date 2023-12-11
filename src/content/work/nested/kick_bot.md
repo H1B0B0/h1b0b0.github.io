@@ -1,7 +1,7 @@
 ---
 title: Kick Viewer-Bot
 publishDate: 2023-03-04 00:00:00
-img: /portfolio/assets/kickbot.png
+img: /assets/kickbot.png
 img_alt: screen shot of the interface
 description: |
   Tools with a graphical interface to create fictitious viewers on your live streams!
@@ -19,11 +19,11 @@ This code is based on the same development principle as the Twitch Viewer-Bot.
 
 ## Requirements
 
-* Python 3.x
-* streamlink
-* requests
-* fake_useragent
-* tkinter
+- Python 3.x
+- streamlink
+- requests
+- fake_useragent
+- tkinter
 
 ## Download the folder
 
@@ -31,17 +31,17 @@ This code is based on the same development principle as the Twitch Viewer-Bot.
 > If you don't have Git installed, you can download it from [here](https://git-scm.com/download/win).
 
 1. Open a command prompt and navigate to the location where you want to install the folder. Then use the following command:
-   ```shell 
+   ```shell
    git clone https://github.com/H1B0B0/Kick-Viewerbot.git
-    ```
+   ```
 2. Once the folder installation is complete, navigate into the folder.
 
-3. Run the file ``install.bat``to install the required dependencies. 
+3. Run the file `install.bat`to install the required dependencies.
 
 > **Warning**
 > You need Python installed. If you don't have it, you can download it from [here](https://www.python.org/downloads/)
 
-4. Run ``main.bat`` or ``main_just_terminal.bat`` if you prefer a command-line interface and better performance (the terminal version currently uses HTTP scraped proxies).
+4. Run `main.bat` or `main_just_terminal.bat` if you prefer a command-line interface and better performance (the terminal version currently uses HTTP scraped proxies).
 
 ## Usage
 
@@ -54,32 +54,43 @@ pip install -r requirements.txt
 2. Run the script:
 
 ```shell
-python3 main.py 
+python3 main.py
 ```
-or 
+
+or
+
 ```shell
 python3 main_just_terminal.py
 ```
-or 
+
+or
+
 ```shell
 python3 script.py -threads nb_threads -kickname example_channel
 ```
+
 or
+
 ```shell
-py -3 main.py 
+py -3 main.py
 ```
-or 
+
+or
+
 ```shell
 py -3 main_just_terminal.py
 ```
-or 
+
+or
+
 ```shell
 py -3 script.py -threads nb_threads -kickname example_channel
 ```
+
 3. Fill in the following details in the GUI:
 
-* Number of threads: Enter the number of threads you want to use. Each thread represents 1/10 of a single viewer(So if you want 100 viewers you need to enter 1000 threads).
-* Kick channel name: Enter the name of the Kick channel you want to generate views for.
+- Number of threads: Enter the number of threads you want to use. Each thread represents 1/10 of a single viewer(So if you want 100 viewers you need to enter 1000 threads).
+- Kick channel name: Enter the name of the Kick channel you want to generate views for.
 
 4. Click the "Start bot" button to start the script.
 
