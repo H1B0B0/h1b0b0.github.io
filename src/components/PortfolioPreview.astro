@@ -17,7 +17,19 @@ const { data, slug } = Astro.props.project;
     decoding="async"
   />
 </a>
-
+<script>
+  import anime from "animejs";
+  function init() {
+    anime({
+      targets: ".card",
+      translateY: [200, 0],
+      duration: 1000,
+      delay: anime.stagger(100),
+    });
+  }
+  document.addEventListener("astro:page-load", init);
+  window.addEventListener("astro:after-swap", init);
+</script>
 <style>
   .card {
     display: grid;

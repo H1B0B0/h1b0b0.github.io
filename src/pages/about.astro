@@ -1,107 +1,141 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
+import BaseLayout from "../layouts/BaseLayout.astro";
 
-import ContactCTA from '../components/ContactCTA.astro';
-import Hero from '../components/Hero.astro';
-import { slide } from 'astro:transitions';
+import ContactCTA from "../components/ContactCTA.astro";
+import Hero from "../components/Hero.astro";
+import { slide } from "astro:transitions";
 ---
 
-<BaseLayout title="About | Etienne Mentrel" description="About Etienne Mentrel Lorem Ipsum">
-	<div class="stack gap-20">
-		<main class="wrapper about">
-			<Hero
-				title="About"
-				tagline="Thanks for stopping by. Read below to learn more about myself and my background."
-			>
-			</Hero>
+<BaseLayout
+  title="About | Etienne Mentrel"
+  description="About Etienne Mentrel Lorem Ipsum"
+>
+  <div class="stack gap-20">
+    <main class="wrapper about">
+      <Hero
+        title="About"
+        tagline="Thanks for stopping by. Read below to learn more about myself and my background."
+      />
 
-			<section>
-				<h2 class="section-title" transition:animate={slide({ duration: '0.1s' })}>Background</h2>
-				<div class="content" transition:animate={slide({ duration: '0.2s' })}>
-					<p>I began my professional journey at the end of high school, 
-						participating in an apprenticeship program at a company specializing 
-						in RFID technology. During my initial training, I was not destined to 
-						become a developer but rather a higher-level technician. It was on the 
-						job that I learned Python. Subsequently, I undertook numerous Python 
-						projects for my company, leading me to transition into a developer role 
-						within the organization. Upon completing my DUT in Electrical Engineering 
-						and Industrial Computing, I decided to enroll at Epitech because I discovered 
-						a great passion for programming. Now, I am embarking on my journey at Epitech 
-						as a pre-MSC student.		
-					</p>
-				</div>
-			</section>
-			<section>
-				<h2 class="section-title" transition:animate={slide({ duration: '0.1s' })}>Education</h2>
-				<div class="content" class="content" transition:animate={slide({ duration: '0.1s' })}>
-					<p>DUT GEII (2021-2023) - Bac STI2D ITEC (2018-2021)</p>
-				</div>
-			</section>
-			<section>
-				<h2 class="section-title" transition:animate={slide({ duration: '0.1s' })}>Skills</h2>
-				<div class="content">
-					<p>Python, C, Java, HTML, CSS</p>
-				</div>
-			</section>
-		</main>  
-		<ContactCTA />
-	</div>
+      <section>
+        <h2
+          class="section-title"
+          transition:animate={slide({ duration: "0.1s" })}
+        >
+          Background
+        </h2>
+        <div class="content" transition:animate={slide({ duration: "0.2s" })}>
+          <p>
+            I began my professional journey at the end of high school,
+            participating in an apprenticeship program at a company specializing
+            in RFID technology. During my initial training, I was not destined
+            to become a developer but rather a higher-level technician. It was
+            on the job that I learned Python. Subsequently, I undertook numerous
+            Python projects for my company, leading me to transition into a
+            developer role within the organization. Upon completing my DUT in
+            Electrical Engineering and Industrial Computing, I decided to enroll
+            at Epitech because I discovered a great passion for programming.
+            Now, I am embarking on my journey at Epitech as a pre-MSC student.
+          </p>
+        </div>
+      </section>
+      <section>
+        <h2
+          class="section-title"
+          transition:animate={slide({ duration: "0.1s" })}
+        >
+          Education
+        </h2>
+        <div
+          class="content"
+          class="content"
+          transition:animate={slide({ duration: "0.1s" })}
+        >
+          <p>DUT GEII (2021-2023) - Bac STI2D ITEC (2018-2021)</p>
+        </div>
+      </section>
+      <section>
+        <h2
+          class="section-title"
+          transition:animate={slide({ duration: "0.1s" })}
+        >
+          Skills
+        </h2>
+        <div class="content">
+          <p>Python, C, Java, HTML, CSS</p>
+        </div>
+      </section>
+    </main>
+    <ContactCTA />
+  </div>
 </BaseLayout>
-
+<script>
+  import anime from "animejs";
+  function init() {
+    anime({
+      targets: ".content",
+      translateY: [200, 0],
+      duration: 1000,
+      delay: anime.stagger(100),
+    });
+  }
+  document.addEventListener("astro:page-load", init);
+  window.addEventListener("astro:after-swap", init);
+</script>
 <style>
-	.about {
-		display: flex;
-		flex-direction: column;
-		gap: 3.5rem;
-	}
+  .about {
+    display: flex;
+    flex-direction: column;
+    gap: 3.5rem;
+  }
 
-	img {
-		margin-top: 1.5rem;
-		border-radius: 1.5rem;
-		box-shadow: var(--shadow-md);
-	}
+  img {
+    margin-top: 1.5rem;
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow-md);
+  }
 
-	section {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		color: var(--gray-200);
-	}
+  section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    color: var(--gray-200);
+  }
 
-	.section-title {
-		grid-column-start: 1;
-		font-size: var(--text-xl);
-		color: var(--gray-0);
-	}
+  .section-title {
+    grid-column-start: 1;
+    font-size: var(--text-xl);
+    color: var(--gray-0);
+  }
 
-	.content {
-		grid-column: 2 / 4;
-	}
+  .content {
+    grid-column: 2 / 4;
+  }
 
-	.content :global(a) {
-		text-decoration: 1px solid underline transparent;
-		text-underline-offset: 0.25em;
-		transition: text-decoration-color var(--theme-transition);
-	}
+  .content :global(a) {
+    text-decoration: 1px solid underline transparent;
+    text-underline-offset: 0.25em;
+    transition: text-decoration-color var(--theme-transition);
+  }
 
-	.content :global(a:hover),
-	.content :global(a:focus) {
-		text-decoration-color: currentColor;
-	}
+  .content :global(a:hover),
+  .content :global(a:focus) {
+    text-decoration-color: currentColor;
+  }
 
-	@media (min-width: 50em) {
-		.about {
-			display: grid;
-			grid-template-columns: 1fr 60% 1fr;
-		}
+  @media (min-width: 50em) {
+    .about {
+      display: grid;
+      grid-template-columns: 1fr 60% 1fr;
+    }
 
-		.about > :global(:first-child) {
-			grid-column-start: 2;
-		}
+    .about > :global(:first-child) {
+      grid-column-start: 2;
+    }
 
-		section {
-			display: contents;
-			font-size: var(--text-lg);
-		}
-	}
+    section {
+      display: contents;
+      font-size: var(--text-lg);
+    }
+  }
 </style>

@@ -33,6 +33,9 @@ const { title, description } = Astro.props;
       addEventListener("load", () =>
         document.documentElement.classList.add("loaded")
       );
+      addEventListener("scroll", (event) => {
+        console.log("scrolling");
+      });
     </script>
 
     <style>
