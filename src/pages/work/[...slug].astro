@@ -7,8 +7,6 @@ import ContactCTA from "../../components/ContactCTA.astro";
 import Hero from "../../components/Hero.astro";
 import Icon from "../../components/Icon.astro";
 import Pill from "../../components/Pill.astro";
-import { slide } from "astro:transitions";
-import { fade } from "astro:transitions";
 
 interface Props {
   entry: CollectionEntry<"work">;
@@ -30,14 +28,14 @@ const { Content } = await entry.render();
 ---
 
 <BaseLayout title={entry.data.title} description={entry.data.description}>
-  <div class="stack gap-20" transition:animate={slide({ duration: "0.3s" })}>
+  <div class="stack gap-20">
     <div class="stack gap-15">
       <header>
         <div class="wrapper stack gap-2">
           <a class="back-link" href="/work/"><Icon icon="arrow-left" /> Work</a>
           <Hero title={entry.data.title} align="start">
             <div class="details">
-              <div class="tags" transition:animate={fade({ duration: "0.6s" })}>
+              <div class="tags">
                 {entry.data.tags.map((t) => <Pill>{t}</Pill>)}
               </div>
               <p class="description">{entry.data.description}</p>
@@ -49,11 +47,7 @@ const { Content } = await entry.render();
         <div class="stack gap-10 content">
           {
             entry.data.img && (
-              <img
-                src={entry.data.img}
-                alt={entry.data.img_alt || ""}
-                transition:animate={slide({ duration: "0.2s" })}
-              />
+              <img src={entry.data.img} alt={entry.data.img_alt || ""} />
             )
           }
           <div class="content">
