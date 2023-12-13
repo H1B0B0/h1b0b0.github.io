@@ -30,6 +30,8 @@ const projects = (await getCollection("work"))
         style="display: flex; justify-content: center; align-items: center; height: 100%;"
       >
         <svg
+          id="svgelement"
+          class="neon-effect"
           width="557.75"
           height="74.752"
           viewBox="0 0 557.75 74.752"
@@ -142,15 +144,17 @@ const projects = (await getCollection("work"))
   import anime from "animejs";
   function updatesvgmode() {
     const svgElement = document.getElementById("svg");
+    const svg = document.getElementById("svgelement");
     const isDarkMode = localStorage.getItem("theme") === "dark";
-    if (svgElement) {
+    if (svgElement && svg) {
       if (isDarkMode) {
-        svgElement.style.stroke = "#ffffff";
-        svgElement.style.fill = "#ffffff00";
+        svg.style.filter =
+          "drop-shadow(0 0 8px purple) drop-shadow(0 0 10px white) drop-shadow(0 0 30px purple)";
       } else {
-        svgElement.style.stroke = "#000000";
-        svgElement.style.fill = "#ffffff00";
+        svg.style.filter = "drop-shadow(-7px 5px 5px black)";
       }
+      svgElement.style.stroke = isDarkMode ? "#ffffff" : "#000000";
+      svgElement.style.fill = "#ffffff00";
     }
   }
   function initializeAnimations() {
@@ -228,7 +232,7 @@ const projects = (await getCollection("work"))
       easing: "easeInOutSine",
       duration: 6000,
       delay: function (el, i) {
-        return i * 25;
+        return i * 500;
       },
       direction: "alternate",
       loop: true,
