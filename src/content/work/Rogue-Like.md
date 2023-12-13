@@ -4,7 +4,7 @@ publishDate: 2022-12-01 00:00:00
 img: /assets/Pedagoquest.png
 img_alt: screen shot of the menu
 description: |
-  Crafted in two weeks, this immersive game features dynamic maps for endless adventure.
+  Made in two weeks, this immersive game features dynamic maps for endless adventure.
 tags:
   - Game
   - LIB-GDX
@@ -13,11 +13,11 @@ tags:
 
 # Rogue-like LibGDX
 
-> The Rogue-like LibGDX project is an immersive game crafted with LibGDX in just two weeks. It showcases the team's commitment and proficiency, featuring dynamically generated maps for an ever-evolving adventure.
+> The Rogue-like LibGDX project is an immersive game made with LibGDX in just two weeks. It showcases the team's commitment and proficiency, featuring dynamically generated maps for an ever-evolving adventure.
 
 ## Description
 
-The Rogue-like LibGDX project is an immersive Rogue-like game meticulously crafted with LibGDX. Faced with the challenge of a tight deadline—only two weeks for development—this project showcases the team's commitment and proficiency in delivering a captivating gaming experience. The game features dynamically generated maps using procedural methods, ensuring an infinite and ever-evolving adventure for players.
+The Rogue-like LibGDX project is an immersive Rogue-like game meticulously made with LibGDX. Faced with the challenge of a tight deadline—only two weeks for development—this project showcases the team's commitment and proficiency in delivering a captivating gaming experience. The game features dynamically generated maps using procedural methods, ensuring an infinite and ever-evolving adventure for players.
 
 ### Key Features
 

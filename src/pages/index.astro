@@ -143,14 +143,11 @@ const projects = (await getCollection("work"))
   function updatesvgmode() {
     const svgElement = document.getElementById("svg");
     const isDarkMode = localStorage.getItem("theme") === "dark";
-    console.log(isDarkMode);
     if (svgElement) {
       if (isDarkMode) {
-        console.log("dark");
         svgElement.style.stroke = "#ffffff";
         svgElement.style.fill = "#ffffff00";
       } else {
-        console.log("light");
         svgElement.style.stroke = "#000000";
         svgElement.style.fill = "#ffffff00";
       }
