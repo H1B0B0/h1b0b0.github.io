@@ -99,7 +99,11 @@ import Icon from "./Icon.astro";
     }
 
     getTheme() {
-      return localStorage.getItem("theme") === "dark";
+      const userPrefersDark =
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const savedTheme = localStorage.getItem("theme");
+      return savedTheme ? savedTheme === "dark" : userPrefersDark;
     }
 
     isDark() {
