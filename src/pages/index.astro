@@ -15,7 +15,6 @@ import PortfolioPreview from "../components/PortfolioPreview.astro";
 // Page section components
 import ContactCTA from "../components/ContactCTA.astro";
 import Skills from "../components/Skills.astro";
-import { slide } from "astro:transitions";
 
 // Content Fetching: List four most recent work projects
 const projects = (await getCollection("work"))
@@ -72,7 +71,6 @@ const projects = (await getCollection("work"))
           width="400"
           height="800"
           src="/assets/picture.jpg"
-          transition:animate={slide({ duration: "0.4s" })}
         />
       </header>
 

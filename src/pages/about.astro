@@ -3,7 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 import ContactCTA from "../components/ContactCTA.astro";
 import Hero from "../components/Hero.astro";
-import { slide } from "astro:transitions";
+import { Icon } from "astro-icon";
 ---
 
 <BaseLayout
@@ -19,104 +19,137 @@ import { slide } from "astro:transitions";
 
       <section>
         <h2 class="section-title">Background</h2>
-        <div class="content" transition:animate={slide({ duration: "0.2s" })}>
+        <div class="content">
           <p>
             I began my professional journey at the end of high school,
             participating in an apprenticeship program at a company specializing
-            in RFID technology. During my initial training, I was not destined
-            to become a developer but rather a higher-level technician. It was
-            on the job that I learned Python. Subsequently, I undertook numerous
-            Python projects for my company, leading me to transition into a
-            developer role within the organization. Upon completing my DUT in
-            Electrical Engineering and Industrial Computing, I decided to enroll
-            at Epitech because I discovered a great passion for programming.
-            Now, I am embarking on my journey at Epitech as a pre-MSC student.
+            in RFID technology.
+          </p>
+          <p>
+            During my initial training, I was not destined to become a developer
+            but rather a higher-level technician. It was on the job that I
+            learned Python. Subsequently, I undertook numerous Python projects
+            for my company, leading me to transition into a developer role
+            within the organization.
+          </p>
+          <p>
+            Upon completing my DUT in Electrical Engineering and Industrial
+            Computing, I decided to enroll at Epitech because I discovered a
+            great passion for programming. Now, I am embarking on my journey at
+            Epitech as a pre-MSC student.
           </p>
         </div>
       </section>
       <section>
         <h2 class="section-title">Education</h2>
         <div class="content" class="content">
-          <p>DUT GEII (2021-2023) - Bac STI2D ITEC (2018-2021)</p>
+          <p>DUT génie électrique et informatique industrielle</p>
+          <p>2021-2023</p>
+          <a href="https://iuthaguenau.unistra.fr">IUT de Haguenau</a>
+          <p>Bac STI2D Spécialité ITEC</p>
+          <p>2018-2021</p>
+          <a href="https://lycee-andre-malraux-remiremont.eu"
+            >Lycée André Malraux Remiremont</a
+          >
         </div>
       </section>
       <section>
         <h2 class="section-title">Skills</h2>
         <div class="content">
-          <p>Python, C, Java, HTML, CSS</p>
+          <list>
+            <Icon name="vscode-icons:file-type-html" size="3em" />
+            <Icon name="vscode-icons:file-type-css" size="3em" />
+            <Icon name="vscode-icons:file-type-astro" size="3em" />
+            <Icon name="vscode-icons:file-type-python" size="3em" />
+            <Icon name="logos:javascript" size="3em" />
+            <Icon name="logos:c" size="3em" />
+            <Icon name="logos:java" size="3em" />
+            <Icon name="vscode-icons:file-type-git" size="3em" />
+            <Icon name="vscode-icons:file-type-docker" size="3em" />
+            <Icon name="logos:fedora" size="3em" />
+            <Icon name="flat-color-icons:linux" size="3em" />
+          </list>
         </div>
       </section>
     </main>
     <ContactCTA />
   </div>
-</BaseLayout>
-<script>
-  import anime from "animejs";
-  function init() {
-    anime({
-      targets: ".content",
-      translateY: [200, 0],
-      duration: 1000,
-      delay: anime.stagger(100),
-    });
-  }
-  document.addEventListener("astro:page-load", init);
-  window.addEventListener("astro:after-swap", init);
-</script>
-<style>
-  .about {
-    display: flex;
-    flex-direction: column;
-    gap: 3.5rem;
-  }
 
-  img {
-    margin-top: 1.5rem;
-    border-radius: 1.5rem;
-    box-shadow: var(--shadow-md);
-  }
-
-  section {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    color: var(--gray-200);
-  }
-
-  .section-title {
-    grid-column-start: 1;
-    font-size: var(--text-xl);
-    color: var(--gray-0);
-  }
-
-  .content {
-    grid-column: 2 / 4;
-  }
-
-  .content :global(a) {
-    text-decoration: 1px solid underline transparent;
-    text-underline-offset: 0.25em;
-    transition: text-decoration-color var(--theme-transition);
-  }
-
-  .content :global(a:hover),
-  .content :global(a:focus) {
-    text-decoration-color: currentColor;
-  }
-
-  @media (min-width: 50em) {
+  <script>
+    import anime from "animejs";
+    function init() {
+      anime({
+        targets: ".content",
+        translateY: [200, 0],
+        duration: 1000,
+        delay: anime.stagger(100),
+      });
+    }
+    document.addEventListener("astro:page-load", init);
+    window.addEventListener("astro:after-swap", init);
+  </script>
+  <style>
     .about {
-      display: grid;
-      grid-template-columns: 1fr 60% 1fr;
+      display: flex;
+      flex-direction: column;
+      gap: 3.5rem;
     }
 
-    .about > :global(:first-child) {
-      grid-column-start: 2;
+    img {
+      max-width: 70px;
+      height: auto;
+    }
+
+    p {
+      margin: 10px;
+    }
+
+    a {
+      margin: 10px;
     }
 
     section {
-      display: contents;
-      font-size: var(--text-lg);
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      color: var(--gray-200);
     }
-  }
-</style>
+
+    .section-title {
+      grid-column-start: 1;
+      font-size: var(--text-xl);
+      color: var(--gray-0);
+    }
+
+    .content {
+      grid-column: 2 / 4;
+    }
+
+    .content :global(a) {
+      text-decoration: 1px solid underline transparent;
+      text-underline-offset: 0.25em;
+      transition: text-decoration-color var(--theme-transition);
+    }
+
+    .content :global(a:hover),
+    .content :global(a:focus) {
+      text-decoration-color: currentColor;
+    }
+
+    @media (min-width: 50em) {
+      .about {
+        display: grid;
+        grid-template-columns: 1fr 60% 1fr;
+      }
+
+      .about > :global(:first-child) {
+        grid-column-start: 2;
+      }
+
+      section {
+        display: contents;
+        font-size: var(--text-lg);
+      }
+    }
+  </style>
+</BaseLayout>
