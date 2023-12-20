@@ -24,16 +24,16 @@ import { Icon } from "astro-icon";
             I began my professional journey at the end of high school,
             participating in an apprenticeship program at a company specializing
             in RFID technology.
-          </p>
-          <p>
-            During my initial training, I was not destined to become a developer
-            but rather a higher-level technician. It was on the job that I
-            learned Python. Subsequently, I undertook numerous Python projects
-            for my company, leading me to transition into a developer role
-            within the organization.
-          </p>
-          <p>
-            Upon completing my DUT in Electrical Engineering and Industrial
+            <br />
+            <br />
+             During my initial training, I was not destined to become a
+            developer but rather a higher-level technician. It was on the job
+            that I learned Python. Subsequently, I undertook numerous Python
+            projects for my company, leading me to transition into a developer
+            role within the organization.
+            <br />
+            <br />
+             Upon completing my DUT in Electrical Engineering and Industrial
             Computing, I decided to enroll at Epitech because I discovered a
             great passion for programming. Now, I am embarking on my journey at
             Epitech as a pre-MSC student.
@@ -46,6 +46,8 @@ import { Icon } from "astro-icon";
           <p>DUT génie électrique et informatique industrielle</p>
           <p>2021-2023</p>
           <a href="https://iuthaguenau.unistra.fr">IUT de Haguenau</a>
+          <br />
+          <br />
           <p>Bac STI2D Spécialité ITEC</p>
           <p>2018-2021</p>
           <a href="https://lycee-andre-malraux-remiremont.eu"
@@ -77,6 +79,7 @@ import { Icon } from "astro-icon";
 
   <script>
     import anime from "animejs";
+
     function init() {
       anime({
         targets: ".content",
@@ -84,10 +87,57 @@ import { Icon } from "astro-icon";
         duration: 1000,
         delay: anime.stagger(100),
       });
+      function animateSVG(element) {
+        console.log("here");
+        anime({
+          targets: element,
+          translateX: function (el, i) {
+            return 50 + -50 * i;
+          },
+          translateY: function (el, i) {
+            return 50 + -50 * i;
+          },
+          scale: function (el, i, l) {
+            return l - i + 0.25;
+          },
+          rotate: function () {
+            return anime.random(-360, 360);
+          },
+          duration: function () {
+            return anime.random(1200, 1800);
+          },
+          delay: function () {
+            return anime.random(1000, 3000);
+          },
+          borderRadius: function () {
+            return ["0%", anime.random(10, 35) + "%"];
+          },
+          direction: "alternate",
+          loop: true,
+        });
+      }
+      let observer = new IntersectionObserver(
+        (entries, observer) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              // Appeler la fonction d'animation pour l'élément visible
+              animateSVG(entry.target);
+              // Optionnel : vous pouvez désactiver l'observation après la première animation
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.5 },
+      );
+      document.querySelectorAll("list svg").forEach((svg) => {
+        observer.observe(svg);
+      });
     }
+
     document.addEventListener("astro:page-load", init);
     window.addEventListener("astro:after-swap", init);
   </script>
+
   <style>
     .about {
       display: flex;
@@ -98,14 +148,6 @@ import { Icon } from "astro-icon";
     img {
       max-width: 70px;
       height: auto;
-    }
-
-    p {
-      margin: 10px;
-    }
-
-    a {
-      margin: 10px;
     }
 
     section {
