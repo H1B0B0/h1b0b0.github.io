@@ -28,16 +28,6 @@ const { title, description } = Astro.props;
       <Footer />
     </div>
 
-    <script>
-      // Add “loaded” class once the document has completely loaded.
-      addEventListener("load", () =>
-        document.documentElement.classList.add("loaded")
-      );
-      addEventListener("scroll", (event) => {
-        console.log("scrolling");
-      });
-    </script>
-
     <style>
       :root {
         --_placeholder-bg: linear-gradient(transparent, transparent);

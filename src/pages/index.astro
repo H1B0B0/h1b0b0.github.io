@@ -160,7 +160,10 @@ const projects = (await getCollection("work"))
     anime({
       targets: ".hero",
       translateX: [200, 0],
+      scaleX: [0.5, 1],
+      scaleY: [0.5, 1],
       duration: 1000,
+      easing: "easeOutElastic(1, .5)",
     });
 
     let heroImage = document.querySelector(".hero img");

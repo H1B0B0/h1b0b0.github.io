@@ -68,6 +68,8 @@ import Icon from "./Icon.astro";
 </style>
 
 <script>
+  import anime from "animejs";
+
   class ThemeToggle extends HTMLElement {
     constructor() {
       super();
@@ -78,6 +80,13 @@ import Icon from "./Icon.astro";
       button.addEventListener("click", () => {
         const isDark = !this.isDark();
         this.setTheme(isDark);
+        anime({
+          targets: ".icon",
+          scale: [0.5, 1], // Commencer de légèrement plus petit à la taille normale
+          opacity: [0.8, 1], // Commencer semi-transparent à opaque
+          duration: 500,
+          easing: "easeInOutQuad",
+        });
       });
 
       // Listen to the Astro after-swap event for page transitions.
