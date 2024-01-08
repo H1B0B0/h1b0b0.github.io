@@ -175,6 +175,13 @@ declare module 'astro:content' {
 
 	type ContentEntryMap = {
 		"work": {
+"Job_boards.md": {
+	id: "Job_boards.md";
+  slug: "job_boards";
+  body: string;
+  collection: "work";
+  data: InferEntrySchema<"work">
+} & { render(): Render[".md"] };
 "Rogue-Like.md": {
 	id: "Rogue-Like.md";
   slug: "rogue-like";
@@ -189,9 +196,9 @@ declare module 'astro:content' {
   collection: "work";
   data: InferEntrySchema<"work">
 } & { render(): Render[".md"] };
-"nested/kick_bot.md": {
-	id: "nested/kick_bot.md";
-  slug: "nested/kick_bot";
+"kick_bot.md": {
+	id: "kick_bot.md";
+  slug: "kick_bot";
   body: string;
   collection: "work";
   data: InferEntrySchema<"work">
