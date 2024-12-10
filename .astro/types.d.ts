@@ -189,6 +189,20 @@ declare module 'astro:content' {
   collection: "work";
   data: InferEntrySchema<"work">
 } & { render(): Render[".md"] };
+"Time-manager.md": {
+	id: "Time-manager.md";
+  slug: "time-manager";
+  body: string;
+  collection: "work";
+  data: InferEntrySchema<"work">
+} & { render(): Render[".md"] };
+"eclatshop.md": {
+	id: "eclatshop.md";
+  slug: "eclatshop";
+  body: string;
+  collection: "work";
+  data: InferEntrySchema<"work">
+} & { render(): Render[".md"] };
 "hangman.md": {
 	id: "hangman.md";
   slug: "hangman";
@@ -199,6 +213,13 @@ declare module 'astro:content' {
 "kick_bot.md": {
 	id: "kick_bot.md";
   slug: "kick_bot";
+  body: string;
+  collection: "work";
+  data: InferEntrySchema<"work">
+} & { render(): Render[".md"] };
+"kurama-chat.md": {
+	id: "kurama-chat.md";
+  slug: "kurama-chat";
   body: string;
   collection: "work";
   data: InferEntrySchema<"work">
