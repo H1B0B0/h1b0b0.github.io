@@ -48,8 +48,10 @@ const { data, slug } = Astro.props.project;
   }
 
   .card:hover {
-    box-shadow: var(--shadow-md);
-  }
+    box-shadow: 
+        0 0 10px 2px rgba(46, 11, 77, 0.3),
+        0 0 20px 5px rgba(51, 73, 147, 0.2);
+}
 
   .title {
     grid-area: 1 / 1 / 2 / 2;

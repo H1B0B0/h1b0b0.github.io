@@ -146,15 +146,6 @@ const iconLinks: {
 
       /** Set whether the menu is currently expanded or collapsed. */
       const setExpanded = (expand: boolean) => {
-        anime({
-          targets: ".link",
-          scale: [
-            { value: 0.8, easing: "easeOutSine", duration: 100 },
-            { value: 1.2, easing: "easeOutSine", duration: 100 },
-            { value: 1, easing: "easeOutSine", duration: 100 },
-          ],
-        });
-        console.log("here");
         btn.setAttribute("aria-expanded", expand ? "true" : "false");
         menu.hidden = !expand;
       };

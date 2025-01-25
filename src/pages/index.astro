@@ -70,7 +70,7 @@ const projects = (await getCollection("work"))
           alt="Etienne Mentrel"
           width="400"
           height="800"
-          src="/assets/picture.jpg"
+          src="/assets/picture.jpeg"
         />
       </header>
 
@@ -261,27 +261,33 @@ const projects = (await getCollection("work"))
     object-fit: cover;
     object-position: top;
     border-radius: 1.5rem;
-    box-shadow: var(--shadow-md);
-  }
+    transition: box-shadow 0.3s ease;
+}
 
+.hero img:hover {
+    box-shadow: 
+        0 0 10px 2px rgba(46, 11, 77, 0.5),
+        0 0 20px 5px rgba(51, 73, 147, 0.4);
+}
+  
   @media (min-width: 50em) {
-    .hero {
-      display: grid;
-      grid-template-columns: 6fr 4fr;
-      padding-inline: 2.5rem;
-      gap: 3.75rem;
-    }
-
-    .roles {
-      margin-top: 0.5rem;
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .hero img {
-      aspect-ratio: 3 / 4;
-      border-radius: 4.5rem;
-      object-fit: cover;
+      .hero {
+        display: grid;
+        grid-template-columns: 6fr 4fr;
+        padding-inline: 2.5rem;
+        gap: 3.75rem;
+      }
+  
+      .roles {
+        margin-top: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+      }
+  
+      .hero img {
+        aspect-ratio: 3 / 4;
+        border-radius: 4.5rem;
+        object-fit: cover;
     }
   }
 
