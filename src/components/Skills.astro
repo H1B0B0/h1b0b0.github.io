@@ -45,32 +45,39 @@ import Icon from "astro-icon";
 
 <script>
   function initSkillsAnimation() {
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach((entry, index) => {
-        if (entry.isIntersecting) {
-          anime.timeline({
-            easing: 'cubicBezier(0.22, 1, 0.36, 1)'
-          })
-          .add({
-            targets: entry.target,
-            opacity: [0, 1],
-            translateY: [30, 0],
-            scale: [0.95, 1],
-            duration: 1000,
-            delay: index * 150
-          })
-          .add({
-            targets: entry.target.querySelector('[astro-icon]'),
-            scale: [0.5, 1],
-            opacity: [0, 1],
-            rotate: ['-15deg', '0deg'],
-            duration: 800
-          }, '-=600');
-        }
-      });
-    }, { threshold: 0.2 });
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry, index) => {
+          if (entry.isIntersecting) {
+            anime
+              .timeline({
+                easing: "cubicBezier(0.22, 1, 0.36, 1)",
+              })
+              .add({
+                targets: entry.target,
+                opacity: [0, 1],
+                translateY: [30, 0],
+                scale: [0.95, 1],
+                duration: 1000,
+                delay: index * 150,
+              })
+              .add(
+                {
+                  targets: entry.target.querySelector("[astro-icon]"),
+                  scale: [0.5, 1],
+                  opacity: [0, 1],
+                  rotate: ["-15deg", "0deg"],
+                  duration: 800,
+                },
+                "-=600"
+              );
+          }
+        });
+      },
+      { threshold: 0.2 }
+    );
 
-    document.querySelectorAll('.box').forEach(box => observer.observe(box));
+    document.querySelectorAll(".box").forEach((box) => observer.observe(box));
   }
 
   document.addEventListener("astro:page-load", initSkillsAnimation);
@@ -96,7 +103,7 @@ import Icon from "astro-icon";
       transform 0.4s ease-out,
       box-shadow 0.4s ease-out;
     transform-origin: center;
-    transition: all 0.4s cubic-bezier(.16, 1, .3, 1);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .box:hover {
@@ -167,10 +174,6 @@ import Icon from "astro-icon";
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     transition: transform 0.3s ease;
-  }
-
-  .skills h2:hover {
-    transform: scale(1.05);
   }
 
   .skills p {
