@@ -16,6 +16,52 @@ const { align = "center", tagline, title } = Astro.props;
   <slot />
 </div>
 
+<script>
+  import anime from "animejs";
+
+  function initHeroAnimation() {
+    const title = document.querySelector(".title");
+    const tagline = document.querySelector(".tagline");
+    const slot = document.querySelector(".slot");
+
+    anime
+      .timeline({
+        easing: "cubicBezier(.16, 1, .3, 1)",
+      })
+      .add({
+        targets: title,
+        opacity: [0, 1],
+        translateY: [30, 0],
+        duration: 800,
+        clipPath: [
+          "polygon(0 0, 0 0, 0 100%, 0 100%)",
+          "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
+        ],
+      })
+      .add(
+        {
+          targets: tagline,
+          opacity: [0, 1],
+          translateY: [20, 0],
+          duration: 600,
+        },
+        "-=400"
+      )
+      .add(
+        {
+          targets: slot,
+          opacity: [0, 1],
+          translateY: [20, 0],
+          duration: 600,
+        },
+        "-=400"
+      );
+  }
+
+  document.addEventListener("astro:page-load", initHeroAnimation);
+  window.addEventListener("astro:after-swap", initHeroAnimation);
+</script>
+
 <style>
   .hero {
     font-size: var(--text-lg);
@@ -31,6 +77,12 @@ const { align = "center", tagline, title } = Astro.props;
   .title {
     font-size: var(--text-3xl);
     color: var(--gray-0);
+    opacity: 0;
+    clip-path: polygon(0 0, 0 0, 0 100%, 0 100%);
+  }
+
+  .tagline {
+    opacity: 0;
   }
 
   @media (min-width: 50em) {

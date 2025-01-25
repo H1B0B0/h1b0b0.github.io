@@ -23,14 +23,14 @@ const projects = (await getCollection("work"))
 ---
 
 <BaseLayout>
-  <div class="stack gap-20 lg:gap-48">
-    <div class="wrapper stack gap-8 lg:gap-20">
+  <div class="stack gap-20">
+    <div class="wrapper stack gap-8">
       <div
         style="display: flex; justify-content: center; align-items: center; height: 100%;"
       >
         <svg
           id="svgelement"
-          class="neon-effect"
+          class="neon-effect p-8"
           width="557.75"
           height="74.752"
           viewBox="0 0 557.75 74.752"
@@ -43,6 +43,7 @@ const projects = (await getCollection("work"))
             stroke="#ff0000"
             stroke-width="0.50mm"
             fill="#ffffff00"
+            class="p-8"
             ><path
               id="svg"
               d="M 13.583 72.338 L 44.75 72.338 L 51.083 38.671 L 53.083 38.671 L 59.417 72.338 L 90.583 72.338 L 104.167 2.338 L 80.75 2.338 L 73.25 47.671 L 71.25 47.671 L 61.25 2.338 L 42.917 2.338 L 32.917 47.671 L 30.917 47.671 L 23.417 2.338 L 0 2.338 L 13.583 72.338 Z M 406.167 72.338 L 428.167 72.338 L 428.167 41.338 L 430 41.338 L 438.917 72.338 L 456.083 72.338 L 465 41.338 L 466.833 41.338 L 466.833 72.338 L 488.833 72.338 L 488.833 2.338 L 459.75 2.338 L 448.333 42.254 L 446.667 42.254 L 435.25 2.338 L 406.167 2.338 L 406.167 72.338 Z M 108.75 72.338 L 171.833 72.338 L 171.833 53.838 L 131.833 53.838 L 131.833 44.921 L 170.333 44.921 L 170.333 29.754 L 131.833 29.754 L 131.833 20.838 L 171.833 20.838 L 171.833 2.338 L 108.75 2.338 L 108.75 72.338 Z M 494.667 72.338 L 557.75 72.338 L 557.75 53.838 L 517.75 53.838 L 517.75 44.921 L 556.25 44.921 L 556.25 29.754 L 517.75 29.754 L 517.75 20.838 L 557.75 20.838 L 557.75 2.338 L 494.667 2.338 L 494.667 72.338 Z M 318.917 43.338 L 296.917 43.338 C 295.199 50.357 290.672 53.963 284.294 54.637 A 21.827 21.827 0 0 1 282 54.754 A 15.841 15.841 0 0 1 266.373 43.087 A 20.468 20.468 0 0 1 265.583 37.338 A 19.457 19.457 0 0 1 267.272 29.175 A 15.792 15.792 0 0 1 282 19.921 A 18.15 18.15 0 0 1 288.576 21.04 C 291.858 22.312 294.378 24.681 295.926 28.228 A 18.67 18.67 0 0 1 296.917 31.171 L 318.917 31.171 A 40.018 40.018 0 0 0 315.875 18.963 C 309.68 4.832 295.706 0.004 282 0.004 C 259.842 0.004 244.599 13.173 242.837 33.358 A 45.781 45.781 0 0 0 242.667 37.338 A 38.874 38.874 0 0 0 247.474 56.72 C 252.203 65.045 260.203 70.901 270.491 73.367 A 49.347 49.347 0 0 0 282 74.671 C 298.041 74.671 314.153 68.186 318.21 48.113 A 47.428 47.428 0 0 0 318.917 43.338 Z M 177.667 72.338 L 238.083 72.338 L 238.083 53.088 L 200.75 53.088 L 200.75 2.338 L 177.667 2.338 L 177.667 72.338 Z M 361.917 74.671 C 386 74.671 401.583 59.754 401.583 37.338 A 38.932 38.932 0 0 0 396.8 17.956 C 392.23 9.893 384.568 4.147 374.611 1.552 A 50.306 50.306 0 0 0 361.917 0.004 C 337.833 0.004 322.25 14.921 322.25 37.338 A 38.932 38.932 0 0 0 327.033 56.72 C 331.603 64.782 339.266 70.529 349.222 73.123 A 50.306 50.306 0 0 0 361.917 74.671 Z M 346.201 43.939 A 15.953 15.953 0 0 0 361.917 54.754 C 371.083 54.754 378.667 48.421 378.667 37.338 A 20.375 20.375 0 0 0 377.632 30.737 A 15.953 15.953 0 0 0 361.917 19.921 C 352.75 19.921 345.167 26.254 345.167 37.338 A 20.375 20.375 0 0 0 346.201 43.939 Z"
@@ -78,7 +79,7 @@ const projects = (await getCollection("work"))
     </div>
 
     <main class="wrapper stack gap-20 lg:gap-48">
-      <section class="section with-background with-cta">
+      <section class="section with-cta">
         <header class="section-header stack gap-2 lg:gap-4">
           <h3>Selected Work</h3>
           <p>
@@ -250,6 +251,8 @@ const projects = (await getCollection("work"))
     flex-direction: column;
     align-items: center;
     gap: 2rem;
+    margin: 2rem 0;
+    padding: 1rem;
   }
 
   .roles {
@@ -257,25 +260,31 @@ const projects = (await getCollection("work"))
   }
 
   .hero img {
-    aspect-ratio: 5 / 4;
+    width: 100%;
+    height: auto;
+    max-height: 80vh; /* Limite la hauteur maximale */
+    aspect-ratio: 3/4;
     object-fit: cover;
-    object-position: top;
+    object-position: top 25%; /* Ajuste la position verticale */
     border-radius: 1.5rem;
-    transition: box-shadow 0.3s ease;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    margin: 1rem;
+    filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.1));
   }
 
   .hero img:hover {
-    box-shadow:
-      0 0 10px 2px rgba(46, 11, 77, 0.5),
-      0 0 20px 5px rgba(51, 73, 147, 0.4);
+    transform: scale(1.02) translateY(-5px);
+    filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.2));
   }
 
   @media (min-width: 50em) {
     .hero {
       display: grid;
       grid-template-columns: 6fr 4fr;
-      padding-inline: 2.5rem;
+      padding: 2.5rem;
       gap: 3.75rem;
+      margin: 3rem 0;
     }
 
     .roles {
@@ -285,9 +294,14 @@ const projects = (await getCollection("work"))
     }
 
     .hero img {
-      aspect-ratio: 3 / 4;
+      width: 100%;
+      height: auto;
+      max-height: 600px; /* Hauteur maximale fixe sur desktop */
+      aspect-ratio: 3/4;
       border-radius: 4.5rem;
       object-fit: cover;
+      object-position: top 25%;
+      margin: 1.5rem;
     }
   }
 
@@ -317,7 +331,7 @@ const projects = (await getCollection("work"))
       url("/assets/backgrounds/noise.png") top center/220px repeat,
       var(--hero-bg) center center / var(--bg-gradient-size) no-repeat,
       var(--gray-999);
-    background-blend-mode: overlay, normal, normal, normal;
+    background-blend-mode: overlay, normal, normal;
     mix-blend-mode: var(--bg-blend-mode);
     z-index: -1;
   }
@@ -396,6 +410,16 @@ const projects = (await getCollection("work"))
     .mention-card {
       border-radius: 1.5rem;
       height: 9.5rem;
+    }
+  }
+
+  .wrapper.stack {
+    padding-top: 2rem; /* Add top padding */
+  }
+
+  @media (min-width: 50em) {
+    .wrapper.stack {
+      padding-top: 4rem; /* Larger padding on desktop */
     }
   }
 </style>

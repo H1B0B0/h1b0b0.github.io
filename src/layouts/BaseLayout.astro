@@ -7,6 +7,9 @@ import MainHead from "../components/MainHead.astro";
 import Nav from "../components/Nav.astro";
 import Footer from "../components/Footer.astro";
 import { ViewTransitions } from "astro:transitions";
+import Spline from "@splinetool/react-spline";
+import { Suspense } from "react";
+import Loader from "../components/Loader.astro";
 
 interface Props {
   title?: string | undefined;
@@ -21,6 +24,22 @@ const { title, description } = Astro.props;
     <MainHead title={title} description={description} />
   </head>
   <body>
+    <div class="spline-container">
+      {
+        () => {
+          try {
+            return (
+              <Spline
+                client:only="react"
+                scene="https://prod.spline.design/0zfiWcHYJLJfg6nt/scene.splinecode"
+              />
+            );
+          } catch (error) {
+            return <Loader />;
+          }
+        }
+      }
+    </div>
     <div class="stack backgrounds">
       <ViewTransitions />
       <Nav />
@@ -29,10 +48,17 @@ const { title, description } = Astro.props;
     </div>
 
     <style>
+      .spline-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100vh;
+        z-index: -2;
+      }
+
       :root {
         --_placeholder-bg: linear-gradient(transparent, transparent);
-        --bg-image-main: url("/assets/backgrounds/bg-main-light-800w.jpg");
-        --bg-image-main-curves: url("/assets/backgrounds/bg-main-light.svg");
         --bg-image-subtle-1: var(--_placeholder-bg);
         --bg-image-subtle-2: var(--_placeholder-bg);
         --bg-image-footer: var(--_placeholder-bg);
@@ -44,67 +70,37 @@ const { title, description } = Astro.props;
         --bg-gradient-size: calc(var(--bg-scale) * 100%);
       }
 
-      :root.theme-dark {
-        --bg-image-main: url("/assets/backgrounds/bg-main-dark-800w.jpg");
-        --bg-image-main-curves: url("/assets/backgrounds/bg-main-dark.svg");
-        --bg-svg-blend-mode: darken;
-        --bg-blend-mode: lighten;
+      :root.theme-dark .spline-container {
+        filter: brightness(0.3) contrast(1.1);
       }
 
-      /* These backgrounds are displayed below the fold, so we lazy load them
-			   once the `.loaded` class has been set.  */
-      :root.loaded {
-        --bg-image-subtle-1: url("/assets/backgrounds/bg-subtle-1-light-800w.jpg");
-        --bg-image-subtle-2: url("/assets/backgrounds/bg-subtle-2-light-800w.jpg");
-        --bg-image-footer: url("/assets/backgrounds/bg-footer-light-800w.jpg");
-      }
-      :root.loaded.theme-dark {
-        --bg-image-subtle-1: url("/assets/backgrounds/bg-subtle-1-dark-800w.jpg");
-        --bg-image-subtle-2: url("/assets/backgrounds/bg-subtle-2-dark-800w.jpg");
-        --bg-image-footer: url("/assets/backgrounds/bg-footer-dark-800w.jpg");
-      }
-
-      @media (min-width: 50em) {
-        :root {
-          --bg-scale: 1;
-          --bg-image-main: url("/assets/backgrounds/bg-main-light-1440w.jpg");
-        }
-        :root.theme-dark {
-          --bg-image-main: url("/assets/backgrounds/bg-main-dark-1440w.jpg");
-        }
-
-        :root.loaded {
-          --bg-image-subtle-1: url("/assets/backgrounds/bg-subtle-1-light-1440w.jpg");
-          --bg-image-subtle-2: url("/assets/backgrounds/bg-subtle-2-light-1440w.jpg");
-          --bg-image-footer: url("/assets/backgrounds/bg-footer-light-1440w.jpg");
-        }
-        :root.loaded.theme-dark {
-          --bg-image-subtle-1: url("/assets/backgrounds/bg-subtle-1-dark-1440w.jpg");
-          --bg-image-subtle-2: url("/assets/backgrounds/bg-subtle-2-dark-1440w.jpg");
-          --bg-image-footer: url("/assets/backgrounds/bg-footer-dark-1440w.jpg");
-        }
+      :root:not(.theme-dark) .spline-container {
+        filter: brightness(0.9) contrast(1) saturate(1);
+        opacity: 0.85;
       }
 
       .backgrounds {
+        position: relative;
+        z-index: 1;
         min-height: 100%;
         isolation: isolate;
-        background:
-					/*noise*/
-          url("/assets/backgrounds/noise.png") top center/220px repeat,
-          /*footer*/ var(--bg-image-footer) bottom
-            center/var(--bg-gradient-size) no-repeat,
-          /*header1*/ var(--bg-image-main-curves) top
-            center/var(--bg-gradient-size) no-repeat,
-          /*header2*/ var(--bg-image-main) top center/var(--bg-gradient-size)
-            no-repeat,
-          /*base*/ var(--gray-999);
-        background-blend-mode: /*noise*/
-          overlay,
-          /*footer*/ var(--bg-blend-mode),
-          /*header1*/ var(--bg-svg-blend-mode),
-          /*header2*/ normal,
-          /*base*/ normal;
+        background: linear-gradient(
+          to bottom,
+          rgba(var(--gray-999-basis), 0.7) 0%,
+          rgba(var(--gray-999-basis), 0.6) 100%
+        );
+        backdrop-filter: blur(4px);
       }
+
+      :root.theme-dark .backgrounds {
+        background: linear-gradient(
+          to bottom,
+          rgba(var(--gray-999-basis), 0.8) 0%,
+          rgba(var(--gray-999-basis), 0.7) 100%
+        );
+        backdrop-filter: blur(6px);
+      }
+
       @media (forced-colors: active) {
         /* Deactivate custom backgrounds for high contrast users. */
         .backgrounds {
