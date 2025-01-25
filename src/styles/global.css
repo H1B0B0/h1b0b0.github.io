@@ -388,6 +388,24 @@ button:focus {
   }
 }
 
+/* Nouvelles animations avancées */
+@keyframes moveGradient {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+@keyframes tiltEffect {
+  0% { transform: perspective(1000px) rotateX(0deg) rotateY(0deg); }
+  100% { transform: perspective(1000px) rotateX(2deg) rotateY(2deg); }
+}
+
 /* Classes d'animation réutilisables */
 .animate-fade-in {
   animation: fadeIn 0.3s cubic-bezier(0.14, 1, 0.34, 1) forwards;
@@ -411,6 +429,24 @@ button:focus {
 
 .clip-reveal {
   animation: clipReveal 0.8s cubic-bezier(.16, 1, .3, 1) forwards;
+}
+
+/* Classes d'animation améliorées */
+.hover-tilt {
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hover-tilt:hover {
+  transform: perspective(1000px) rotateX(2deg) rotateY(2deg) translateZ(10px);
+}
+
+.gradient-animation {
+  background-size: 200% 200%;
+  animation: moveGradient 5s ease infinite;
+}
+
+.shimmer-effect {
+  animation: shimmer 2s ease-in-out infinite;
 }
 
 /* Délais d'animation */

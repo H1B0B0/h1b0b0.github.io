@@ -24,7 +24,7 @@ const projects = (await getCollection("work"))
 
 <BaseLayout>
   <div class="stack gap-20">
-    <div class="wrapper stack gap-8">
+    <div class="wrapper stack gap-8 lg:gap-20">
       <div
         style="display: flex; justify-content: center; align-items: center; height: 100%;"
       >
@@ -158,35 +158,47 @@ const projects = (await getCollection("work"))
   }
   function initializeAnimations() {
     updatesvgmode();
+
+    // Animation moderne du hero
+    anime
+      .timeline({
+        easing: "cubicBezier(0.33, 1, 0.68, 1)",
+      })
+      .add({
+        targets: ".hero",
+        opacity: [0, 1],
+        translateY: [30, 0],
+        duration: 800,
+        delay: 200,
+      })
+      .add(
+        {
+          targets: ".roles",
+          opacity: [0, 1],
+          translateY: [20, 0],
+          duration: 600,
+          delay: anime.stagger(100, { from: "center" }),
+        },
+        "-=400"
+      );
+
+    // Animation SVG modernisée
     anime({
-      targets: ".hero",
-      translateX: [200, 0],
-      scaleX: [0.5, 1],
-      scaleY: [0.5, 1],
-      duration: 1000,
-      easing: "easeOutElastic(1, .5)",
+      targets: "#svg",
+      strokeDashoffset: [anime.setDashoffset, 0],
+      easing: "cubicBezier(0.33, 1, 0.68, 1)",
+      duration: 2500,
+      delay: 300,
+      loop: true,
+      direction: "alternate",
+      opacity: {
+        value: [0.4, 1],
+        duration: 2500,
+        easing: "cubicBezier(0.33, 1, 0.68, 1)",
+      },
     });
 
     let heroImage = document.querySelector(".hero img");
-    if (heroImage) {
-      heroImage.addEventListener("mouseover", () => {
-        anime({
-          targets: heroImage,
-          scale: 1.05,
-          duration: 200,
-          easing: "easeInOutSine",
-        });
-      });
-
-      heroImage.addEventListener("mouseout", () => {
-        anime({
-          targets: heroImage,
-          scale: 1, // scale the image back to its original size
-          duration: 200,
-          easing: "easeInOutSine",
-        });
-      });
-    }
     let skills = document.querySelector(".skills");
     if (skills) {
       skills.addEventListener("mouseover", () => {
@@ -243,6 +255,26 @@ const projects = (await getCollection("work"))
   document.addEventListener("click", updatesvgmode);
   document.addEventListener("astro:page-load", initializeAnimations);
   window.addEventListener("astro:after-swap", initializeAnimations);
+
+  function initSvgAnimation() {
+    anime({
+      targets: "#svg",
+      strokeDashoffset: [anime.setDashoffset, 0],
+      opacity: [0.4, 1],
+      easing: "cubicBezier(0.22, 1, 0.36, 1)",
+      duration: 3000,
+      delay: function (el, i) {
+        return i * 250;
+      },
+      loop: true,
+      direction: "alternate",
+      scale: {
+        value: [0.98, 1],
+        duration: 2000,
+        easing: "cubicBezier(0.22, 1, 0.36, 1)",
+      },
+    });
+  }
 </script>
 
 <style>
@@ -251,8 +283,8 @@ const projects = (await getCollection("work"))
     flex-direction: column;
     align-items: center;
     gap: 2rem;
-    margin: 2rem 0;
-    padding: 1rem;
+    padding: 2rem;
+    margin-top: 2rem; /* Add margin to hero section */
   }
 
   .roles {
@@ -267,7 +299,6 @@ const projects = (await getCollection("work"))
     object-fit: cover;
     object-position: top 25%; /* Ajuste la position verticale */
     border-radius: 1.5rem;
-    box-shadow: var(--shadow-md);
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
     margin: 1rem;
     filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.1));
@@ -278,13 +309,17 @@ const projects = (await getCollection("work"))
     filter: drop-shadow(0 15px 15px rgba(0, 0, 0, 0.2));
   }
 
+  .wrapper.stack {
+    padding-top: 2rem; /* Add top padding */
+  }
+
   @media (min-width: 50em) {
     .hero {
       display: grid;
       grid-template-columns: 6fr 4fr;
-      padding: 2.5rem;
+      padding-inline: 2.5rem;
       gap: 3.75rem;
-      margin: 3rem 0;
+      margin-top: 3rem; /* Larger margin on desktop */
     }
 
     .roles {
@@ -294,132 +329,66 @@ const projects = (await getCollection("work"))
     }
 
     .hero img {
+      max-width: none;
       width: 100%;
       height: auto;
-      max-height: 600px; /* Hauteur maximale fixe sur desktop */
-      aspect-ratio: 3/4;
-      border-radius: 4.5rem;
-      object-fit: cover;
-      object-position: top 25%;
-      margin: 1.5rem;
+      aspect-ratio: 2/3;
+      border-radius: 2rem;
     }
-  }
 
-  /* ====================================================== */
+    .wrapper.stack {
+      padding-top: 4rem; /* Larger padding on desktop */
+    }
 
-  .section {
-    display: grid;
-    gap: 2rem;
-  }
-
-  .with-background {
-    position: relative;
-  }
-
-  .with-background::before {
-    --hero-bg: var(--bg-image-subtle-2);
-
-    content: "";
-    position: absolute;
-    pointer-events: none;
-    left: 50%;
-    width: 100vw;
-    aspect-ratio: calc(2.25 / var(--bg-scale));
-    top: 0;
-    transform: translateY(-75%) translateX(-50%);
-    background:
-      url("/assets/backgrounds/noise.png") top center/220px repeat,
-      var(--hero-bg) center center / var(--bg-gradient-size) no-repeat,
-      var(--gray-999);
-    background-blend-mode: overlay, normal, normal;
-    mix-blend-mode: var(--bg-blend-mode);
-    z-index: -1;
-  }
-
-  .with-background.bg-variant::before {
-    --hero-bg: var(--bg-image-subtle-1);
-  }
-
-  .section-header {
-    justify-self: center;
-    text-align: center;
-    max-width: 50ch;
-    font-size: var(--text-md);
-    color: var(--gray-300);
-  }
-
-  .section-header h3 {
-    font-size: var(--text-2xl);
-  }
-
-  @media (min-width: 50em) {
     .section {
-      grid-template-columns: repeat(4, 1fr);
-      grid-template-areas: "header header header header" "gallery gallery gallery gallery";
-      gap: 5rem;
-    }
-
-    .section.with-cta {
-      grid-template-areas: "header header header cta" "gallery gallery gallery gallery";
+      display: grid;
+      gap: 2rem;
     }
 
     .section-header {
-      grid-area: header;
-      font-size: var(--text-lg);
+      justify-self: center;
+      text-align: center;
+      max-width: 50ch;
+      font-size: var(--text-md);
+      color: var(--gray-300);
     }
 
     .section-header h3 {
-      font-size: var(--text-4xl);
+      font-size: var(--text-2xl);
     }
 
-    .with-cta .section-header {
-      justify-self: flex-start;
-      text-align: left;
-    }
+    @media (min-width: 50em) {
+      .section {
+        grid-template-columns: repeat(4, 1fr);
+        grid-template-areas: "header header header header" "gallery gallery gallery gallery";
+        gap: 5rem;
+      }
 
-    .gallery {
-      grid-area: gallery;
-    }
+      .section.with-cta {
+        grid-template-areas: "header header header cta" "gallery gallery gallery gallery";
+      }
 
-    #svg {
-      stroke: #ffffff;
-      stroke-width: 1mm;
-      fill: #ffffff00;
-    }
-    .cta {
-      grid-area: cta;
-    }
-  }
+      .section-header {
+        grid-area: header;
+        font-size: var(--text-lg);
+      }
 
-  /* ====================================================== */
+      .section-header h3 {
+        font-size: var(--text-4xl);
+      }
 
-  .mention-card {
-    display: flex;
-    height: 7rem;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    border: 1px solid var(--gray-800);
-    border-radius: 1.5rem;
-    color: var(--gray-300);
-    background: var(--gradient-subtle);
-    box-shadow: var(--shadow-sm);
-  }
+      .with-cta .section-header {
+        justify-self: flex-start;
+        text-align: left;
+      }
 
-  @media (min-width: 50em) {
-    .mention-card {
-      border-radius: 1.5rem;
-      height: 9.5rem;
-    }
-  }
+      .gallery {
+        grid-area: gallery;
+      }
 
-  .wrapper.stack {
-    padding-top: 2rem; /* Add top padding */
-  }
-
-  @media (min-width: 50em) {
-    .wrapper.stack {
-      padding-top: 4rem; /* Larger padding on desktop */
+      .cta {
+        grid-area: cta;
+      }
     }
   }
 </style>

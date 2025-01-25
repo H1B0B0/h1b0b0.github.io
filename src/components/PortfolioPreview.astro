@@ -20,38 +20,62 @@ const { data, slug } = Astro.props.project;
 <script>
   import anime from "animejs";
   function init() {
-    anime({
-      targets: ".card",
+    anime.timeline({
+      easing: 'cubicBezier(0.22, 1, 0.36, 1)'
+    })
+    .add({
+      targets: '.card',
       opacity: [0, 1],
-      translateY: [50, 0],
+      translateY: [40, 0],
       scale: [0.9, 1],
-      duration: 800,
-      delay: anime.stagger(150, { start: 300 }),
-      easing: "easeOutElastic(1, .5)",
+      duration: 1200,
+      delay: anime.stagger(200, {from: 'center'})
     });
 
-    // Ajoute un effet de parallaxe au survol
-    const cards = document.querySelectorAll(".card");
-    cards.forEach((card) => {
-      card.addEventListener("mousemove", (e) => {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+      card.addEventListener('mousemove', e => {
         const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x = (e.clientX - rect.left - rect.width / 2) / 20;
+        const y = (e.clientY - rect.top - rect.height / 2) / 20;
 
-        const xPos = (x / rect.width - 0.5) * 20;
-        const yPos = (y / rect.height - 0.5) * 20;
+        anime({
+          targets: card,
+          transform: `
+            perspective(1000px)
+            rotateX(${-y}deg)
+            rotateY(${x}deg)
+            translateZ(20px)
+            scale3d(1.02, 1.02, 1.02)
+          `,
+          boxShadow: `
+            ${-x}px ${-y}px 30px rgba(0, 0, 0, 0.2)
+          `,
+          duration: 400,
+          easing: 'linear'
+        });
 
-        card.style.transform = `
-          perspective(1000px)
-          rotateY(${xPos}deg)
-          rotateX(${-yPos}deg)
-          scale3d(1.02, 1.02, 1.02)
-        `;
+        // Effet de parallaxe sur l'image
+        const image = card.querySelector('img');
+        anime({
+          targets: image,
+          translateX: x * 2,
+          translateY: y * 2,
+          duration: 400,
+          easing: 'linear'
+        });
       });
 
-      card.addEventListener("mouseleave", () => {
-        card.style.transform =
-          "perspective(1000px) rotateY(0) rotateX(0) scale3d(1, 1, 1)";
+      card.addEventListener('mouseleave', () => {
+        anime({
+          targets: [card, card.querySelector('img')],
+          transform: 'none',
+          translateX: 0,
+          translateY: 0,
+          boxShadow: 'none',
+          duration: 800,
+          easing: 'cubicBezier(0.22, 1, 0.36, 1)'
+        });
       });
     });
   }

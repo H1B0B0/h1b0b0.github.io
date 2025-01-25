@@ -45,29 +45,32 @@ import Icon from "astro-icon";
 
 <script>
   function initSkillsAnimation() {
-    const skills = document.querySelectorAll(".box");
-
-    const observer = new IntersectionObserver((entries) => {
+    const observer = new IntersectionObserver(entries => {
       entries.forEach((entry, index) => {
         if (entry.isIntersecting) {
-          anime({
+          anime.timeline({
+            easing: 'cubicBezier(0.22, 1, 0.36, 1)'
+          })
+          .add({
             targets: entry.target,
             opacity: [0, 1],
             translateY: [30, 0],
             scale: [0.95, 1],
-            duration: 800,
-            delay: index * 150,
-            easing: 'cubicBezier(.16, 1, .3, 1)'
-          });
-          observer.unobserve(entry.target);
+            duration: 1000,
+            delay: index * 150
+          })
+          .add({
+            targets: entry.target.querySelector('[astro-icon]'),
+            scale: [0.5, 1],
+            opacity: [0, 1],
+            rotate: ['-15deg', '0deg'],
+            duration: 800
+          }, '-=600');
         }
       });
     }, { threshold: 0.2 });
 
-    skills.forEach(skill => {
-      skill.style.opacity = '0';
-      observer.observe(skill);
-    });
+    document.querySelectorAll('.box').forEach(box => observer.observe(box));
   }
 
   document.addEventListener("astro:page-load", initSkillsAnimation);
@@ -92,13 +95,15 @@ import Icon from "astro-icon";
     transition:
       transform 0.4s ease-out,
       box-shadow 0.4s ease-out;
+    transform-origin: center;
+    transition: all 0.4s cubic-bezier(.16, 1, .3, 1);
   }
 
   .box:hover {
-    transform: perspective(1000px) rotateX(5deg) scale(1.02);
+    transform: translateY(-5px) scale(1.02);
     box-shadow:
-      0 15px 30px rgba(0, 0, 0, 0.15),
-      0 5px 15px rgba(0, 0, 0, 0.1);
+      0 20px 40px rgba(0, 0, 0, 0.1),
+      0 15px 20px rgba(0, 0, 0, 0.1);
   }
 
   .box.visible {
@@ -170,6 +175,14 @@ import Icon from "astro-icon";
 
   .skills p {
     color: var(--gray-400);
+  }
+
+  [astro-icon] {
+    transition: transform 0.3s ease;
+  }
+
+  .box:hover [astro-icon] {
+    transform: scale(1.2) rotate(5deg);
   }
 
   @media (min-width: 50em) {
