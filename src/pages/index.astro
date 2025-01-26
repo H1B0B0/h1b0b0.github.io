@@ -57,13 +57,29 @@ const projects = (await getCollection("work"))
           tagline="I'm Epitech student in msc 1."
           align="start"
         >
-          <div class="roles">
-            <Pill>
-              <Icon name="ant-design:code-filled" size="1.33em" /> Developer
-            </Pill>
-            <Pill>
-              <Icon name="ph:music-note-fill" size="1.33em" /> Musician
-            </Pill>
+          <div class="flex flex-col items-center m-5">
+            <div class="roles-container">
+              <div class="roles">
+                <Pill>
+                  <Icon name="ic:baseline-code" size="1.33em" /> Developer
+                </Pill>
+                <Pill>
+                  <Icon name="ic:baseline-cloud" size="1.33em" /> Devops
+                </Pill>
+                <Pill>
+                  <Icon name="ph:music-note-fill" size="1.33em" /> Musician
+                </Pill>
+              </div>
+              <a
+                href="/assets/CV_2025-01-26_Etienne_Mentrel.pdf"
+                download
+                class="download-button"
+                id="downloadBtn"
+              >
+                <Icon name="ic:round-download" size="1.33em" />
+                <span>Download CV</span>
+              </a>
+            </div>
           </div>
         </Hero>
 
@@ -275,6 +291,27 @@ const projects = (await getCollection("work"))
       },
     });
   }
+
+  document.getElementById("downloadBtn")?.addEventListener("click", (e) => {
+    const button = e.currentTarget;
+    button.setAttribute("data-downloading", "true");
+
+    // Animate icon
+    const icon = button.querySelector("svg");
+    if (icon) {
+      anime({
+        targets: icon,
+        translateY: [0, 5, 0],
+        rotate: 360,
+        duration: 600,
+        easing: "easeOutBack",
+      });
+    }
+
+    setTimeout(() => {
+      button.removeAttribute("data-downloading");
+    }, 1000);
+  });
 </script>
 
 <style>
@@ -287,8 +324,18 @@ const projects = (await getCollection("work"))
     margin-top: 2rem; /* Add margin to hero section */
   }
 
+  .roles-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+    width: fit-content;
+  }
+
   .roles {
-    display: none;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
   }
 
   .hero img {
@@ -311,6 +358,85 @@ const projects = (await getCollection("work"))
 
   .wrapper.stack {
     padding-top: 2rem; /* Add top padding */
+  }
+
+  .download-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    width: fit-content;
+    align-items: center;
+  }
+
+  .download-button {
+    width: 100%;
+    max-width: fit-content;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.8rem 2rem;
+    background: #7612a6;
+    background: linear-gradient(135deg, #7612a6 0%, #9333ea 100%);
+    color: white;
+    border-radius: 999px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .download-button::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.2) 0%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: translateX(-100%);
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .download-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+
+  .download-button:hover::before {
+    transform: translateX(100%);
+  }
+
+  .download-button:active {
+    transform: translateY(1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .download-button[data-downloading="true"] {
+    pointer-events: none;
+    opacity: 0.8;
+  }
+
+  .download-button svg {
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .download-button:hover svg {
+    transform: translateY(2px);
+  }
+
+  @media (min-width: 50em) {
+    .download-button {
+      font-size: var(--text-lg);
+      padding: 0.8rem 2rem;
+    }
   }
 
   @media (min-width: 50em) {
