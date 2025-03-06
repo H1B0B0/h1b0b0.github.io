@@ -8,74 +8,153 @@
   --foreground: #ffffff;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Reset des styles de défilement pour éviter les conflits */
+html,
+body {
+  overflow: hidden !important; /* Désactiver complètement le défilement natif */
+  margin: 0;
+  padding: 0;
+  background: black;
+  height: 100%;
+  width: 100%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: auto !important; /* Désactiver les transitions CSS natives */
+  overscroll-behavior: none; /* Empêcher les effets de rebond */
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
   font-family: var(--font-geist-sans);
-  overflow-x: hidden;
-  scroll-behavior: smooth;
+  position: fixed; /* Empêcher le défilement du body */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 100%;
+  -ms-overflow-style: none; /* Masquer la scrollbar IE/Edge */
+  scrollbar-width: none; /* Masquer la scrollbar Firefox */
+  overflow: -moz-scrollbars-none; /* Firefox */
 }
 
-html {
-  scroll-behavior: smooth;
+body::-webkit-scrollbar {
+  display: none; /* Masquer la scrollbar Chrome/Safari */
 }
 
-.snap-container {
+/* Section styles pour positionnement absolu */
+.section {
+  position: absolute;
   height: 100vh;
-  overflow-y: auto;
-  scroll-snap-type: y mandatory;
-  -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
-  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
-.snap-container::-webkit-scrollbar {
+/* Section avec hauteur exacte */
+section {
+  height: 100vh;
+  width: 100%;
+  flex-shrink: 0; /* Empêcher le rétrécissement */
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+main {
+  height: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  will-change: transform; /* Optimisation des performances */
+}
+
+/* Conteneurs de section */
+.section-content {
+  width: 100%;
+  max-width: 1200px;
+  height: auto; /* Ne pas forcer height: 100% */
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-height: 90vh; /* Légèrement plus petit que la hauteur totale pour garantir la visibilité */
+}
+
+/* Cacher les scrollbars */
+.section-content.overflow-y-auto {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior: contain;
+}
+
+.section-content.overflow-y-auto::-webkit-scrollbar {
   display: none;
 }
 
-.section {
-  scroll-snap-align: start;
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  position: relative;
-  transition: background-color 0.5s ease;
+/* Visual indicators for scrollable content on mobile */
+@media (max-width: 767px) {
+  .section-content.overflow-y-auto::after {
+    content: "";
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 4px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    z-index: 10;
+    animation: pulse 2s infinite;
+  }
 }
 
-.section-indicator {
-  position: fixed;
-  right: 30px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 50;
-}
-
+/* Section indicator dots */
 .section-indicator-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  margin: 10px 0;
+  margin: 12px 0;
   background-color: rgba(255, 255, 255, 0.3);
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  position: relative;
+}
+
+.section-indicator-dot::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  bottom: -5px;
+  left: -5px;
+  border-radius: 50%;
+  z-index: -1;
 }
 
 .section-indicator-dot.active {
   background-color: white;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.7),
+    0 0 20px rgba(255, 255, 255, 0.3);
   transform: scale(1.3);
+}
+
+/* Animations */
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.2;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 @keyframes float {
@@ -90,6 +169,21 @@ html {
   }
 }
 
+@keyframes scrollDown {
+  0% {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  30%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+}
+
 .float {
   animation: float 6s ease-in-out infinite;
 }
@@ -101,6 +195,13 @@ html {
 .cosmic-button {
   @apply px-6 py-3 rounded-full bg-transparent border border-white/30 hover:border-white/80 
   transition-all duration-300 backdrop-blur-sm hover:bg-white/10 hover:scale-105 hover:shadow-[0_0_15px_rgba(255,255,255,0.5)];
+}
+
+/* Performance optimizations */
+.gpu-accelerated {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .scroll-indicator {
@@ -121,23 +222,6 @@ html {
   background-color: white;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
   transition: width 0.3s ease;
-}
-
-@keyframes scrollDown {
-  0% {
-    transform: translateY(-10px);
-    opacity: 0;
-  }
-  30% {
-    opacity: 1;
-  }
-  60% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(10px);
-    opacity: 0;
-  }
 }
 
 .scroll-down-indicator {

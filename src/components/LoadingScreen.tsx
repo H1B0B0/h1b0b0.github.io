@@ -52,33 +52,52 @@ const LoadingScreen = () => {
 
   // Gestion de la progression
   useEffect(() => {
-    // Progress animation
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        // Increase loading speed as we progress
-        const increment = Math.random() * (prev < 80 ? 2 : 5);
-        const newProgress = prev + increment;
-        return newProgress >= 100 ? 100 : newProgress;
-      });
-    }, 120);
+    // Durée fixe de 2 secondes pour le chargement
+    const duration = 2000;
+    const startTime = performance.now();
 
-    // Rotate planet effect
-    let rotationAngle = 0;
-    const rotatePlanet = () => {
-      if (planetRef.current) {
-        rotationAngle += 0.2;
-        planetRef.current.style.transform = `rotate(${rotationAngle}deg)`;
-        requestAnimationFrame(rotatePlanet);
+    // Fonction pour mettre à jour la progression de manière fluide
+    const updateProgress = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const rawProgress = Math.min(elapsed / duration, 1);
+
+      // Utiliser une courbe d'accélération pour simuler un vrai chargement
+      // Lent au début, plus rapide en fin de chargement
+      const easedProgress =
+        rawProgress < 0.5
+          ? 2 * rawProgress * rawProgress
+          : -1 + (4 - 2 * rawProgress) * rawProgress;
+
+      const newProgress = Math.min(100, Math.round(easedProgress * 100));
+      setProgress(newProgress);
+
+      if (rawProgress < 1) {
+        // Continuer l'animation
+        requestAnimationFrame(updateProgress);
+      } else {
+        // Garantir que nous atteignons 100% à la fin
+        setProgress(100);
       }
     };
 
-    const animationFrame = requestAnimationFrame(rotatePlanet);
+    // Démarrer l'animation
+    const animationFrame = requestAnimationFrame(updateProgress);
 
     return () => {
-      clearInterval(interval);
       cancelAnimationFrame(animationFrame);
     };
   }, []);
+
+  // Add this effect to ensure the progress completes
+  useEffect(() => {
+    // Ensure progress reaches 100% even if the component unmounts quickly
+    if (progress >= 100) {
+      const timer = setTimeout(() => {
+        // Signal to parent that loading is complete if needed
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [progress]);
 
   return (
     <AnimatePresence>
