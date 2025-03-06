@@ -1,0 +1,115 @@
+.starBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  background-color: #000;
+  overflow: hidden;
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  will-change: transform, background-color, box-shadow, width, height;
+}
+
+/* Animation de pulsation pour les étoiles brillantes au repos */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+}
+
+/* Animations d'étirement vers le haut avec effet d'accélération */
+.stretchUp {
+  animation: stretchUpAnim 0.8s cubic-bezier(0.19, 0.95, 0.42, 1) forwards;
+  width: var(--size) !important;
+  height: calc(var(--size) * var(--stretch)) !important;
+  border-radius: 30% / 100% !important;
+  transform: translateY(calc(-1 * var(--distance))) !important;
+}
+
+@keyframes stretchUpAnim {
+  0% {
+    height: var(--size);
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  15% {
+    height: calc(var(--size) * var(--stretch) * 0.3);
+    transform: translateY(calc(-1 * var(--distance) * 0.1));
+    opacity: 0.8;
+  }
+  40% {
+    height: calc(var(--size) * var(--stretch) * 0.6);
+    transform: translateY(calc(-1 * var(--distance) * 0.4));
+    opacity: 1;
+  }
+  100% {
+    height: calc(var(--size) * var(--stretch));
+    transform: translateY(calc(-1 * var(--distance)));
+    opacity: 0.9;
+  }
+}
+
+/* Animations d'étirement vers le bas avec effet d'accélération */
+.stretchDown {
+  animation: stretchDownAnim 0.8s cubic-bezier(0.19, 0.95, 0.42, 1) forwards;
+  width: var(--size) !important;
+  height: calc(var(--size) * var(--stretch)) !important;
+  border-radius: 30% / 100% !important;
+  transform: translateY(var(--distance)) !important;
+}
+
+@keyframes stretchDownAnim {
+  0% {
+    height: var(--size);
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  15% {
+    height: calc(var(--size) * var(--stretch) * 0.3);
+    transform: translateY(calc(var(--distance) * 0.1));
+    opacity: 0.8;
+  }
+  40% {
+    height: calc(var(--size) * var(--stretch) * 0.6);
+    transform: translateY(calc(var(--distance) * 0.4));
+    opacity: 1;
+  }
+  100% {
+    height: calc(var(--size) * var(--stretch));
+    transform: translateY(var(--distance));
+    opacity: 0.9;
+  }
+}
+
+/* Animation d'étoile filante améliorée */
+@keyframes shootingStar {
+  0% {
+    height: var(--size);
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  10% {
+    height: calc(var(--size) * 10);
+    opacity: 1;
+  }
+  100% {
+    height: calc(var(--size) * 15);
+    transform: translateY(calc(var(--direction) * 100px));
+    opacity: 0;
+  }
+}

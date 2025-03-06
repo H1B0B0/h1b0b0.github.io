@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import CosmicBackground from "@/components/CosmicBackground";
+import SimpleStarBackground from "@/components/SimpleStarBackground";
 import IntroSection from "@/components/sections/IntroSection";
 import AboutSection from "@/components/sections/AboutSection";
 import ProjectsSection from "@/components/sections/ProjectsSection";
@@ -17,6 +17,7 @@ export default function Home() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [scrollY, setScrollY] = useState(0);
+  const [isReady, setIsReady] = useState(false);
 
   // Refs
   const mainRef = useRef<HTMLDivElement>(null);
@@ -41,6 +42,27 @@ export default function Home() {
 
     return () => clearTimeout(timer);
   }, [sections]);
+
+  // Effet de défilement artificiel au chargement
+  useEffect(() => {
+    if (!loading) {
+      // Attendre un peu après le chargement pour initialiser
+      const timer = setTimeout(() => {
+        // Déclencher un défilement artificiel pour forcer l'initialisation
+        setIsScrolling(true);
+        console.log("Initializing scroll effect");
+
+        // Revenir à l'état normal après un court délai
+        setTimeout(() => {
+          setIsScrolling(false);
+          setIsReady(true);
+          console.log("Initialization complete");
+        }, 600);
+      }, 300);
+
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   // Calculate scroll progress
   const calculateScrollProgress = () => {
@@ -198,8 +220,12 @@ export default function Home() {
         <LoadingScreen />
       ) : (
         <div ref={mainRef} className="relative w-full">
-          {/* Background with stars */}
-          <CosmicBackground scrollY={scrollY} isScrolling={isScrolling} />
+          {/* Utiliser SimpleStarBackground au lieu de CosmicBackground */}
+          <SimpleStarBackground
+            scrollY={scrollY}
+            isScrolling={isScrolling}
+            key={`star-bg-${isReady ? "ready" : "loading"}`}
+          />
 
           {/* Navigation bar */}
           <Navigation
