@@ -1,61 +1,36 @@
-# Etienne Mentrel's Website
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-This website is designed to showcase my skills in the form of a portfolio.
+## Getting Started
 
-## Table of Contents
+First, run the development server:
 
-- [Overview](#overview)
-- [Technologies Used](#technologies-used)
-- [Screenshot](#screenshot)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Customization](#customization)
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
 
-## Overview
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-This website lists my projects, professional and academic journey, as well as my contact information.
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-## Technologies Used
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-- [Astro](https://astro.build/) - Astro is a framework for building websites faster.
-- CSS, JS, TS
+## Learn More
 
-## Screenshot
+To learn more about Next.js, take a look at the following resources:
 
-Coming soon.
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-## Installation
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-1. Clone this repository to your local machine.
+## Deploy on Vercel
 
-   ```bash
-   git clone https://github.com/H1B0B0/portfolio
-   ```
-2. Navigate to the repository.
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-   ```bash
-      cd portfolio
-   ```
-3. Install the dependencies.
-
-   ```bash
-      npm install
-   ```
-
-## Usage
-
-   To start the development server, run the following command:
-      ```bash
-      npm run dev
-      ```
-   This will launch a development server, and you can view the website by opening your browser and navigating to http://localhost:3000.
-
-## Customization
-
-   You can customize this website to make it your own:
-
-   - Modify the content in the source code to reflect your portfolio, skills, and projects.
-   - Adjust the styles and layout by editing the CSS and Astro components.
-   - Add your own images and assets to personalize the site.
-
-Feel free to get creative and tailor the website to your preferences.
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
