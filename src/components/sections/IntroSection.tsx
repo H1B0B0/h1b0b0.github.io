@@ -68,9 +68,10 @@ const IntroSection = () => {
           <h2 className="text-2xl md:text-4xl font-medium mb-6 md:mb-8 text-white/80">
             <TypewriterEffect
               phrases={[
+                "DevOps Engineer",
                 "Software Developer",
-                "UI/UX Designer",
                 "Tech Enthusiast",
+                "Passionate Learner",
               ]}
               typingSpeed={100}
               deletingSpeed={80}

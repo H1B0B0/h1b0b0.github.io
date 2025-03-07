@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const AboutSection = () => {
   return (
@@ -20,12 +21,23 @@ const AboutSection = () => {
           className="md:col-span-2 flex justify-center"
         >
           <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full overflow-hidden border-4 border-white/10 shadow-lg shadow-purple-500/20">
-            {/* Add your image here */}
-            <div className="w-full h-full bg-gradient-to-br from-purple-600 to-blue-500 flex items-center justify-center text-4xl font-bold">
-              EM
+            {/* Enhanced glow effect behind the image */}
+            <div className="absolute -inset-4 bg-gradient-to-r from-purple-600 to-blue-500 opacity-70 blur-xl rounded-full animate-pulse"></div>
+
+            {/* Improved image container */}
+            <div className="relative w-full h-full bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center z-10 rounded-full">
+              <Image
+                src="/avatar.png"
+                alt="Etienne Mentrel"
+                fill
+                sizes="(max-width: 768px) 12rem, 16rem"
+                className="object-cover"
+                priority
+                quality={95}
+              />
             </div>
 
-            {/* Orbital ring decoration */}
+            {/* Enhanced orbital rings */}
             <div
               className="absolute inset-0 border-4 border-transparent rounded-full animate-spin-slow"
               style={{
@@ -33,6 +45,18 @@ const AboutSection = () => {
                 borderRightColor: "rgba(59, 130, 246, 0.3)",
                 transformOrigin: "center",
                 animation: "spin 15s linear infinite",
+              }}
+            ></div>
+
+            {/* Second orbital ring */}
+            <div
+              className="absolute inset-0 border-2 border-transparent rounded-full animate-spin-slow"
+              style={{
+                borderTopColor: "rgba(219, 39, 119, 0.4)",
+                borderBottomColor: "rgba(16, 185, 129, 0.3)",
+                transformOrigin: "center",
+                animation: "spin 10s linear infinite reverse",
+                margin: "10px",
               }}
             ></div>
           </div>
@@ -51,49 +75,44 @@ const AboutSection = () => {
           </h2>
 
           <div className="text-lg text-gray-300 space-y-4">
+            <h3 className="text-2xl md:text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+              My Background
+            </h3>
             <p>
-              I'm a passionate software developer with 5+ years of experience
-              crafting digital experiences that are both functional and
-              beautiful. My journey in tech started with a curiosity about how
-              things work, which evolved into a career building solutions that
-              make a difference.
+              I began my professional journey at the end of high school,
+              participating in an apprenticeship program at a company
+              specializing in RFID technology.
             </p>
 
             <p>
-              Specializing in front-end development with React and Next.js, I
-              create responsive, accessible, and performant applications. I'm
-              also experienced in back-end development with Node.js and Python.
+              During my initial training, I was not destined to become a
+              developer but rather a higher-level technician. It was on the job
+              that I learned Python. Subsequently, I undertook numerous Python
+              projects for my company, leading me to transition into a developer
+              role within the organization.
             </p>
 
             <p>
-              When I'm not coding, you'll find me exploring new technologies,
-              contributing to open-source projects, or stargazing – both
-              literally and in the form of dreaming up new digital creations.
+              After completing my DUT in Electrical Engineering and Industrial
+              Computing, I discovered a strong passion for programming and
+              decided to enroll at Epitech. Having successfully completed my
+              pre-MSc year, I am now continuing my journey as an MSc 1 student
+              at Epitech.
             </p>
           </div>
 
           <div className="mt-8 flex gap-4 flex-wrap">
             <a
-              href="/resume.pdf"
+              href="https://cvdesignr.com/p/647b251d89bf4?hl=fr_FR"
               target="_blank"
               rel="noopener noreferrer"
               className="cosmic-button flex items-center gap-2"
             >
               <span>Download Resume</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="16"
-                height="16"
-                fill="currentColor"
-                viewBox="0 0 16 16"
-              >
-                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
-                <path d="M6.5 5a.5.5 0 0 1 .5.5v3.793l1.146-1.147a.5.5 0 0 1 .708.708l-2 2a.5.5 0 0 1-.708 0l-2-2a.5.5 0 1 1 .708-.708L5.5 9.293V5.5a.5.5 0 0 1 .5-.5z" />
-              </svg>
             </a>
 
             <a
-              href="https://github.com/yourusername"
+              href="https://github.com/H1B0B0"
               target="_blank"
               rel="noopener noreferrer"
               className="cosmic-button"
