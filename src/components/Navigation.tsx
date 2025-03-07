@@ -22,16 +22,24 @@ const Navigation = ({
     { id: "contact", label: "Contact" },
   ];
 
+  // Mise à jour de l'état actif quand currentSection change
   useEffect(() => {
-    setActiveSection(currentSection);
-  }, [currentSection]);
+    if (currentSection !== activeSection) {
+      console.log(
+        `Navigation: mise à jour de la section active à ${currentSection}`
+      );
+      setActiveSection(currentSection);
+    }
+  }, [currentSection, activeSection]);
 
+  // Détection du défilement pour le fond
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
 
     window.addEventListener("scroll", handleScroll);
+    handleScroll(); // Vérifier immédiatement
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -40,6 +48,7 @@ const Navigation = ({
     id: string
   ) => {
     e.preventDefault();
+    console.log(`Navigation: clic sur ${id}`);
 
     if (onSectionClick) {
       onSectionClick(id);
@@ -50,6 +59,7 @@ const Navigation = ({
       }
     }
 
+    // Fermer le menu mobile
     if (isMenuOpen) {
       setIsMenuOpen(false);
     }
@@ -57,9 +67,10 @@ const Navigation = ({
 
   return (
     <nav
-      className={`fixed top-0 w-full z-50 px-6 py-4 transition-all duration-300 ${
-        isScrolled ? "bg-gradient-to-b from-black/80 to-transparent" : ""
-      } backdrop-blur-sm`}
+      className={`fixed top-0 w-full z-[1000] px-6 py-4 transition-all duration-300 ${
+        isScrolled ? "bg-black/70 backdrop-blur-md" : "bg-transparent"
+      }`}
+      aria-label="Main navigation"
     >
       <div className="container mx-auto flex justify-between items-center">
         <a
@@ -70,18 +81,20 @@ const Navigation = ({
           E.Mentrel
         </a>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex space-x-8">
+        {/* Desktop Navigation with improved active state */}
+        <div className="hidden md:flex space-x-8" role="navigation">
           {sections.map(({ id, label }) => (
             <a
               key={id}
               href={`#${id}`}
               onClick={(e) => handleNavClick(e, id)}
-              className={`transition-all duration-300 ${
+              className={`transition-all duration-300 relative ${
                 activeSection === id
-                  ? "text-white text-glow"
-                  : "text-gray-400 hover:text-white"
+                  ? "text-white font-semibold"
+                  : "text-gray-400 hover:text-white hover:scale-105"
               }`}
+              aria-current={activeSection === id ? "page" : undefined}
+              data-section={id}
             >
               {label}
             </a>
@@ -94,6 +107,7 @@ const Navigation = ({
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label={isMenuOpen ? "Close menu" : "Open menu"}
           aria-expanded={isMenuOpen}
+          aria-controls="mobile-menu"
         >
           {isMenuOpen ? (
             <svg
@@ -129,22 +143,31 @@ const Navigation = ({
         </button>
       </div>
 
-      {/* Mobile Menu */}
+      {/* Mobile Menu with improved active state */}
       {isMenuOpen && (
-        <div className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-md py-4">
+        <div
+          id="mobile-menu"
+          className="md:hidden absolute top-full left-0 w-full bg-black/95 backdrop-blur-md py-4"
+          role="navigation"
+        >
           <div className="container mx-auto flex flex-col space-y-4 px-6">
             {sections.map(({ id, label }) => (
               <a
                 key={id}
                 href={`#${id}`}
                 onClick={(e) => handleNavClick(e, id)}
-                className={`transition-all duration-300 ${
+                className={`transition-all duration-300 relative ${
                   activeSection === id
-                    ? "text-white text-glow"
+                    ? "text-white font-semibold"
                     : "text-gray-400 hover:text-white"
                 }`}
+                aria-current={activeSection === id ? "page" : undefined}
+                data-section={id}
               >
                 {label}
+                {activeSection === id && (
+                  <span className="absolute -left-4 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-white rounded-full" />
+                )}
               </a>
             ))}
           </div>

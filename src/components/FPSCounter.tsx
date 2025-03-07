@@ -15,12 +15,17 @@ const FPSCounter: React.FC<FPSCounterProps> = ({ visible }) => {
   const frameCount = useRef(0);
   const lastUpdateTime = useRef(performance.now());
   const frameTimes = useRef<number[]>([]);
-  const animationFrameId = useRef<number>(0);
+  const animationFrameId = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!visible) return;
+    if (!visible) {
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+      }
+      return;
+    }
 
-    // Réinitialiser les valeurs
+    // Reset values
     frameCount.current = 0;
     lastUpdateTime.current = performance.now();
     frameTimes.current = [];
@@ -30,30 +35,30 @@ const FPSCounter: React.FC<FPSCounterProps> = ({ visible }) => {
       const now = performance.now();
       frameCount.current++;
 
-      // Calculer le temps entre chaque frame
+      // Calculate time between each frame
       const frameTime = now - lastUpdateTime.current;
       frameTimes.current.push(frameTime);
 
-      // Limiter le tableau à 100 valeurs pour éviter trop de données
+      // Limit array to 100 values to avoid too much data
       if (frameTimes.current.length > 100) {
         frameTimes.current.shift();
       }
 
-      // Mettre à jour FPS toutes les 500ms
+      // Update FPS every 500ms
       if (now - lastUpdateTime.current >= 500) {
         const elapsedSecs = (now - lastUpdateTime.current) / 1000;
         const currentFps = Math.round(frameCount.current / elapsedSecs);
 
-        // Mettre à jour FPS actuel
+        // Update current FPS
         setFps(currentFps);
 
-        // Ajouter à l'historique pour la moyenne
+        // Add to history for average calculation
         fpsValues.current.push(currentFps);
         if (fpsValues.current.length > 20) {
           fpsValues.current.shift();
         }
 
-        // Calculer min, max, et moyenne
+        // Calculate min, max, and average
         const newMinFps = Math.min(
           minFps === Infinity ? currentFps : minFps,
           currentFps
@@ -67,25 +72,41 @@ const FPSCounter: React.FC<FPSCounterProps> = ({ visible }) => {
         setMaxFps(newMaxFps);
         setAvgFps(newAvgFps);
 
-        // Réinitialiser pour la prochaine période
+        // Reset for next period
         frameCount.current = 0;
         lastUpdateTime.current = now;
       }
 
-      // Continuer la boucle
+      // Continue the loop
       animationFrameId.current = requestAnimationFrame(updateFPS);
     };
 
     animationFrameId.current = requestAnimationFrame(updateFPS);
 
     return () => {
-      cancelAnimationFrame(animationFrameId.current);
+      if (animationFrameId.current) {
+        cancelAnimationFrame(animationFrameId.current);
+        animationFrameId.current = null;
+      }
     };
   }, [visible, minFps, maxFps]);
 
+  // Add keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.key === "f") {
+        e.preventDefault(); // Prevent browser's find function
+        // You'd implement a toggle function here if needed
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   if (!visible) return null;
 
-  // Déterminer la couleur en fonction du FPS
+  // Determine color based on FPS
   const getFpsColor = () => {
     if (fps >= 50) return "text-green-400";
     if (fps >= 30) return "text-yellow-400";
