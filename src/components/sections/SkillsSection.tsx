@@ -11,33 +11,30 @@ interface Skill {
 const skills: Skill[] = [
   // Frontend
   { name: "HTML/CSS", level: 5, category: "Frontend" },
-  { name: "JavaScript", level: 5, category: "Frontend" },
+  { name: "JavaScript", level: 4, category: "Frontend" },
   { name: "TypeScript", level: 4, category: "Frontend" },
-  { name: "React", level: 5, category: "Frontend" },
-  { name: "Next.js", level: 4, category: "Frontend" },
-  { name: "Tailwind CSS", level: 4, category: "Frontend" },
+  { name: "React", level: 4, category: "Frontend" },
+  { name: "Tailwind CSS", level: 5, category: "Frontend" },
 
   // Backend
-  { name: "Node.js", level: 4, category: "Backend" },
-  { name: "Express", level: 4, category: "Backend" },
-  { name: "MongoDB", level: 3, category: "Backend" },
-  { name: "PostgreSQL", level: 3, category: "Backend" },
-  { name: "REST API", level: 4, category: "Backend" },
-
-  // Graphics
-  { name: "Three.js", level: 4, category: "Graphics" },
-  { name: "WebGL", level: 3, category: "Graphics" },
-  { name: "GSAP", level: 3, category: "Graphics" },
-  { name: "SVG Animation", level: 4, category: "Graphics" },
+  { name: "NestJS", level: 4, category: "Backend" },
+  { name: "MongoDB", level: 5, category: "Backend" },
+  { name: "PostgreSQL", level: 5, category: "Backend" },
+  { name: "Golang", level: 3, category: "Backend" },
 
   // Tools
-  { name: "Git", level: 4, category: "Tools" },
-  { name: "Docker", level: 3, category: "Tools" },
-  { name: "CI/CD", level: 3, category: "Tools" },
-  { name: "VS Code", level: 5, category: "Tools" },
+  { name: "Git", level: 5, category: "Tools" },
+  { name: "Docker", level: 5, category: "Tools" },
+  { name: "CI/CD", level: 5, category: "Tools" },
+  { name: "Linux", level: 4, category: "Tools" },
+  { name: "Kubernetes", level: 4, category: "Tools" },
+
+  // Cloud
+  { name: "AWS", level: 4, category: "Cloud" },
+  { name: "Scaleway", level: 3, category: "Cloud" },
 ];
 
-const categories = ["All", "Frontend", "Backend", "Graphics", "Tools"];
+const categories = ["All", "Frontend", "Backend", "Tools", "Cloud"];
 
 const SkillsSection = () => {
   const [activeCategory, setActiveCategory] = useState("All");
