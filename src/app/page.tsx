@@ -271,14 +271,7 @@ export default function Home() {
         <LoadingScreen />
       ) : (
         <div className="relative">
-          <StarsCanvas numStars={3000} />
-
-          {process.env.NODE_ENV === "development" && (
-            <div className="fixed bottom-4 right-4 bg-black/80 text-white p-2 text-xs z-[9999] pointer-events-none">
-              scrollY: {Math.round(scrollY)}
-              <br />
-            </div>
-          )}
+          <StarsCanvas numStars={5000} />
 
           <div className="relative z-10">
             <div className="fixed top-0 left-0 right-0 z-50">
@@ -290,7 +283,7 @@ export default function Home() {
                 }}
               />
             </div>
-            <FPSCounter visible={true} onVisibilityChange={() => {}} />
+            <FPSCounter visible={false} onVisibilityChange={() => {}} />
             <div className="section-indicators-container hidden md:flex flex-col z-[1000]">
               {sections.map((section, index) => (
                 <div key={section} className="relative indicator-wrapper">

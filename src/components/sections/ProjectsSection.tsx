@@ -1,61 +1,82 @@
 "use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 // Sample project data - replace with your actual projects
 const projects = [
   {
     id: 1,
-    title: "Stellar Dashboard",
+    title: "Eclat Shop",
     description:
-      "A responsive analytics dashboard with dark mode and interactive charts. Built with React, TypeScript, and D3.js.",
-    image: "/images/projects/project1.jpg", // Add your actual image path
-    tech: ["React", "TypeScript", "D3.js", "Tailwind CSS"],
-    link: "https://github.com/yourusername/stellar-dashboard",
-    demo: "https://stellar-dashboard.example.com",
+      "Eclat Shop is a robust e-commerce platform tailored for selling computer components. Built with Symfony for backend operations, React with TypeScript for the frontend, and Docker for deployment, it ensures a seamless and efficient user experience.",
+    image: "/images/projects/EclatShop.png",
+    tech: [
+      "Symfony",
+      "NextJS",
+      "React",
+      "Tailwind CSS",
+      "TypeScript",
+      "Docker",
+    ],
+    link: "https://github.com/H1B0B0/Eclatshop",
     featured: true,
+    demo: undefined,
   },
   {
     id: 2,
-    title: "Cosmic E-commerce",
+    title: "Time Manager",
     description:
-      "A full-featured online store with product catalog, cart functionality, and payment processing. Built with Next.js and MongoDB.",
-    image: "/images/projects/project2.jpg",
-    tech: ["Next.js", "MongoDB", "Stripe", "AWS"],
-    link: "https://github.com/yourusername/cosmic-ecommerce",
-    demo: "https://cosmic-shop.example.com",
+      "Time Manager is a time tracking application designed to help municipal employees of Gotham manage their working hours efficiently. It allows employees to report their working hours, managers to supervise their teams, and the general manager to maintain overall control. The application aims to improve working conditions and provide transparency in work schedules.",
+    image: "/images/projects/TimeManager.png",
+    tech: ["Vue.js", "Docker", "Elixir"],
+    link: "https://github.com/H1B0B0/Time-manager",
     featured: true,
+    demo: undefined,
   },
   {
     id: 3,
-    title: "Orbit API",
+    title: "Kurama Chat",
     description:
-      "RESTful API service for managing and tracking space missions data. Features authentication, rate limiting, and comprehensive documentation.",
-    image: "/images/projects/project3.jpg",
-    tech: ["Node.js", "Express", "PostgreSQL", "Docker"],
-    link: "https://github.com/yourusername/orbit-api",
-    featured: false,
+      "Kurama Chat is an IRC client and server developed with Node.js, Express.js, and React.js. It supports multiple channels, real-time messaging, and user notifications. The project includes features for channel management, persistent storage, and user interaction without requiring authentication.",
+    image: "/images/projects/KuramaChat.png",
+    tech: ["Node.js", "Express.js", "React.js", "Next.js", "IRC"],
+    link: "https://github.com/H1B0B0/Kurama-chat",
+    featured: true,
+    demo: undefined,
   },
   {
     id: 4,
-    title: "Galaxy Note",
+    title: "Rogue-like in Java",
     description:
-      "A minimalist note-taking app with markdown support, tags, and cloud sync. Progressive Web App with offline capabilities.",
-    image: "/images/projects/project4.jpg",
-    tech: ["Vue.js", "Firebase", "PWA", "IndexedDB"],
-    link: "https://github.com/yourusername/galaxy-note",
-    demo: "https://galaxy-note.example.com",
+      "This immersive Rogue-like game was developed in two weeks with LibGDX. It features dynamically generated maps for endless adventure, real-time combat, and inventory management.",
+    image: "/images/projects/RogueLikeJava.png",
+    tech: ["Java", "LibGDX"],
+    link: "https://github.com/H1B0B0/Rogue-like-LibGDX",
     featured: false,
+    demo: undefined,
   },
   {
     id: 5,
-    title: "Nebula Chat",
+    title: "Twitch Viewer-Bot",
     description:
-      "Real-time messaging application with end-to-end encryption, file sharing, and video calls. Built with WebRTC and WebSockets.",
-    image: "/images/projects/project5.jpg",
-    tech: ["React", "Socket.io", "WebRTC", "Redis"],
-    link: "https://github.com/yourusername/nebula-chat",
-    featured: true,
+      "Twitch Viewer-Bot is a GUI tool that allows you to create fake viewers on your live streams. Developed in Python, it uses proxies to generate views on Twitch.",
+    image: "/images/projects/TwitchViewerBot.png",
+    tech: ["Python", "Flask", "React.js", "TypeScript"],
+    link: "https://github.com/H1B0B0/twitch-Viewerbot",
+    featured: false,
+    demo: undefined,
+  },
+  {
+    id: 6,
+    title: "Kick Viewer-Bot",
+    description:
+      "Kick Viewer-Bot is a tool similar to Twitch Viewer-Bot, designed for the Kick platform. It allows you to generate fake views on your live streams using proxies.",
+    image: "/images/projects/KickViewerBot.png",
+    tech: ["Python", "Flask", "React.js", "TypeScript"],
+    link: "https://github.com/H1B0B0/Kick-Viewerbot",
+    featured: false,
+    demo: undefined,
   },
 ];
 
@@ -132,13 +153,13 @@ const ProjectsSection = () => {
 
                 <div className="w-full h-full bg-gradient-to-br from-purple-600/20 to-blue-500/20 flex items-center justify-center">
                   {/* If you have actual images, uncomment this */}
-                  {/* <Image 
-                    src={project.image || "/images/placeholder.jpg"} 
-                    alt={project.title} 
+                  <Image
+                    src={project.image || "/images/placeholder.jpg"}
+                    alt={project.title}
                     layout="fill"
                     objectFit="cover"
                     className="transition-transform duration-500 ease-in-out group-hover:scale-110"
-                  /> */}
+                  />
 
                   {/* Project icon placeholder */}
                   <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
