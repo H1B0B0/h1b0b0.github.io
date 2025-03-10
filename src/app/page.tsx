@@ -171,18 +171,12 @@ export default function Home() {
   }, [currentSectionIndex, sections, isMobile]);
 
   const smoothScrollToSection = (sectionId: string) => {
-    console.log(`Tentative de navigation vers la section: ${sectionId}`);
-
     const section = document.getElementById(sectionId);
     if (section) {
       const rect = section.getBoundingClientRect();
       const scrollTop =
         window.pageYOffset || document.documentElement.scrollTop;
       const sectionTop = rect.top + scrollTop;
-
-      console.log(
-        `Position précise de la section ${sectionId}: ${sectionTop}px`
-      );
 
       try {
         window.scrollTo({
@@ -192,7 +186,6 @@ export default function Home() {
 
         setTimeout(() => {
           if (Math.abs(window.scrollY - sectionTop) > 50) {
-            console.log("Correction de position nécessaire");
             window.scrollTo({
               top: sectionTop,
               behavior: "auto",
@@ -208,16 +201,15 @@ export default function Home() {
         const newIndex = sections.indexOf(sectionId);
         if (newIndex !== -1) {
           setCurrentSectionIndex(newIndex);
-          console.log(`Index mis à jour: ${newIndex}`);
         }
       } catch (error) {
-        console.error("Erreur lors du défilement:", error);
+        console.error("Error", error);
         section.scrollIntoView({ behavior: "smooth" });
       }
 
       setTimeout(() => {}, 1000);
     } else {
-      console.error(`Section "${sectionId}" non trouvée dans le DOM`);
+      console.error(`Section ${sectionId} not found`);
     }
   };
 
@@ -244,7 +236,6 @@ export default function Home() {
       setTimeout(() => {
         const currentScroll = window.pageYOffset;
         if (Math.abs(currentScroll - offsetTop) > 50) {
-          console.log("Utilisation du fallback pour le défilement");
           sectionElement.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }, 300);
@@ -278,7 +269,6 @@ export default function Home() {
               <Navigation
                 currentSection={sections[currentSectionIndex]}
                 onSectionClick={(id) => {
-                  console.log(`Navigation: clic sur ${id}`);
                   smoothScrollToSection(id);
                 }}
               />
