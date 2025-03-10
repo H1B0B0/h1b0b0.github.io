@@ -4,7 +4,8 @@
 import React, { useState, useRef, Suspense } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial } from "@react-three/drei";
-//@ts-ignore
+import * as THREE from "three";
+// @ts-expect-error - Package doesn't have proper TypeScript definitions
 import * as random from "maath/random/dist/maath-random.esm";
 
 interface StarBackgroundProps {
@@ -24,9 +25,9 @@ const StarBackground: React.FC<StarBackgroundProps> = ({
   color = "#ffffff",
   size = 0.005,
 }) => {
-  const ref = useRef<any>(null);
+  const ref = useRef<THREE.Points>(null);
   const [sphere] = useState(() =>
-    random.inSphere(new Float32Array(numStars), { radius })
+    random.inSphere(new Float32Array(numStars * 3), { radius })
   );
 
   useFrame((state, delta) => {

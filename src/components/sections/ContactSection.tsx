@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const ContactSection = () => {
   const [copied, setCopied] = useState(false);
@@ -22,8 +22,8 @@ const ContactSection = () => {
         </h2>
 
         <p className="text-lg text-gray-300 mb-12">
-          Ready to collaborate on something cosmic? Send me a message and let's
-          create something amazing together.
+          Ready to collaborate on something cosmic? Send me a message and
+          let&apos;s create something amazing together.
         </p>
 
         <div className="flex flex-col items-center justify-center space-y-8">

@@ -71,7 +71,7 @@ const SkillsSection = () => {
 
       {/* Skills grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filteredSkills.map((skill, index) => (
+        {filteredSkills.map((skill) => (
           <div
             key={skill.name}
             className="bg-black/30 backdrop-blur-sm border border-white/10 rounded-lg p-4 hover:border-white/30 transition-all duration-300 group"

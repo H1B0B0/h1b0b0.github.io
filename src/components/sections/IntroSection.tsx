@@ -55,7 +55,7 @@ const IntroSection = () => {
         >
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-              Hello, I'm Etienne Mentrel
+              Hello, I&apos;m Etienne Mentrel
             </span>
           </h1>
         </motion.div>
@@ -140,20 +140,27 @@ const IntroSection = () => {
   );
 };
 
+interface TypewriterEffectProps {
+  phrases: string[];
+  typingSpeed?: number;
+  deletingSpeed?: number;
+  delayBetweenPhrases?: number;
+}
+
 // Simple typewriter effect component
 const TypewriterEffect = ({
   phrases,
   typingSpeed = 150,
   deletingSpeed = 100,
   delayBetweenPhrases = 2000,
-}) => {
+}: TypewriterEffectProps) => {
   const [displayText, setDisplayText] = useState("");
   const [currentPhrase, setCurrentPhrase] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isWaiting, setIsWaiting] = useState(false);
 
   useEffect(() => {
-    let timer;
+    let timer: NodeJS.Timeout;
 
     if (isWaiting) {
       timer = setTimeout(() => {

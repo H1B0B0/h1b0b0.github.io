@@ -82,7 +82,8 @@ const projects = [
 
 const ProjectsSection = () => {
   const [filter, setFilter] = useState<"all" | "featured">("all");
-  const [activeProject, setActiveProject] = useState<number | null>(null);
+  // Remove the unused variable but keep the function as it might be used elsewhere
+  const [, setActiveProject] = useState<number | null>(null);
 
   const filteredProjects =
     filter === "all" ? projects : projects.filter((p) => p.featured);

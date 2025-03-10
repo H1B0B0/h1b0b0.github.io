@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import StarsCanvas from "@/components/StarBackground";
 import IntroSection from "@/components/sections/IntroSection";
 import AboutSection from "@/components/sections/AboutSection";
@@ -14,9 +14,8 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [scrollY, setScrollY] = useState(0);
-  const [windowHeight, setWindowHeight] = useState(0);
-  const [windowWidth, setWindowWidth] = useState(0);
 
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
   const lastUIUpdateTimeRef = useRef(0);
@@ -24,7 +23,10 @@ export default function Home() {
 
   const mainRef = useRef<HTMLDivElement>(null);
   const sectionsRef = useRef<HTMLDivElement[]>([]);
-  const sections = ["home", "about", "projects", "skills", "contact"];
+  const sections = useMemo(
+    () => ["home", "about", "projects", "skills", "contact"],
+    []
+  );
 
   useEffect(() => {
     lastUIUpdateTimeRef.current = Date.now();
@@ -34,8 +36,6 @@ export default function Home() {
     lastScrollYRef.current = initialScrollY;
 
     setIsMobile(window.innerWidth < 768);
-    setWindowHeight(window.innerHeight);
-    setWindowWidth(window.innerWidth);
 
     let ticking = false;
     let isUserScrolling = false;
@@ -110,8 +110,6 @@ export default function Home() {
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
-      setWindowHeight(window.innerHeight);
-      setWindowWidth(window.innerWidth);
     };
 
     handleResize();
@@ -171,12 +169,18 @@ export default function Home() {
   }, [currentSectionIndex, sections, isMobile]);
 
   const smoothScrollToSection = (sectionId: string) => {
+    console.log(`Tentative de navigation vers la section: ${sectionId}`);
+
     const section = document.getElementById(sectionId);
     if (section) {
       const rect = section.getBoundingClientRect();
       const scrollTop =
         window.pageYOffset || document.documentElement.scrollTop;
       const sectionTop = rect.top + scrollTop;
+
+      console.log(
+        `Position précise de la section ${sectionId}: ${sectionTop}px`
+      );
 
       try {
         window.scrollTo({
@@ -186,6 +190,7 @@ export default function Home() {
 
         setTimeout(() => {
           if (Math.abs(window.scrollY - sectionTop) > 50) {
+            console.log("Correction de position nécessaire");
             window.scrollTo({
               top: sectionTop,
               behavior: "auto",
@@ -201,15 +206,16 @@ export default function Home() {
         const newIndex = sections.indexOf(sectionId);
         if (newIndex !== -1) {
           setCurrentSectionIndex(newIndex);
+          console.log(`Index mis à jour: ${newIndex}`);
         }
       } catch (error) {
-        console.error("Error", error);
+        console.error("Erreur lors du défilement:", error);
         section.scrollIntoView({ behavior: "smooth" });
       }
 
       setTimeout(() => {}, 1000);
     } else {
-      console.error(`Section ${sectionId} not found`);
+      console.error(`Section "${sectionId}" non trouvée dans le DOM`);
     }
   };
 
@@ -236,6 +242,7 @@ export default function Home() {
       setTimeout(() => {
         const currentScroll = window.pageYOffset;
         if (Math.abs(currentScroll - offsetTop) > 50) {
+          console.log("Utilisation du fallback pour le défilement");
           sectionElement.scrollIntoView({ behavior: "smooth", block: "start" });
         }
       }, 300);
@@ -269,6 +276,7 @@ export default function Home() {
               <Navigation
                 currentSection={sections[currentSectionIndex]}
                 onSectionClick={(id) => {
+                  console.log(`Navigation: clic sur ${id}`);
                   smoothScrollToSection(id);
                 }}
               />
