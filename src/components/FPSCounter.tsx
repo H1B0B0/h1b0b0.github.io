@@ -3,9 +3,13 @@ import { useState, useEffect, useRef } from "react";
 
 interface FPSCounterProps {
   visible: boolean;
+  onVisibilityChange: (visible: boolean) => void;
 }
 
-const FPSCounter: React.FC<FPSCounterProps> = ({ visible }) => {
+const FPSCounter: React.FC<FPSCounterProps> = ({
+  visible,
+  onVisibilityChange,
+}) => {
   const [fps, setFps] = useState<number>(0);
   const [minFps, setMinFps] = useState<number>(Infinity);
   const [maxFps, setMaxFps] = useState<number>(0);
@@ -96,13 +100,13 @@ const FPSCounter: React.FC<FPSCounterProps> = ({ visible }) => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === "f") {
         e.preventDefault(); // Prevent browser's find function
-        // You'd implement a toggle function here if needed
+        onVisibilityChange(!visible);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [visible, onVisibilityChange]);
 
   if (!visible) return null;
 

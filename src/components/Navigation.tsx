@@ -22,24 +22,21 @@ const Navigation = ({
     { id: "contact", label: "Contact" },
   ];
 
-  // Mise à jour de l'état actif quand currentSection change
   useEffect(() => {
     if (currentSection !== activeSection) {
-      console.log(
-        `Navigation: mise à jour de la section active à ${currentSection}`
-      );
       setActiveSection(currentSection);
     }
   }, [currentSection, activeSection]);
 
-  // Détection du défilement pour le fond
   useEffect(() => {
     const handleScroll = () => {
+      console.log("Navigation: scroll");
+      console.log("window.scrollY", window.scrollY);
       setIsScrolled(window.scrollY > 50);
     };
 
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); // Vérifier immédiatement
+    handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -48,7 +45,6 @@ const Navigation = ({
     id: string
   ) => {
     e.preventDefault();
-    console.log(`Navigation: clic sur ${id}`);
 
     if (onSectionClick) {
       onSectionClick(id);
