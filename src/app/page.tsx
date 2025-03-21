@@ -219,38 +219,6 @@ export default function Home() {
     }
   };
 
-  const handleIndicatorClick = (section: string) => {
-    console.log(`Clic sur indicateur pour ${section}`);
-
-    const sectionElement = document.getElementById(section);
-    if (sectionElement) {
-      const offsetTop = sectionElement.offsetTop;
-      console.log(
-        `Position de la section ${section} (offsetTop): ${offsetTop}px`
-      );
-
-      const newIndex = sections.indexOf(section);
-      if (newIndex !== -1) {
-        setCurrentSectionIndex(newIndex);
-      }
-
-      window.scrollTo({
-        top: offsetTop,
-        behavior: "smooth",
-      });
-
-      setTimeout(() => {
-        const currentScroll = window.pageYOffset;
-        if (Math.abs(currentScroll - offsetTop) > 50) {
-          console.log("Utilisation du fallback pour le défilement");
-          sectionElement.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }, 300);
-
-      setTimeout(() => {});
-    }
-  };
-
   useEffect(() => {
     const loadTimer = setTimeout(() => setLoading(false), 2000);
 
