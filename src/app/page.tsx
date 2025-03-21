@@ -166,7 +166,7 @@ export default function Home() {
     return () => {
       observer.disconnect();
     };
-  }, [currentSectionIndex, sections, isMobile]);
+  }, [currentSectionIndex, sections, isMobile, loading]);
 
   const smoothScrollToSection = (sectionId: string) => {
     console.log(`Tentative de navigation vers la section: ${sectionId}`);
@@ -289,7 +289,12 @@ export default function Home() {
                     className={`section-indicator-dot ${
                       currentSectionIndex === index ? "active" : ""
                     }`}
-                    onClick={() => handleIndicatorClick(section)}
+                    onClick={() => {
+                      console.log(
+                        `Section indicator dot clicked for ${section}`
+                      );
+                      smoothScrollToSection(section); // Use the same function as the navbar!
+                    }}
                     aria-label={`Go to ${section} section`}
                     data-section={section}
                     data-active={currentSectionIndex === index}
