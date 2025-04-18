@@ -9,6 +9,7 @@ import ContactSection from "@/components/sections/ContactSection";
 import Navigation from "@/components/Navigation";
 import LoadingScreen from "@/components/LoadingScreen";
 import FPSCounter from "@/components/FPSCounter";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
@@ -16,6 +17,7 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [scrollY, setScrollY] = useState(0);
+  const { t } = useLanguage();
 
   const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
   const lastUIUpdateTimeRef = useRef(0);
@@ -333,10 +335,12 @@ export default function Home() {
             <footer className="py-6 text-center text-sm text-white/60 bg-black/30 backdrop-blur-sm">
               <div className="container mx-auto px-6">
                 <p>
-                  © {new Date().getFullYear()} Etienne Mentrel | Cosmic
-                  Portfolio
+                  {t.footer.copyright.replace(
+                    "{year}",
+                    new Date().getFullYear().toString()
+                  )}
                 </p>
-                <p className="mt-2">Made with Next.js and cosmic dust ✨</p>
+                <p className="mt-2">{t.footer.madeWith}</p>
               </div>
             </footer>
           </div>

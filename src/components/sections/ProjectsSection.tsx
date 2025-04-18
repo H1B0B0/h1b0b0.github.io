@@ -2,14 +2,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useLanguage } from "@/i18n/LanguageContext";
 
-// Sample project data - replace with your actual projects
 const projects = [
   {
     id: 1,
-    title: "Eclat Shop",
-    description:
-      "Eclat Shop is a robust e-commerce platform tailored for selling computer components. Built with Symfony for backend operations, React with TypeScript for the frontend, and Docker for deployment, it ensures a seamless and efficient user experience.",
+    projectKey: "eclatShop",
     image: "/images/projects/EclatShop.png",
     tech: [
       "Symfony",
@@ -25,9 +23,7 @@ const projects = [
   },
   {
     id: 2,
-    title: "Time Manager",
-    description:
-      "Time Manager is a time tracking application designed to help municipal employees of Gotham manage their working hours efficiently. It allows employees to report their working hours, managers to supervise their teams, and the general manager to maintain overall control. The application aims to improve working conditions and provide transparency in work schedules.",
+    projectKey: "timeManager",
     image: "/images/projects/TimeManager.png",
     tech: ["Vue.js", "Docker", "Elixir"],
     link: "https://github.com/H1B0B0/Time-manager",
@@ -36,9 +32,7 @@ const projects = [
   },
   {
     id: 3,
-    title: "Kurama Chat",
-    description:
-      "Kurama Chat is an IRC client and server developed with Node.js, Express.js, and React.js. It supports multiple channels, real-time messaging, and user notifications. The project includes features for channel management, persistent storage, and user interaction without requiring authentication.",
+    projectKey: "kuramaChat",
     image: "/images/projects/KuramaChat.png",
     tech: ["Node.js", "Express.js", "React.js", "Next.js", "IRC"],
     link: "https://github.com/H1B0B0/Kurama-chat",
@@ -47,9 +41,7 @@ const projects = [
   },
   {
     id: 4,
-    title: "Rogue-like in Java",
-    description:
-      "This immersive Rogue-like game was developed in two weeks with LibGDX. It features dynamically generated maps for endless adventure, real-time combat, and inventory management.",
+    projectKey: "rogueLike",
     image: "/images/projects/RogueLikeJava.png",
     tech: ["Java", "LibGDX"],
     link: "https://github.com/H1B0B0/Rogue-like-LibGDX",
@@ -58,9 +50,7 @@ const projects = [
   },
   {
     id: 5,
-    title: "Twitch Viewer-Bot",
-    description:
-      "Twitch Viewer-Bot is a GUI tool that allows you to create fake viewers on your live streams. Developed in Python, it uses proxies to generate views on Twitch.",
+    projectKey: "twitchViewerBot",
     image: "/images/projects/TwitchViewerBot.png",
     tech: ["Python", "Flask", "React.js", "TypeScript"],
     link: "https://github.com/H1B0B0/twitch-Viewerbot",
@@ -69,9 +59,7 @@ const projects = [
   },
   {
     id: 6,
-    title: "Kick Viewer-Bot",
-    description:
-      "Kick Viewer-Bot is a tool similar to Twitch Viewer-Bot, designed for the Kick platform. It allows you to generate fake views on your live streams using proxies.",
+    projectKey: "kickViewerBot",
     image: "/images/projects/KickViewerBot.png",
     tech: ["Python", "Flask", "React.js", "TypeScript"],
     link: "https://github.com/H1B0B0/Kick-Viewerbot",
@@ -84,6 +72,7 @@ const ProjectsSection = () => {
   const [filter, setFilter] = useState<"all" | "featured">("all");
   // Remove the unused variable but keep the function as it might be used elsewhere
   const [, setActiveProject] = useState<number | null>(null);
+  const { t } = useLanguage();
 
   const filteredProjects =
     filter === "all" ? projects : projects.filter((p) => p.featured);
@@ -100,11 +89,10 @@ const ProjectsSection = () => {
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-            My Projects
+            {t.projects.title}
           </h2>
           <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-            Explore my recent work and personal projects. Each one represents a
-            unique challenge and learning experience.
+            {t.projects.description}
           </p>
 
           {/* Filters */}
@@ -117,7 +105,7 @@ const ProjectsSection = () => {
               }`}
               onClick={() => setFilter("all")}
             >
-              All Projects
+              {t.projects.allProjects}
             </button>
             <button
               className={`px-4 py-2 rounded-full transition ${
@@ -127,7 +115,7 @@ const ProjectsSection = () => {
               }`}
               onClick={() => setFilter("featured")}
             >
-              Featured
+              {t.projects.featured}
             </button>
           </div>
         </motion.div>
@@ -156,7 +144,11 @@ const ProjectsSection = () => {
                   {/* If you have actual images, uncomment this */}
                   <Image
                     src={project.image || "/images/placeholder.jpg"}
-                    alt={project.title}
+                    alt={
+                      t.projects.projectsList[
+                        project.projectKey as keyof typeof t.projects.projectsList
+                      ]?.title || "Project"
+                    }
                     layout="fill"
                     objectFit="cover"
                     className="transition-transform duration-500 ease-in-out group-hover:scale-110"
@@ -179,16 +171,26 @@ const ProjectsSection = () => {
                 {/* Featured badge */}
                 {project.featured && (
                   <div className="absolute top-2 right-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    Featured
+                    {t.projects.featured}
                   </div>
                 )}
               </div>
 
               {/* Project Content */}
               <div className="p-6 flex-1 flex flex-col">
-                <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                <h3 className="text-xl font-bold mb-2">
+                  {
+                    t.projects.projectsList[
+                      project.projectKey as keyof typeof t.projects.projectsList
+                    ]?.title
+                  }
+                </h3>
                 <p className="text-gray-300 mb-4 flex-1">
-                  {project.description}
+                  {
+                    t.projects.projectsList[
+                      project.projectKey as keyof typeof t.projects.projectsList
+                    ]?.description
+                  }
                 </p>
 
                 {/* Tech stack */}
@@ -220,7 +222,7 @@ const ProjectsSection = () => {
                     >
                       <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
                     </svg>
-                    <span>Code</span>
+                    <span>{t.projects.viewCode}</span>
                   </a>
 
                   {project.demo && (
@@ -239,7 +241,7 @@ const ProjectsSection = () => {
                       >
                         <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
                       </svg>
-                      <span>Demo</span>
+                      <span>{t.projects.demo}</span>
                     </a>
                   )}
                 </div>

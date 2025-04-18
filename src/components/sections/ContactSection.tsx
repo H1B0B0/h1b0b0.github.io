@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const ContactSection = () => {
   const [copied, setCopied] = useState(false);
   const email = "etienne.mentrel@gmail.com";
+  const { t, currentLanguage } = useLanguage();
 
   const handleCopyEmail = () => {
     navigator.clipboard.writeText(email);
@@ -11,20 +13,27 @@ const ContactSection = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  // Créer des textes différents pour l'email selon la langue
+  const emailSubject =
+    currentLanguage === "fr"
+      ? "Collaboration%20sur%20un%20projet"
+      : "Let's%20Collaborate";
+
+  const emailBody =
+    currentLanguage === "fr"
+      ? "Bonjour%20Etienne,%0D%0A%0D%0AJ'aimerais%20discuter%20d'un%20projet%20avec%20vous."
+      : "Hello%20Etienne,%0D%0A%0D%0AI'd%20like%20to%20discuss%20a%20project%20with%20you.";
+
   return (
     <div className="container mx-auto px-6 py-12 text-center">
       <div className="max-w-2xl mx-auto">
         <h2 className="text-4xl font-bold mb-8">
           <span className="bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
-            Contact
-          </span>{" "}
-          Me
+            {t.contact.title}
+          </span>
         </h2>
 
-        <p className="text-lg text-gray-300 mb-12">
-          Ready to collaborate on something cosmic? Send me a message and
-          let&apos;s create something amazing together.
-        </p>
+        <p className="text-lg text-gray-300 mb-12">{t.contact.description}</p>
 
         <div className="flex flex-col items-center justify-center space-y-8">
           <div className="relative w-72 h-72 md:w-96 md:h-96">
@@ -32,7 +41,7 @@ const ContactSection = () => {
             <div className="relative flex items-center justify-center w-full h-full">
               <div className="bg-black/50 backdrop-blur-md p-8 rounded-xl border border-white/20 w-full max-w-md">
                 <a
-                  href={`mailto:${email}?subject=Let's%20Collaborate&body=Hello%20Etienne,%0D%0A%0D%0AI'd%20like%20to%20discuss%20a%20project%20with%20you.`}
+                  href={`mailto:${email}?subject=${emailSubject}&body=${emailBody}`}
                   className="cosmic-button w-full flex items-center justify-center mb-6"
                 >
                   <svg
@@ -48,12 +57,12 @@ const ContactSection = () => {
                       d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
                     />
                   </svg>
-                  Send Email
+                  {t.contact.sendEmail}
                 </a>
 
                 <div className="flex items-center mb-2">
                   <p className="text-gray-400 text-sm mr-auto">
-                    Or copy my email address:
+                    {t.contact.copyEmail}
                   </p>
                 </div>
 
@@ -96,6 +105,13 @@ const ContactSection = () => {
                     )}
                   </button>
                 </div>
+
+                {/* Show feedback when email is copied */}
+                {copied && (
+                  <div className="mt-2 text-green-400 text-sm">
+                    {t.contact.emailCopied}
+                  </div>
+                )}
 
                 <div className="mt-8 flex justify-center space-x-6">
                   <a

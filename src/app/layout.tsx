@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
+import { LanguageProvider } from "@/i18n/LanguageContext";
 
 // Load fonts
 const geistSans = Geist({
@@ -32,7 +33,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
       >
-        {children}
+        <LanguageProvider>{children}</LanguageProvider>
         <Script id="favicon-animation" strategy="afterInteractive">
           {`
           setTimeout(() => {

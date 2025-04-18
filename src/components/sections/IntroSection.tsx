@@ -1,9 +1,11 @@
 "use client";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const IntroSection = () => {
   const [mounted, setMounted] = useState(false);
+  const { t } = useLanguage();
 
   useEffect(() => {
     setMounted(true);
@@ -55,7 +57,7 @@ const IntroSection = () => {
         >
           <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-3">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-              Hello, I&apos;m Etienne Mentrel
+              {t.intro.hello}
             </span>
           </h1>
         </motion.div>
@@ -67,12 +69,7 @@ const IntroSection = () => {
         >
           <h2 className="text-2xl md:text-4xl font-medium mb-6 md:mb-8 text-white/80">
             <TypewriterEffect
-              phrases={[
-                "DevOps Engineer",
-                "Software Developer",
-                "Tech Enthusiast",
-                "Passionate Learner",
-              ]}
+              phrases={t.intro.titles}
               typingSpeed={100}
               deletingSpeed={80}
               delayBetweenPhrases={2000}
@@ -86,9 +83,7 @@ const IntroSection = () => {
           transition={{ duration: 0.8, delay: 0.4 }}
           className="max-w-2xl text-lg md:text-xl text-gray-300 mb-10 mx-auto"
         >
-          Welcome to my cosmic portfolio. Explore my universe of projects and
-          discover how I combine creativity and technology to build stellar
-          digital experiences.
+          {t.intro.description}
         </motion.p>
 
         <motion.div
@@ -106,7 +101,7 @@ const IntroSection = () => {
               }
             }}
           >
-            <span>View Projects</span>
+            <span>{t.intro.viewProjects}</span>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="16"
@@ -132,7 +127,7 @@ const IntroSection = () => {
               }
             }}
           >
-            Get In Touch
+            {t.intro.getInTouch}
           </a>
         </motion.div>
       </div>

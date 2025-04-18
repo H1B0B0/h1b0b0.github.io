@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 // Generate an array of stars with pre-calculated properties
 const generateStars = (count: number) => {
@@ -21,13 +22,14 @@ const LoadingScreen = () => {
   const [isTypingComplete, setIsTypingComplete] = useState(false);
   const textTimerRef = useRef<NodeJS.Timeout | null>(null);
   const animationFrameRef = useRef<number | null>(null);
+  const { t } = useLanguage();
 
   // Generate stars only once with useMemo
   const stars = useMemo(() => generateStars(80), []);
 
   // Simple typewriter effect for "Initializing" only
   useEffect(() => {
-    const loadingMessage = "Initializing";
+    const loadingMessage = t.common.loading;
     let currentIndex = 0;
 
     const typeText = () => {
@@ -48,7 +50,7 @@ const LoadingScreen = () => {
     return () => {
       if (textTimerRef.current) clearTimeout(textTimerRef.current);
     };
-  }, []);
+  }, [t.common.loading]);
 
   // Progress management with smooth acceleration
   useEffect(() => {

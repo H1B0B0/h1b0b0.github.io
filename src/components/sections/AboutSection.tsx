@@ -1,8 +1,11 @@
 "use client";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const AboutSection = () => {
+  const { t } = useLanguage();
+  
   return (
     <div className="py-10 md:py-0">
       <motion.div
@@ -71,34 +74,16 @@ const AboutSection = () => {
           className="md:col-span-3"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-            About Me
+            {t.about.title}
           </h2>
 
           <div className="text-lg text-gray-300 space-y-4">
             <h3 className="text-2xl md:text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-              My Background
+              {t.about.background}
             </h3>
-            <p>
-              I began my professional journey at the end of high school,
-              participating in an apprenticeship program at a company
-              specializing in RFID technology.
-            </p>
-
-            <p>
-              During my initial training, I was not destined to become a
-              developer but rather a higher-level technician. It was on the job
-              that I learned Python. Subsequently, I undertook numerous Python
-              projects for my company, leading me to transition into a developer
-              role within the organization.
-            </p>
-
-            <p>
-              After completing my DUT in Electrical Engineering and Industrial
-              Computing, I discovered a strong passion for programming and
-              decided to enroll at Epitech. Having successfully completed my
-              pre-MSc year, I am now continuing my journey as an MSc 1 student
-              at Epitech.
-            </p>
+            <p>{t.about.paragraph1}</p>
+            <p>{t.about.paragraph2}</p>
+            <p>{t.about.paragraph3}</p>
           </div>
 
           <div className="mt-8 flex gap-4 flex-wrap">
@@ -108,7 +93,7 @@ const AboutSection = () => {
               rel="noopener noreferrer"
               className="cosmic-button flex items-center gap-2"
             >
-              <span>Download Resume</span>
+              <span>{t.about.downloadResume}</span>
             </a>
 
             <a
@@ -117,7 +102,7 @@ const AboutSection = () => {
               rel="noopener noreferrer"
               className="cosmic-button"
             >
-              GitHub Profile
+              {t.about.githubProfile}
             </a>
           </div>
         </motion.div>

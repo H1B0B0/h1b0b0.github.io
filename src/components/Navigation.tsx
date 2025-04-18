@@ -1,5 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
+import LanguageSelector from "./LanguageSelector";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface NavigationProps {
   currentSection?: string;
@@ -13,13 +15,14 @@ const Navigation = ({
   const [activeSection, setActiveSection] = useState(currentSection);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const { t } = useLanguage();
 
   const sections = [
-    { id: "home", label: "Home" },
-    { id: "about", label: "About" },
-    { id: "projects", label: "Projects" },
-    { id: "skills", label: "Skills" },
-    { id: "contact", label: "Contact" },
+    { id: "home", label: t.navigation.home },
+    { id: "about", label: t.navigation.about },
+    { id: "projects", label: t.navigation.projects },
+    { id: "skills", label: t.navigation.skills },
+    { id: "contact", label: t.navigation.contact },
   ];
 
   useEffect(() => {
@@ -78,7 +81,10 @@ const Navigation = ({
         </a>
 
         {/* Desktop Navigation with improved active state */}
-        <div className="hidden md:flex space-x-8" role="navigation">
+        <div
+          className="hidden md:flex space-x-8 items-center"
+          role="navigation"
+        >
           {sections.map(({ id, label }) => (
             <a
               key={id}
@@ -95,48 +101,54 @@ const Navigation = ({
               {label}
             </a>
           ))}
+
+          {/* Language Selector */}
+          <LanguageSelector />
         </div>
 
-        {/* Mobile Navigation Button */}
-        <button
-          className="md:hidden text-white focus:outline-none"
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-          aria-expanded={isMenuOpen}
-          aria-controls="mobile-menu"
-        >
-          {isMenuOpen ? (
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          ) : (
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
-            </svg>
-          )}
-        </button>
+        {/* Mobile Navigation - maintenant avec deux boutons */}
+        <div className="md:hidden flex items-center gap-2">
+          <LanguageSelector />
+          <button
+            className="text-white focus:outline-none"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-menu"
+          >
+            {isMenuOpen ? (
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            ) : (
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu with improved active state */}

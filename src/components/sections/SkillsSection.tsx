@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Skill {
   name: string;
@@ -20,7 +21,7 @@ const skills: Skill[] = [
   { name: "NestJS", level: 4, category: "Backend" },
   { name: "MongoDB", level: 5, category: "Backend" },
   { name: "PostgreSQL", level: 5, category: "Backend" },
-  { name: "Golang", level: 3, category: "Backend" },
+  { name: "Golang", level: 2, category: "Backend" },
 
   // Tools
   { name: "Git", level: 5, category: "Tools" },
@@ -38,6 +39,16 @@ const categories = ["All", "Frontend", "Backend", "Tools", "Cloud"];
 
 const SkillsSection = () => {
   const [activeCategory, setActiveCategory] = useState("All");
+  const { t } = useLanguage();
+
+  // Mapping des catégories pour les traductions
+  const categoryMapping: { [key: string]: string } = {
+    All: t.skills.categories.all,
+    Frontend: t.skills.categories.frontend,
+    Backend: t.skills.categories.backend,
+    Tools: t.skills.categories.tools,
+    Cloud: t.skills.categories.cloud,
+  };
 
   const filteredSkills = skills.filter(
     (skill) => activeCategory === "All" || skill.category === activeCategory
@@ -46,9 +57,9 @@ const SkillsSection = () => {
   return (
     <div className="container mx-auto px-6 py-12">
       <h2 className="text-4xl font-bold mb-8 text-center">
-        My{" "}
+        {t.skills.title.split(" ")[0]}{" "}
         <span className="bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
-          Skills
+          {t.skills.title.split(" ").slice(1).join(" ")}
         </span>
       </h2>
 
@@ -64,7 +75,7 @@ const SkillsSection = () => {
                 : "bg-white/10 text-gray-300 hover:bg-white/20"
             }`}
           >
-            {category}
+            {categoryMapping[category]}
           </button>
         ))}
       </div>
@@ -82,7 +93,7 @@ const SkillsSection = () => {
               </div>
               <div>
                 <h4 className="text-lg font-bold">{skill.name}</h4>
-                <p className="text-sm text-gray-400">{skill.category}</p>
+                <p className="text-sm text-gray-400">{categoryMapping[skill.category] || skill.category}</p>
               </div>
             </div>
             <div className="h-2 bg-white/10 rounded-full overflow-hidden">
@@ -97,11 +108,10 @@ const SkillsSection = () => {
 
       <div className="mt-16 text-center">
         <p className="text-lg text-gray-300 max-w-2xl mx-auto mb-8">
-          These skills represent my cosmic toolbox, constantly expanding as I
-          explore new technologies and techniques.
+          {t.skills.description}
         </p>
         <a href="#projects" className="cosmic-button inline-block">
-          See Skills in Action
+          {t.skills.seeInAction}
         </a>
       </div>
     </div>
