@@ -5,7 +5,7 @@ import { useLanguage } from "@/i18n/LanguageContext";
 
 const AboutSection = () => {
   const { t } = useLanguage();
-  
+
   return (
     <div className="py-10 md:py-0">
       <motion.div
@@ -30,13 +30,11 @@ const AboutSection = () => {
             {/* Improved image container */}
             <div className="relative w-full h-full bg-gradient-to-br from-gray-900 to-gray-800 flex items-center justify-center z-10 rounded-full">
               <Image
-                src="/avatar.png"
+                src="/avatar.jpg"
                 alt="Etienne Mentrel"
                 fill
-                sizes="(max-width: 768px) 12rem, 16rem"
-                className="object-cover"
+                className="object-cover rounded-full"
                 priority
-                quality={95}
               />
             </div>
 
