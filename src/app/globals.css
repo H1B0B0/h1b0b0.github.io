@@ -1,13 +1,18 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --nav-height: 4rem;
-  --section-padding: clamp(1.5rem, 5vh, 4rem);
+  --background: #030712; /* Deep Midnight */
+  --foreground: #f8fafc;
+  --accent-primary: #8b5cf6; /* Electric Violet */
+  --accent-secondary: #06b6d4; /* Glacial Cyan */
+  --accent-tertiary: #f43f5e; /* Rose Glow */
+  --nav-height: 4.5rem;
+  --section-padding: clamp(2rem, 8vh, 6rem);
+  
+  /* Glassmorphism tokens */
+  --glass-bg: rgba(8, 12, 24, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.04);
 }
 
 /* Reset des styles pour permettre le défilement */
@@ -15,27 +20,28 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: black;
+  background: var(--background);
   height: 100%;
   width: 100%;
-  overflow-x: hidden; /* Empêcher le défilement horizontal */
-  overflow-y: auto; /* Permettre le défilement vertical */
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 html {
-  scroll-behavior: smooth; /* Pour des transitions de défilement fluides */
+  scroll-behavior: smooth;
 }
 
 body {
   color: var(--foreground);
-  font-family: var(--font-geist-sans);
-  overflow-x: hidden;
-  min-height: 100%;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Masquer la scrollbar mais garder la fonctionnalité */
 body::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 body::-webkit-scrollbar-track {
@@ -43,12 +49,12 @@ body::-webkit-scrollbar-track {
 }
 
 body::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
+  background: rgba(139, 92, 246, 0.3);
+  border-radius: 10px;
 }
 
 body::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(139, 92, 246, 0.5);
 }
 
 /* Section styles - Refactorisés pour un comportement plus dynamique */
@@ -59,31 +65,22 @@ body::-webkit-scrollbar-thumb:hover {
   align-items: center;
   justify-content: center;
   padding: var(--section-padding) 0;
-  transition: transform 0.3s ease-out;
-  overflow: hidden; /* Éviter les débordements */
-  /* Optimisation pour le rendu des sections */
+  overflow: hidden;
   will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 }
 
-/* Hauteurs de section adaptatives */
 .min-h-screen {
-  min-height: 100vh; /* Pour la première section, hauteur complète */
+  min-height: 100vh;
 }
 
 .min-h-dynamic {
-  min-height: max(
-    100vh,
-    fit-content
-  ); /* Pour les autres sections, au moins la hauteur de l'écran ou plus si besoin */
+  min-height: max(100vh, fit-content);
 }
 
 @media (max-width: 768px) {
   .min-h-dynamic {
-    /* Sur mobile, permettre aux sections de s'adapter au contenu */
     min-height: fit-content;
-    padding: calc(var(--nav-height) + 2rem) 0 2rem 0;
+    padding: calc(var(--nav-height) + 3rem) 0 3rem 0;
   }
 }
 
@@ -91,392 +88,159 @@ body::-webkit-scrollbar-thumb:hover {
 .section-content {
   width: 100%;
   max-width: 1200px;
-  padding: clamp(1rem, 3vw, 2rem);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  padding: 0 1.5rem;
   position: relative;
-  z-index: 10; /* Assurez-vous que le contenu est au-dessus du fond */
-}
-
-/* Amélioration de l'espacement et du padding responsif */
-@media (min-width: 768px) {
-  .section-content {
-    padding: clamp(2rem, 4vw, 3rem);
-  }
-}
-
-@media (min-width: 1024px) {
-  .section-content {
-    padding: clamp(2rem, 5vw, 4rem);
-  }
-}
-
-/* Cacher les scrollbars pour les contenus défilables tout en restant accessible */
-.section-content.overflow-y-auto {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  overscroll-behavior: contain;
-}
-
-.section-content.overflow-y-auto::-webkit-scrollbar {
-  display: none;
-}
-
-/* Visual indicators for scrollable content on mobile */
-@media (max-width: 767px) {
-  .section-content.overflow-y-auto::after {
-    content: "";
-    position: absolute;
-    bottom: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 40px;
-    height: 4px;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 4px;
-    z-index: 10;
-    animation: pulse 2s infinite;
-  }
-}
-
-/* Section indicator dots - amélioration de la visibilité sur tous les écrans */
-.section-indicator-dot {
-  width: clamp(8px, 1.5vw, 12px);
-  height: clamp(8px, 1.5vw, 12px);
-  border-radius: 50%;
-  background-color: rgba(255, 255, 255, 0.4);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-  border: none;
-  outline: none;
   z-index: 10;
-  position: relative; /* Important pour maintenir au-dessus */
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-/* Ajouter une zone tactile plus grande mais invisible */
-.section-indicator-dot::after {
-  content: "";
-  position: absolute;
-  top: -12px;
-  right: -12px;
-  bottom: -12px;
-  left: -12px;
-  border-radius: 50%;
-  cursor: pointer;
-  background-color: transparent;
-  transition: background-color 0.3s;
-}
-
-.section-indicator-dot:hover::after {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.section-indicator-dot.active {
-  background-color: white;
-  width: clamp(10px, 2vw, 14px);
-  height: clamp(10px, 2vw, 14px);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7),
-    0 0 25px rgba(255, 255, 255, 0.3);
-  transform: scale(1.2);
-  animation: activateDot 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.section-indicator-dot:hover {
-  background-color: rgba(255, 255, 255, 0.9);
-  transform: scale(1.1);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-}
-
-/* Indicateurs fixes à droite - positionnement amélioré */
-.section-indicators-container {
-  position: fixed;
-  right: clamp(10px, 3vw, 25px); /* Position adaptative */
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1000; /* Même niveau de priorité que la navbar */
-  display: flex;
-  flex-direction: column;
-  gap: clamp(12px, 2vh, 20px); /* Espacement adaptatif */
-  padding: clamp(10px, 1.5vh, 15px) clamp(8px, 1vw, 10px);
-  border-radius: 30px;
-  background-color: rgba(0, 0, 0, 0.6); /* Fond plus contrasté */
-  backdrop-filter: blur(8px);
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.4); /* Ombre subtile */
-  border: 1px solid rgba(255, 255, 255, 0.15); /* Bordure subtile */
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-/* Pour éviter que les indicateurs soient trop proches des bords sur petit écran */
-@media (max-width: 640px) {
-  .section-indicators-container {
-    right: 5px;
-    padding: 8px 6px;
-    gap: 10px;
-    transform: translateY(-50%) scale(0.8);
-  }
-}
-
-.section-indicators-container .relative {
+/* Premium Card Style */
+.premium-card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
-  display: flex;
-  align-items: center;
-  width: 20px; /* Largeur fixe pour contenir le point */
-  height: 20px; /* Hauteur fixe pour contenir le point */
-  justify-content: center;
-}
-
-/* Wrapper pour améliorer le comportement au hover */
-.indicator-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: clamp(20px, 3vw, 30px); /* Largeur adaptative */
-  height: clamp(20px, 3vw, 30px); /* Hauteur adaptative */
-}
-
-.section-indicators-container .section-indicator-label {
-  position: absolute;
-  right: 40px; /* Position fixe par rapport au conteneur */
-  top: 50%;
-  transform: translateY(-50%);
-  white-space: nowrap;
-  font-size: clamp(0.75rem, 1.5vw, 0.875rem);
-  font-weight: 500;
-  color: transparent;
-  transition: all 0.3s;
-  pointer-events: none;
-  background: rgba(0, 0, 0, 0.8);
-  padding: 6px 12px;
-  border-radius: 6px;
-  opacity: 0;
-  user-select: none;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  letter-spacing: 0.5px;
-}
-
-.section-indicator-dot:hover + .section-indicator-label,
-.section-indicator-dot.active + .section-indicator-label {
-  color: white;
-  opacity: 1;
-  right: 45px; /* Animation plus subtile */
-  transform: translateY(-50%);
-}
-
-/* Amélioration des marges et du padding pour les conteneurs principaux */
-@media (max-width: 640px) {
-  .section-content {
-    padding-left: 1rem;
-    padding-right: 1rem;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 768px) {
-  .section-content {
-    padding-left: 1.5rem;
-    padding-right: 1.5rem;
-  }
-}
-
-@media (min-width: 769px) and (max-width: 1024px) {
-  .section-content {
-    padding-left: 2rem;
-    padding-right: 2rem;
-  }
-}
-
-@media (min-width: 1025px) {
-  .section-content {
-    padding-left: 2.5rem;
-    padding-right: 2.5rem;
-  }
-}
-
-/* Animations */
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 0.2;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-20px);
-  }
-  100% {
-    transform: translateY(0px);
-  }
-}
-
-@keyframes scrollDown {
-  0% {
-    transform: translateY(-10px);
-    opacity: 0;
-  }
-  30%,
-  60% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(10px);
-    opacity: 0;
-  }
-}
-
-@keyframes activateDot {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.4);
-  }
-  100% {
-    transform: scale(1.2);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.text-glow {
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
-}
-
-/* Style des boutons amélioré pour responsivité */
-.cosmic-button {
-  @apply px-6 py-3 rounded-full bg-transparent border border-white/40 hover:border-white/90 
-  transition-all duration-300 backdrop-blur-sm hover:bg-white/15 hover:scale-105 hover:shadow-[0_0_15px_rgba(255,255,255,0.5)];
-  position: relative;
-  z-index: 20; /* Assurer que les boutons sont cliquables */
-  overflow: hidden; /* Pour l'effet de brillance */
-}
-
-/* Ajout d'un effet de brillance sur les boutons */
-.cosmic-button::after {
-  content: "";
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: linear-gradient(
-    to bottom right,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  transform: rotate(45deg);
-  opacity: 0;
-  transition: opacity 0.3s;
-  pointer-events: none;
-}
-
-.cosmic-button:hover::after {
-  opacity: 1;
-}
-
-/* Performance optimizations */
-.gpu-accelerated {
-  will-change: transform;
-  transform: translateZ(0);
-  backface-visibility: hidden;
-}
-
-.scroll-indicator {
-  position: fixed;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100px;
-  height: 4px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 2px;
-  z-index: 50;
   overflow: hidden;
 }
 
-.scroll-indicator-progress {
-  height: 100%;
-  background-color: white;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.7);
-  transition: width 0.3s ease;
-}
-
-.scroll-down-indicator {
-  position: absolute;
-  bottom: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  animation: scrollDown 2s infinite;
-  z-index: 50;
-}
-
-/* Position des indicateurs de section */
-.section-indicator {
-  position: fixed;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 50;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Assurer que la navigation reste au-dessus de tout */
-nav {
-  z-index: 1000 !important; /* Forcer la navigation à rester au-dessus */
-}
-
-nav a[aria-current="page"] {
+.premium-nav-card {
+  background: rgba(8, 12, 24, 0.8);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 10px 40px 0 rgba(0, 0, 0, 0.6);
+  transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
-  font-weight: 600;
+  overflow: visible !important; /* Crucial for dropdowns */
 }
 
-nav a[aria-current="page"]::after {
+.premium-card::before {
   content: "";
   position: absolute;
-  bottom: -5px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 1) 50%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  animation: fadeIn 0.5s ease-out;
-}
-
-/* Optimisation pour l'arrière-plan d'étoiles */
-canvas {
-  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: -1;
-  pointer-events: none; /* Pour que le clic passe à travers */
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0) 50%
+  );
+  pointer-events: none;
+}
+
+.premium-card:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 50px 0 rgba(0, 0, 0, 0.6),
+              0 0 30px rgba(139, 92, 246, 0.15);
+}
+
+/* Text Gradient Premium */
+.text-gradient-premium {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-violet-400 to-fuchsia-500;
+  background-size: 200% auto;
+  animation: gradientFlow 4s linear infinite;
+  filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.3));
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+  100% { background-position: 0% center; }
+}
+
+/* Section indicator dots */
+.section-indicators-container {
+  @apply fixed right-6 top-1/2 -translate-y-1/2 z-[100] flex flex-col gap-4 p-3 rounded-full;
+  background: rgba(3, 7, 18, 0.4);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.section-indicator-dot {
+  @apply w-2.5 h-2.5 rounded-full bg-white/20 transition-all duration-300;
+  position: relative;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.section-indicator-dot.active {
+  @apply bg-violet-500 w-3 h-3;
+  box-shadow: 0 0 15px var(--accent-primary);
+}
+
+.section-indicator-label {
+  @apply absolute right-10 top-1/2 -translate-y-1/2 px-2 py-1 rounded bg-black/80 text-xs font-medium text-white opacity-0 transition-opacity pointer-events-none whitespace-nowrap;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.indicator-wrapper:hover .section-indicator-label {
+  @apply opacity-100;
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes shine {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes scrollDown {
+  0% { transform: translateY(-10px); opacity: 0; }
+  30%, 60% { opacity: 1; }
+  100% { transform: translateY(10px); opacity: 0; }
+}
+
+.cosmic-button {
+  @apply relative px-8 py-3 rounded-full font-medium transition-all duration-300 overflow-hidden;
+  background: rgba(139, 92, 246, 0.1);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.cosmic-button::before {
+  content: "";
+  @apply absolute top-0 -left-full w-full h-full;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.cosmic-button:hover {
+  @apply scale-105;
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.4);
+}
+
+.cosmic-button:hover::before {
+  animation: shine 1.5s infinite;
+}
+
+/* Custom Cursor Placeholder */
+.custom-cursor {
+  @apply fixed top-0 left-0 w-8 h-8 rounded-full pointer-events-none z-[9999] mix-blend-difference transition-transform duration-200 ease-out;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Performance and Utils */
+.gpu {
+  transform: translateZ(0);
+}
+
+.blur-soft {
+  backdrop-filter: blur(8px);
 }

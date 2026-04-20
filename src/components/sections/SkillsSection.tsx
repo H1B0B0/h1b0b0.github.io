@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 interface Skill {
@@ -54,12 +55,16 @@ const SkillsSection = () => {
     (skill) => activeCategory === "All" || skill.category === activeCategory
   );
 
+  const titleParts = t.skills.title ? t.skills.title.split(" ") : ["My", "Skills"];
+  const firstWord = titleParts[0];
+  const restOfTitle = titleParts.slice(1).join(" ");
+
   return (
     <div className="container mx-auto px-6 py-12">
-      <h2 className="text-4xl font-bold mb-8 text-center">
-        {t.skills.title.split(" ")[0]}{" "}
-        <span className="bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
-          {t.skills.title.split(" ").slice(1).join(" ")}
+      <h2 className="text-4xl font-bold mb-8 text-center text-white">
+        {firstWord}{" "}
+        <span className="text-gradient-premium">
+          {restOfTitle}
         </span>
       </h2>
 
@@ -81,29 +86,50 @@ const SkillsSection = () => {
       </div>
 
       {/* Skills grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {filteredSkills.map((skill) => (
-          <div
-            key={skill.name}
-            className="bg-black/30 backdrop-blur-sm border border-white/10 rounded-lg p-4 hover:border-white/30 transition-all duration-300 group"
-          >
-            <div className="flex items-center mb-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center text-xl mr-3">
-                {skill.icon || skill.name.charAt(0)}
-              </div>
-              <div>
-                <h4 className="text-lg font-bold">{skill.name}</h4>
-                <p className="text-sm text-gray-400">{categoryMapping[skill.category] || skill.category}</p>
-              </div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+        <AnimatePresence mode="popLayout">
+          {filteredSkills && filteredSkills.length > 0 ? (
+            filteredSkills.map((skill, index) => {
+              if (!skill || !skill.name) return null;
+              
+              return (
+                <motion.div
+                  key={`${skill.category}-${skill.name}`}
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  className="premium-card rounded-xl p-6 group hover:border-violet-500/50"
+                >
+                  <div className="flex flex-col items-center text-center">
+                    <div className="w-12 h-12 rounded-2xl bg-violet-500/10 flex items-center justify-center text-xl mb-4 group-hover:bg-violet-500/20 transition-colors shadow-inner border border-white/5 text-violet-400 font-bold">
+                      {skill.icon || skill.name.charAt(0)}
+                    </div>
+                    <h4 className="text-sm font-black tracking-tighter mb-1 group-hover:text-violet-400 transition-colors uppercase">
+                      {skill.name}
+                    </h4>
+                    <p className="text-[10px] text-gray-500 font-medium uppercase tracking-widest mb-4">
+                      {categoryMapping && skill.category ? (categoryMapping[skill.category] || skill.category) : skill.category}
+                    </p>
+                    
+                    <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+                      <motion.div
+                        initial={{ width: 0 }}
+                        whileInView={{ width: `${(Math.min(Math.max(skill.level || 0, 0), 5) / 5) * 100}%` }}
+                        transition={{ duration: 1, delay: 0.5 }}
+                        className="h-full bg-gradient-to-r from-violet-500 to-cyan-500 shadow-[0_0_10px_rgba(139,92,246,0.5)]"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              );
+            })
+          ) : (
+            <div className="col-span-full py-20 text-center text-gray-500 font-mono text-sm uppercase tracking-widest">
+              No skills found in this category
             </div>
-            <div className="h-2 bg-white/10 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
-                style={{ width: `${(skill.level / 5) * 100}%` }}
-              />
-            </div>
-          </div>
-        ))}
+          )}
+        </AnimatePresence>
       </div>
 
       <div className="mt-16 text-center">

@@ -20,15 +20,28 @@ const LoadingScreen = () => {
   const [progress, setProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("");
   const [isTypingComplete, setIsTypingComplete] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
   const textTimerRef = useRef<NodeJS.Timeout | null>(null);
   const animationFrameRef = useRef<number | null>(null);
   const { t } = useLanguage();
 
-  // Generate stars only once with useMemo
+  // Generate stars only once
   const stars = useMemo(() => generateStars(80), []);
+  const particles = useMemo(() => Array.from({ length: 15 }, (_, i) => ({
+    id: i,
+    top: Math.random() * 100,
+    duration: Math.random() * 5 + 10,
+    delay: Math.random() * 10,
+    y: Math.random() * 20 - 10
+  })), []);
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
 
   // Simple typewriter effect for "Initializing" only
   useEffect(() => {
+    if (!hasMounted) return;
     const loadingMessage = t.common.loading;
     let currentIndex = 0;
 
@@ -50,10 +63,12 @@ const LoadingScreen = () => {
     return () => {
       if (textTimerRef.current) clearTimeout(textTimerRef.current);
     };
-  }, [t.common.loading]);
+  }, [t.common.loading, hasMounted]);
 
   // Progress management with smooth acceleration
   useEffect(() => {
+    if (!hasMounted) return;
+
     // Fixed duration of 2 seconds for loading
     const duration = 2000;
     const startTime = performance.now();
@@ -91,7 +106,16 @@ const LoadingScreen = () => {
         cancelAnimationFrame(animationFrameRef.current);
       }
     };
-  }, []);
+  }, [hasMounted]);
+
+  // Main render logic
+  if (!hasMounted) {
+    return (
+      <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
+        <div className="text-white text-sm font-mono">Initializing cosmic systems...</div>
+      </div>
+    );
+  }
 
   return (
     <AnimatePresence>
@@ -328,23 +352,23 @@ const LoadingScreen = () => {
           </motion.div>
         </div>
 
-        {/* Small particles floating across screen */}
-        {[...Array(15)].map((_, i) => (
+        {/* Small particles floating across screen - using memoized particles */}
+        {particles.map((particle) => (
           <motion.div
-            key={`particle-${i}`}
+            key={`particle-${particle.id}`}
             className="absolute w-1 h-1 rounded-full bg-white/70"
             style={{
-              top: `${Math.random() * 100}%`,
+              top: `${particle.top}%`,
               left: "-5px",
             }}
             animate={{
               x: ["0vw", "100vw"],
-              y: [0, Math.random() * 20 - 10],
+              y: [0, particle.y],
               opacity: [0, 1, 0],
             }}
             transition={{
-              duration: Math.random() * 5 + 10,
-              delay: Math.random() * 10,
+              duration: particle.duration,
+              delay: particle.delay,
               repeat: Infinity,
               ease: "linear",
             }}

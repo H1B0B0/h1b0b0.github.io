@@ -114,7 +114,7 @@ export const translations: { [key: string]: Translation } = {
       paragraph2:
         "Initially trained as a higher-level technician, I discovered my passion for programming on the job, learning Python and taking on numerous projects that transitioned me into a developer role.",
       paragraph3:
-        "After earning my DUT in Electrical Engineering and Industrial Computing, I pursued my passion for programming at Epitech. Now, as an MSc 1 student, I continue to expand my skills and knowledge.",
+        "After earning my DUT in Electrical Engineering and Industrial Computing, I pursued my passion for programming at Epitech. Now, as an MSc 2 student, I continue to expand my skills and knowledge.",
       downloadResume: "Download My Resume",
       githubProfile: "Visit My GitHub",
     },

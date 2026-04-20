@@ -71,34 +71,34 @@ const AboutSection = () => {
           viewport={{ once: true }}
           className="md:col-span-3"
         >
-          <h2 className="text-3xl md:text-4xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+          <h2 className="text-3xl md:text-5xl font-black mb-8 tracking-tighter text-gradient-premium">
             {t.about.title}
           </h2>
 
-          <div className="text-lg text-gray-300 space-y-4">
-            <h3 className="text-2xl md:text-2xl font-bold mb-6 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+          <div className="text-base md:text-lg text-gray-400 space-y-6 leading-relaxed">
+            <h3 className="text-xl md:text-2xl font-bold text-white/90 tracking-tight">
               {t.about.background}
             </h3>
             <p>{t.about.paragraph1}</p>
             <p>{t.about.paragraph2}</p>
-            <p>{t.about.paragraph3}</p>
+            <p className="pb-4">{t.about.paragraph3}</p>
           </div>
 
-          <div className="mt-8 flex gap-4 flex-wrap">
+          <div className="mt-8 flex gap-6 flex-wrap">
             <a
               href="https://cvdesignr.com/p/647b251d89bf4?hl=fr_FR"
               target="_blank"
               rel="noopener noreferrer"
-              className="cosmic-button flex items-center gap-2"
+              className="cosmic-button"
             >
-              <span>{t.about.downloadResume}</span>
+              {t.about.downloadResume}
             </a>
 
             <a
               href="https://github.com/H1B0B0"
               target="_blank"
               rel="noopener noreferrer"
-              className="cosmic-button"
+              className="px-8 py-3 rounded-full border border-white/10 hover:border-white/30 transition-all duration-300 text-white/70 hover:text-white"
             >
               {t.about.githubProfile}
             </a>

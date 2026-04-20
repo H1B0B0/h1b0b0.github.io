@@ -9,6 +9,7 @@ import ContactSection from "@/components/sections/ContactSection";
 import Navigation from "@/components/Navigation";
 import LoadingScreen from "@/components/LoadingScreen";
 import FPSCounter from "@/components/FPSCounter";
+import CustomCursor from "@/components/CustomCursor";
 import { useLanguage } from "@/i18n/LanguageContext";
 
 export default function Home() {
@@ -239,7 +240,8 @@ export default function Home() {
         <LoadingScreen />
       ) : (
         <div className="relative">
-          <StarsCanvas numStars={5000} />
+          <CustomCursor />
+          <StarsCanvas numStars={6000} />
 
           <div className="relative z-10">
             <div className="fixed top-0 left-0 right-0 z-50">
