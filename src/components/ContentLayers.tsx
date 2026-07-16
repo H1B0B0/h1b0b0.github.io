@@ -124,7 +124,7 @@ export default function ContentLayers() {
           variants={sectionVariants}
         >
           {/* Hero monolith canvas (lightweight placeholder) */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none -z-10">
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
             <div className="w-full flex items-center justify-center">
               <div className="w-full max-w-3xl">
                 {/* Lazy-loaded component to keep initial bundle smaller */}
