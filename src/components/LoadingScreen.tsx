@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useProgress } from "@react-three/drei";
 
 // Generate an array of stars with pre-calculated properties
 const generateStars = (count: number) => {
@@ -16,13 +17,17 @@ const generateStars = (count: number) => {
   }));
 };
 
-const LoadingScreen = () => {
-  const [progress, setProgress] = useState(0);
+interface LoadingScreenProps {
+  onLoadingComplete?: () => void;
+}
+
+const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
+  const { progress: threeProgress, active: threeActive, total: threeTotal } = useProgress();
+  const [displayProgress, setDisplayProgress] = useState(0);
   const [loadingText, setLoadingText] = useState("");
   const [isTypingComplete, setIsTypingComplete] = useState(false);
   const [hasMounted, setHasMounted] = useState(false);
   const textTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const animationFrameRef = useRef<number | null>(null);
   const { t } = useLanguage();
 
   // Generate stars only once
@@ -65,55 +70,48 @@ const LoadingScreen = () => {
     };
   }, [t.common.loading, hasMounted]);
 
-  // Progress management with smooth acceleration
+  // Real progress management blending Three.js progress with a minimum display time
   useEffect(() => {
     if (!hasMounted) return;
 
-    // Fixed duration of 2 seconds for loading
-    const duration = 2000;
-    const startTime = performance.now();
-
-    // Function to smoothly update progress with custom easing
-    const updateProgress = (currentTime: number) => {
-      const elapsed = currentTime - startTime;
-      const rawProgress = Math.min(elapsed / duration, 1);
-
-      // Custom easing curve for more natural loading feel
-      const easedProgress =
-        rawProgress < 0.2
-          ? 3 * Math.pow(rawProgress, 2)
-          : rawProgress > 0.8
-          ? 1 - Math.pow(-2 * rawProgress + 2, 2) / 2
-          : 0.3 + rawProgress * 0.7;
-
-      const newProgress = Math.min(100, Math.round(easedProgress * 100));
-      setProgress(newProgress);
-
-      if (rawProgress < 1) {
-        // Continue animation
-        animationFrameRef.current = requestAnimationFrame(updateProgress);
-      } else {
-        // Ensure we reach 100% at the end
-        setProgress(100);
-      }
+    // We want the progress to reflect threeProgress but also not jump too fast if assets load instantly
+    // If threeTotal is 0 and not active, it means no 3D assets are being loaded by THREE.DefaultLoadingManager,
+    // so we can proceed to 100%.
+    const isThreeDone = (threeTotal === 0 && !threeActive) || threeProgress === 100;
+    const targetProgress = isThreeDone ? 100 : Math.max(displayProgress, threeProgress);
+    
+    // Smoothly animate towards target progress
+    let animationFrameId: number;
+    const updateProgress = () => {
+      setDisplayProgress((prev) => {
+        // Slow down the fake progress a bit to enjoy the loading screen (e.g. 0.05 instead of 0.1)
+        const next = prev + (targetProgress - prev) * 0.05;
+        
+        // If we are close to 100 and Three.js is done loading
+        if (next > 99 && isThreeDone) {
+          setTimeout(() => {
+            if (onLoadingComplete) onLoadingComplete();
+          }, 400); // Small delay before hiding loader completely
+          return 100;
+        }
+        
+        // Ensure we keep moving forward at least a little bit if not complete
+        return next > prev ? next : Math.min(prev + 0.5, targetProgress);
+      });
+      animationFrameId = requestAnimationFrame(updateProgress);
     };
 
-    // Start animation
-    animationFrameRef.current = requestAnimationFrame(updateProgress);
+    animationFrameId = requestAnimationFrame(updateProgress);
 
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+      cancelAnimationFrame(animationFrameId);
     };
-  }, [hasMounted]);
+  }, [hasMounted, threeProgress, threeActive, threeTotal, displayProgress, onLoadingComplete]);
 
   // Main render logic
   if (!hasMounted) {
     return (
-      <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
-        <div className="text-white text-sm font-mono">Initializing cosmic systems...</div>
-      </div>
+      <div className="fixed inset-0 bg-black z-50" />
     );
   }
 
@@ -329,7 +327,7 @@ const LoadingScreen = () => {
                   "linear-gradient(90deg, rgba(79, 70, 229, 0.8) 0%, rgba(147, 51, 234, 0.9) 50%, rgba(79, 70, 229, 0.8) 100%)",
                 backgroundSize: "200% 100%",
                 boxShadow: "0 0 8px rgba(139, 92, 246, 0.5)",
-                width: `${progress}%`,
+                width: `${Math.round(displayProgress)}%`,
               }}
               animate={{
                 backgroundPosition: ["0% 0%", "100% 0%"],
@@ -348,7 +346,7 @@ const LoadingScreen = () => {
             animate={{ opacity: [0.7, 1, 0.7] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            {progress}%
+            {Math.round(displayProgress)}%
           </motion.div>
         </div>
 

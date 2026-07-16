@@ -82,6 +82,15 @@ export interface Translation {
   common: {
     loading: string;
   };
+  cinematic: {
+    acts: {
+      genesis: string;
+      constellations: string;
+      signal: string;
+    };
+    scrollHint: string;
+    actCounter: string;
+  };
 }
 
 export const translations: { [key: string]: Translation } = {
@@ -187,6 +196,15 @@ export const translations: { [key: string]: Translation } = {
     common: {
       loading: "Loading...",
     },
+    cinematic: {
+      acts: {
+        genesis: "Genesis",
+        constellations: "Constellations",
+        signal: "Signal",
+      },
+      scrollHint: "Scroll to travel",
+      actCounter: "{current} / {total}",
+    },
   },
   fr: {
     navigation: {
@@ -289,6 +307,15 @@ export const translations: { [key: string]: Translation } = {
     },
     common: {
       loading: "Chargement...",
+    },
+    cinematic: {
+      acts: {
+        genesis: "Genèse",
+        constellations: "Constellations",
+        signal: "Signal",
+      },
+      scrollHint: "Défilez pour voyager",
+      actCounter: "{current} / {total}",
     },
   },
 };

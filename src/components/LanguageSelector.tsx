@@ -83,8 +83,7 @@ const LanguageSelector = () => {
                   <span className="flex items-center justify-between">
                     {languageNames[lang] || lang}
                     {currentLanguage === lang && (
-                      <motion.div 
-                        layoutId="activeLangDot"
+                      <div 
                         className="w-1 h-1 rounded-full bg-violet-400 shadow-[0_0_8px_#a78bfa]" 
                       />
                     )}
