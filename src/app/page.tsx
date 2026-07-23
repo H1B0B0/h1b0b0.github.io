@@ -31,7 +31,7 @@ export default function Home() {
           scrollYRef={scrollYRef}
           scrollToProgress={scrollToProgress}
         >
-          <div className="film-grain relative w-full h-[400vh] bg-black">
+          <div className="film-grain relative min-h-[700dvh] w-full bg-black">
             <CustomCursor />
             <FPSCounter visible={false} onVisibilityChange={() => {}} />
 
@@ -44,13 +44,6 @@ export default function Home() {
             <ContentLayers />
             <CinematicHUD />
 
-            {/* Scrollable Content Container (for semantic HTML / future content) */}
-            <main className="absolute top-0 left-0 w-full pointer-events-none">
-              {/* Spacer sections to establish the scroll height. Act content will eventually go here. */}
-              <section id="act-1" className="h-[100vh]" aria-label="Act 1" />
-              <section id="act-2" className="h-[100vh]" aria-label="Act 2" />
-              <section id="act-3" className="h-[200vh]" aria-label="Act 3" />
-            </main>
           </div>
         </ScrollProgressProvider>
       )}

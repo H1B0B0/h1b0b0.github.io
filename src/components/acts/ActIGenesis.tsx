@@ -96,7 +96,7 @@ const STAR_VERT = /* glsl */ `
 `;
 
 const STAR_FRAG = /* glsl */ `
-  precision mediump float;
+  precision highp float;
   varying vec3 vNormal;
   varying vec3 vViewDir;
   varying float vDisplace;
@@ -194,6 +194,8 @@ export default function ActIGenesis({ scrollProgress }: ActIGenesisProps) {
   const { progressRef } = useScrollProgress();
   const groupRef = useRef<THREE.Group>(null);
   const diskRef = useRef<THREE.Mesh>(null);
+  const diskMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const diskEdgeMatRef = useRef<THREE.MeshBasicMaterial>(null);
 
   const nebulaMat = useMemo(
     () =>
@@ -260,10 +262,14 @@ export default function ActIGenesis({ scrollProgress }: ActIGenesisProps) {
     starMat.uniforms.uTime.value = t;
     starMat.uniforms.uIntensity.value = env;
 
-    coronaMat.uniforms.uIntensity.value = 0.7 + Math.sin(t * 0.6) * 0.15;
+    coronaMat.uniforms.uIntensity.value = (0.7 + Math.sin(t * 0.6) * 0.15) * env;
     coronaMat.uniforms.uColor.value.setHSL(0.96, 0.8, 0.55 + 0.05 * Math.sin(t * 0.3));
 
+    if (diskMatRef.current) diskMatRef.current.opacity = 0.18 * env;
+    if (diskEdgeMatRef.current) diskEdgeMatRef.current.opacity = 0.4 * env;
+
     if (groupRef.current) {
+      groupRef.current.visible = env > 0;
       groupRef.current.rotation.y = t * 0.02;
       groupRef.current.rotation.z = Math.sin(t * 0.08) * 0.02;
     }
@@ -291,6 +297,7 @@ export default function ActIGenesis({ scrollProgress }: ActIGenesisProps) {
       <mesh ref={diskRef} rotation={[Math.PI / 2.05, 0, 0]}>
         <ringGeometry args={[2.2, 3.8, 256, 1]} />
         <meshBasicMaterial
+          ref={diskMatRef}
           color={"#ff6a85"}
           transparent
           opacity={0.18}
@@ -304,6 +311,7 @@ export default function ActIGenesis({ scrollProgress }: ActIGenesisProps) {
       <mesh rotation={[Math.PI / 2.05, 0, 0]}>
         <ringGeometry args={[3.78, 3.82, 256, 1]} />
         <meshBasicMaterial
+          ref={diskEdgeMatRef}
           color={"#ffd9c2"}
           transparent
           opacity={0.4}

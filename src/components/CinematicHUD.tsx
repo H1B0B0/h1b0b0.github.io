@@ -113,12 +113,12 @@ export default function CinematicHUD() {
       <CornerFrame />
 
       {/* Top-left: wordmark */}
-      <div className="absolute top-6 left-6 text-[11px] tracking-[0.25em]">
+      <div className="absolute top-6 left-6 hidden text-[11px] tracking-[0.25em] sm:block">
         ETIENNE&nbsp;MENTREL
       </div>
 
       {/* Top-right: 3-act navigation & Language Selector */}
-      <nav className="pointer-events-auto absolute top-6 right-6 flex items-center gap-5 text-[11px] tracking-[0.25em]">
+      <nav className="pointer-events-auto absolute top-5 left-5 right-5 flex items-center justify-between gap-2 text-[9px] tracking-[0.12em] sm:top-6 sm:left-auto sm:right-6 sm:w-auto sm:justify-start sm:gap-5 sm:text-[11px] sm:tracking-[0.25em]">
         {ACTS.map((act, i) => {
           const isActive = displayAct === i;
           return (
@@ -137,7 +137,7 @@ export default function CinematicHUD() {
             </button>
           );
         })}
-        <div className="w-px h-3 bg-white/20" />
+        <div className="hidden h-3 w-px bg-white/20 sm:block" />
         <LanguageSelector />
       </nav>
 

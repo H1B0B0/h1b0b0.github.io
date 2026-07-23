@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { EffectComposer, Bloom, Vignette, Noise, ChromaticAberration } from "@react-three/postprocessing";
 import * as THREE from "three";
 
 import { useScrollProgress } from "@/context/ScrollProgressContext";
@@ -30,40 +31,40 @@ const ACT_I_CAMERA = new THREE.Vector3(0, 0, 30);
 const ACT_II_CAMERA = new THREE.Vector3(0, 5, 15);
 const ACT_III_CAMERA = new THREE.Vector3(0, 0, 8);
 
+// Module-level chromatic aberration offset — allocated once, never per render.
+const CHROMATIC_OFFSET = new THREE.Vector2(0.0004, 0.0007);
+
 const ACT_I_COLOR = new THREE.Color("#02010a"); // near-black, faint warmth
 const ACT_II_COLOR = new THREE.Color("#050a1a"); // cold blue night
 const ACT_III_COLOR = new THREE.Color("#000000"); // pure deep void
 
-const ACT_BOUNDARIES = [
-  { end: 0.33, pos: ACT_I_CAMERA, color: ACT_I_COLOR },
-  { end: 0.66, pos: ACT_II_CAMERA, color: ACT_II_COLOR },
-  { end: 1.01, pos: ACT_III_CAMERA, color: ACT_III_COLOR },
+const CAMERA_KEYFRAMES = [
+  { progress: 0, pos: ACT_I_CAMERA, color: ACT_I_COLOR },
+  { progress: 0.33, pos: ACT_II_CAMERA, color: ACT_II_COLOR },
+  { progress: 0.66, pos: ACT_III_CAMERA, color: ACT_III_COLOR },
+  { progress: 1, pos: ACT_III_CAMERA, color: ACT_III_COLOR },
 ] as const;
 
 /** Compute interpolated camera target + scene color from scroll progress. */
-function sampleCameraPath(progress: number, outPos: THREE.Vector3, outColor: THREE.Color): void {
+export function sampleCameraPath(progress: number, outPos: THREE.Vector3, outColor: THREE.Color): void {
   const p = Math.max(0, Math.min(1, progress));
 
-  // Find the act segment containing p.
-  let from: (typeof ACT_BOUNDARIES)[number] = ACT_BOUNDARIES[0];
-  let to: (typeof ACT_BOUNDARIES)[number] = ACT_BOUNDARIES[1];
-  let segStart = 0;
-  for (let i = 0; i < ACT_BOUNDARIES.length - 1; i++) {
-    if (p <= ACT_BOUNDARIES[i].end) {
-      from = ACT_BOUNDARIES[i];
-      to = ACT_BOUNDARIES[i + 1];
-      segStart = i === 0 ? 0 : ACT_BOUNDARIES[i - 1].end;
-      break;
-    }
+  for (let index = 1; index < CAMERA_KEYFRAMES.length; index++) {
+    const from = CAMERA_KEYFRAMES[index - 1];
+    const to = CAMERA_KEYFRAMES[index];
+    if (p > to.progress) continue;
+
+    const span = Math.max(0.0001, to.progress - from.progress);
+    const localT = Math.max(0, Math.min(1, (p - from.progress) / span));
+    const eased = localT * localT * (3 - 2 * localT);
+    outPos.lerpVectors(from.pos, to.pos, eased);
+    outColor.lerpColors(from.color, to.color, eased);
+    return;
   }
 
-  const span = Math.max(0.0001, to.end - segStart);
-  const localT = Math.max(0, Math.min(1, (p - segStart) / span));
-  // Smoothstep easing for a more cinematic camera glide.
-  const eased = localT * localT * (3 - 2 * localT);
-
-  outPos.lerpVectors(from.pos, to.pos, eased);
-  outColor.lerpColors(from.color, to.color, eased);
+  const last = CAMERA_KEYFRAMES[CAMERA_KEYFRAMES.length - 1];
+  outPos.copy(last.pos);
+  outColor.copy(last.color);
 }
 
 /**
@@ -71,13 +72,19 @@ function sampleCameraPath(progress: number, outPos: THREE.Vector3, outColor: THR
  * camera toward the scroll-driven target every frame.
  */
 function CameraRig() {
-  const { camera, scene } = useThree();
+  const { camera, scene, size } = useThree();
   const { progressRef } = useScrollProgress();
 
   // Reusable temporaries to avoid per-frame allocations.
   const targetPos = useRef(new THREE.Vector3().copy(ACT_I_CAMERA));
   const targetColor = useRef(new THREE.Color().copy(ACT_I_COLOR));
   const parallaxTarget = useRef(new THREE.Vector3());
+
+  useEffect(() => {
+    if (!(camera instanceof THREE.PerspectiveCamera)) return;
+    camera.fov = size.width < 640 ? 72 : 55;
+    camera.updateProjectionMatrix();
+  }, [camera, size.width]);
 
   useFrame((state, delta) => {
     const progress = progressRef.current;
@@ -99,6 +106,9 @@ function CameraRig() {
       scene.background.lerp(targetColor.current, lerpFactor);
     } else {
       scene.background = targetColor.current.clone();
+    }
+    if (scene.fog instanceof THREE.Fog) {
+      scene.fog.color.lerp(targetColor.current, lerpFactor);
     }
   });
 
@@ -140,13 +150,24 @@ export default function ScrollDrivenScene() {
         alpha: false,
         powerPreference: "high-performance",
       }}
-      dpr={[1, 2]}
+      dpr={[1, 1.5]}
     >
       {/* Initial background; CameraRig takes over from here. */}
       <color attach="background" args={["#02010a"]} />
       <fog attach="fog" args={["#02010a", 25, 80]} />
       <CameraRig />
       <SceneContents />
+      <EffectComposer multisampling={0}>
+        <Bloom
+          mipmapBlur
+          intensity={0.25}
+          luminanceThreshold={0.82}
+          luminanceSmoothing={0.08}
+        />
+        <ChromaticAberration offset={CHROMATIC_OFFSET} />
+        <Noise opacity={0.02} premultiply />
+        <Vignette offset={0.15} darkness={0.75} />
+      </EffectComposer>
     </Canvas>
   );
 }

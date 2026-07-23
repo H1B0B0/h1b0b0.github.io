@@ -33,26 +33,32 @@ export interface Translation {
       eclatShop: {
         title: string;
         description: string;
+        link: string;
       };
       timeManager: {
         title: string;
         description: string;
+        link: string;
       };
       kuramaChat: {
         title: string;
         description: string;
+        link: string;
       };
       rogueLike: {
         title: string;
         description: string;
+        link: string;
       };
       twitchViewerBot: {
         title: string;
         description: string;
+        link: string;
       };
       kickViewerBot: {
         title: string;
         description: string;
+        link: string;
       };
     };
   };
@@ -124,7 +130,7 @@ export const translations: { [key: string]: Translation } = {
         "Initially trained as a higher-level technician, I discovered my passion for programming on the job, learning Python and taking on numerous projects that transitioned me into a developer role.",
       paragraph3:
         "After earning my DUT in Electrical Engineering and Industrial Computing, I pursued my passion for programming at Epitech. Now, as an MSc 2 student, I continue to expand my skills and knowledge.",
-      downloadResume: "Download My Resume",
+      downloadResume: "View My Resume",
       githubProfile: "Visit My GitHub",
     },
     projects: {
@@ -140,31 +146,37 @@ export const translations: { [key: string]: Translation } = {
           title: "Eclat Shop",
           description:
             "A powerful e-commerce platform for selling computer components. Built with Symfony, React, TypeScript, and Docker, it delivers a seamless user experience.",
+          link: "https://github.com/H1B0B0/Eclatshop",
         },
         timeManager: {
           title: "Time Manager",
           description:
             "A time tracking app designed for municipal employees to efficiently manage their work hours. It offers tools for employees, managers, and general oversight.",
+          link: "https://github.com/H1B0B0/Time-manager",
         },
         kuramaChat: {
           title: "Kurama Chat",
           description:
             "An IRC client and server built with Node.js, Express.js, and React.js. Features include multi-channel support, real-time messaging, and user notifications.",
+          link: "https://github.com/H1B0B0/Kurama-chat",
         },
         rogueLike: {
           title: "Rogue-like in Java",
           description:
             "An immersive Rogue-like game developed in two weeks using LibGDX. It features dynamic maps, real-time combat, and inventory management.",
+          link: "https://github.com/H1B0B0/Rogue-like-LibGDX",
         },
         twitchViewerBot: {
           title: "Twitch Viewer-Bot",
           description:
             "A GUI tool to generate fake viewers for Twitch streams. Developed in Python, it uses proxies to simulate views.",
+          link: "https://github.com/H1B0B0/twitch-Viewerbot",
         },
         kickViewerBot: {
           title: "Kick Viewer-Bot",
           description:
             "A similar tool to Twitch Viewer-Bot, designed for the Kick platform. It generates fake views using proxies.",
+          link: "https://github.com/H1B0B0/Kick-Viewerbot",
         },
       },
     },
@@ -236,7 +248,7 @@ export const translations: { [key: string]: Translation } = {
         "Formé initialement comme technicien supérieur, j'ai découvert ma passion pour la programmation en apprenant Python sur le terrain, ce qui m'a permis de devenir développeur au sein de l'entreprise.",
       paragraph3:
         "Après avoir obtenu mon DUT en Génie Électrique et Informatique Industrielle, j'ai poursuivi ma passion pour la programmation à Epitech. Aujourd'hui, en MSc 1, je continue d'élargir mes compétences et mes connaissances.",
-      downloadResume: "Télécharger mon CV",
+      downloadResume: "Voir mon CV",
       githubProfile: "Voir mon GitHub",
     },
     projects: {
@@ -252,31 +264,37 @@ export const translations: { [key: string]: Translation } = {
           title: "Eclat Shop",
           description:
             "Une plateforme e-commerce performante pour la vente de composants informatiques. Développée avec Symfony, React, TypeScript et Docker, elle offre une expérience utilisateur fluide.",
+          link: "https://github.com/H1B0B0/Eclatshop",
         },
         timeManager: {
           title: "Time Manager",
           description:
             "Une application de gestion du temps conçue pour les employés municipaux, leur permettant de gérer efficacement leurs heures de travail. Elle propose des outils pour les employés, les managers et la supervision générale.",
+          link: "https://github.com/H1B0B0/Time-manager",
         },
         kuramaChat: {
           title: "Kurama Chat",
           description:
             "Un client et serveur IRC développé avec Node.js, Express.js et React.js. Il inclut la gestion multi-canaux, la messagerie en temps réel et les notifications utilisateur.",
+          link: "https://github.com/H1B0B0/Kurama-chat",
         },
         rogueLike: {
           title: "Rogue-like en Java",
           description:
             "Un jeu Rogue-like immersif développé en deux semaines avec LibGDX. Il propose des cartes dynamiques, des combats en temps réel et une gestion d'inventaire.",
+          link: "https://github.com/H1B0B0/Rogue-like-LibGDX",
         },
         twitchViewerBot: {
           title: "Twitch Viewer-Bot",
           description:
             "Un outil GUI pour générer de faux spectateurs sur Twitch. Développé en Python, il utilise des proxies pour simuler des vues.",
+          link: "https://github.com/H1B0B0/twitch-Viewerbot",
         },
         kickViewerBot: {
           title: "Kick Viewer-Bot",
           description:
             "Un outil similaire à Twitch Viewer-Bot, conçu pour la plateforme Kick. Il génère de faux spectateurs en utilisant des proxies.",
+          link: "https://github.com/H1B0B0/Kick-Viewerbot",
         },
       },
     },
