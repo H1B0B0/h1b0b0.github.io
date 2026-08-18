@@ -247,7 +247,7 @@ export const translations: { [key: string]: Translation } = {
       paragraph2:
         "Formé initialement comme technicien supérieur, j'ai découvert ma passion pour la programmation en apprenant Python sur le terrain, ce qui m'a permis de devenir développeur au sein de l'entreprise.",
       paragraph3:
-        "Après avoir obtenu mon DUT en Génie Électrique et Informatique Industrielle, j'ai poursuivi ma passion pour la programmation à Epitech. Aujourd'hui, en MSc 1, je continue d'élargir mes compétences et mes connaissances.",
+        "Après avoir obtenu mon DUT en Génie Électrique et Informatique Industrielle, j'ai poursuivi ma passion pour la programmation à Epitech. Aujourd'hui, en MSc 2, je continue d'élargir mes compétences et mes connaissances.",
       downloadResume: "Voir mon CV",
       githubProfile: "Voir mon GitHub",
     },
