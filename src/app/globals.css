@@ -10,7 +10,7 @@
   --foreground: #f4f4f6;
 
   /* Brand accents (used sparingly) */
-  --accent-primary: #8b5cf6;   /* ion violet */
+  --accent-primary: #ff6b2c;   /* BlueVidia orange */
   --accent-secondary: #06b6d4; /* cold cyan  */
   --accent-tertiary: #f43f5e;  /* mars red   */
 
@@ -53,7 +53,7 @@ body {
 
 /* Selection */
 ::selection {
-  background: rgba(139, 92, 246, 0.35);
+  background: rgba(255, 107, 44, 0.35);
   color: #fff;
 }
 
@@ -133,6 +133,10 @@ body {
     background-color 250ms;
   border: 1px solid rgba(255, 255, 255, 0.6);
   background: rgba(255, 255, 255, 0.06);
+}
+
+.lens-navigation-active .custom-cursor {
+  opacity: 0;
 }
 
 /* ============================================================

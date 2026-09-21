@@ -1,141 +1,157 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { EffectComposer, Bloom, Vignette, Noise, ChromaticAberration } from "@react-three/postprocessing";
 import * as THREE from "three";
 
 import { useScrollProgress } from "@/context/ScrollProgressContext";
-import ActIGenesis from "@/components/acts/ActIGenesis";
-import ActIIConstellations from "@/components/acts/ActIIConstellations";
-import ActIIISignal from "@/components/acts/ActIIISignal";
 
-/**
- * ScrollDrivenScene
- *
- * A full-screen fixed R3F Canvas hosting the cinematic 3-act journey.
- *
- * Camera travel (driven by scroll progress in [0, 1]):
- *   Act I  (0.00 → 0.33): position (0, 0, 30)   →  Genesis nebula
- *   Act II (0.33 → 0.66): position (0, 5, 15)   →  Solar system
- *   Act III(0.66 → 1.00): position (0, 0, 8)    →  Monolith in deep space
- *
- * The camera always looks toward the origin (0,0,0). A subtle mouse-parallax
- * offset is layered on top of the lerped base position.
- *
- * The scene background also shifts across the 3 acts: deep black (Genesis) →
- * cold blue night (Constellations) → pure black (Signal).
- */
+const vertexShader = /* glsl */ `
+  varying vec2 vUv;
 
-const ACT_I_CAMERA = new THREE.Vector3(0, 0, 30);
-const ACT_II_CAMERA = new THREE.Vector3(0, 5, 15);
-const ACT_III_CAMERA = new THREE.Vector3(0, 0, 8);
+  void main() {
+    vUv = uv;
+    gl_Position = vec4(position.xy, 0.0, 1.0);
+  }
+`;
 
-// Module-level chromatic aberration offset — allocated once, never per render.
-const CHROMATIC_OFFSET = new THREE.Vector2(0.0004, 0.0007);
+const fragmentShader = /* glsl */ `
+  precision highp float;
 
-const ACT_I_COLOR = new THREE.Color("#02010a"); // near-black, faint warmth
-const ACT_II_COLOR = new THREE.Color("#050a1a"); // cold blue night
-const ACT_III_COLOR = new THREE.Color("#000000"); // pure deep void
+  varying vec2 vUv;
+  uniform float uTime;
+  uniform float uProgress;
+  uniform float uAspect;
+  uniform vec2 uPointer;
 
-const CAMERA_KEYFRAMES = [
-  { progress: 0, pos: ACT_I_CAMERA, color: ACT_I_COLOR },
-  { progress: 0.33, pos: ACT_II_CAMERA, color: ACT_II_COLOR },
-  { progress: 0.66, pos: ACT_III_CAMERA, color: ACT_III_COLOR },
-  { progress: 1, pos: ACT_III_CAMERA, color: ACT_III_COLOR },
-] as const;
-
-/** Compute interpolated camera target + scene color from scroll progress. */
-export function sampleCameraPath(progress: number, outPos: THREE.Vector3, outColor: THREE.Color): void {
-  const p = Math.max(0, Math.min(1, progress));
-
-  for (let index = 1; index < CAMERA_KEYFRAMES.length; index++) {
-    const from = CAMERA_KEYFRAMES[index - 1];
-    const to = CAMERA_KEYFRAMES[index];
-    if (p > to.progress) continue;
-
-    const span = Math.max(0.0001, to.progress - from.progress);
-    const localT = Math.max(0, Math.min(1, (p - from.progress) / span));
-    const eased = localT * localT * (3 - 2 * localT);
-    outPos.lerpVectors(from.pos, to.pos, eased);
-    outColor.lerpColors(from.color, to.color, eased);
-    return;
+  float hash(vec2 p) {
+    p = fract(p * vec2(123.34, 456.21));
+    p += dot(p, p + 45.32);
+    return fract(p.x * p.y);
   }
 
-  const last = CAMERA_KEYFRAMES[CAMERA_KEYFRAMES.length - 1];
-  outPos.copy(last.pos);
-  outColor.copy(last.color);
-}
+  float noise(vec2 p) {
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
 
-/**
- * CameraRig — internal component that runs inside the Canvas and lerps the
- * camera toward the scroll-driven target every frame.
- */
-function CameraRig() {
-  const { camera, scene, size } = useThree();
+    return mix(
+      mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x),
+      mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x),
+      f.y
+    );
+  }
+
+  float fbm(vec2 p) {
+    float value = 0.0;
+    float amplitude = 0.5;
+    mat2 rotation = mat2(0.82, -0.57, 0.57, 0.82);
+
+    for (int i = 0; i < 5; i++) {
+      value += amplitude * noise(p);
+      p = rotation * p * 2.03 + 13.7;
+      amplitude *= 0.5;
+    }
+
+    return value;
+  }
+
+  void main() {
+    vec2 p = vUv - 0.5;
+    p.x *= uAspect;
+    p -= uPointer * vec2(0.035, 0.025);
+
+    float time = uTime * 0.055;
+    float coarse = fbm(p * 1.25 + vec2(time, -time * 0.62));
+    vec2 warped = p + vec2(
+      fbm(p * 1.7 + coarse + vec2(2.3, time * 0.7)),
+      fbm(p * 1.45 - coarse + vec2(-3.7, -time * 0.45))
+    ) * 0.34;
+
+    float detail = fbm(warped * 2.15 + vec2(-time * 0.4, time * 0.25));
+    float ribbonA = exp(-abs(warped.y + 0.14 * sin(warped.x * 2.1 + coarse * 3.4)) * 5.8);
+    float ribbonB = exp(-abs(warped.y - 0.22 - 0.1 * sin(warped.x * 1.6 - detail * 3.0)) * 7.0);
+    float veil = clamp(ribbonA * 0.72 + ribbonB * 0.34 + detail * 0.28, 0.0, 1.0);
+
+    float profileWeight = 1.0 - smoothstep(0.24, 0.43, uProgress);
+    float contactWeight = smoothstep(0.62, 0.84, uProgress);
+    float blueWeight = 1.0 - max(profileWeight, contactWeight);
+
+    vec3 profileColor = vec3(0.20, 0.035, 0.11);
+    vec3 blueColor = vec3(0.025, 0.15, 0.42);
+    vec3 contactColor = vec3(0.28, 0.055, 0.012);
+    vec3 accent = profileColor * profileWeight + blueColor * blueWeight + contactColor * contactWeight;
+
+    vec2 focus = mix(vec2(-0.28, 0.12), vec2(0.34, -0.08), smoothstep(0.25, 0.88, uProgress));
+    float glow = exp(-dot(p - focus, p - focus) * 1.65);
+    float secondaryGlow = exp(-dot(p + focus * 0.72, p + focus * 0.72) * 3.1);
+    vec2 pointerPosition = vec2(uPointer.x * 0.5 * uAspect, uPointer.y * 0.5);
+    float pointerStrength = smoothstep(0.02, 0.2, length(uPointer));
+    float pointerLight = exp(-dot(p - pointerPosition, p - pointerPosition) * 9.0) * pointerStrength;
+
+    vec3 color = vec3(0.0015, 0.0025, 0.0055);
+    color += accent * veil * (0.42 + glow * 0.34);
+    color += accent.bgr * secondaryGlow * detail * 0.08;
+    color += mix(accent, vec3(0.32, 0.4, 0.52), 0.35) * pointerLight * (0.08 + detail * 0.12);
+
+    float edge = smoothstep(0.94, 0.2, length((vUv - 0.5) * vec2(0.9, 1.08)));
+    color *= edge;
+
+    float grain = hash(gl_FragCoord.xy + uTime * 13.0) - 0.5;
+    color += grain * 0.012;
+
+    gl_FragColor = vec4(max(color, vec3(0.0)), 1.0);
+  }
+`;
+
+function OrganicField() {
+  const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const smoothedPointer = useRef(new THREE.Vector2());
+  const { size } = useThree();
   const { progressRef } = useScrollProgress();
+  const [reducedMotion, setReducedMotion] = useState(false);
 
-  // Reusable temporaries to avoid per-frame allocations.
-  const targetPos = useRef(new THREE.Vector3().copy(ACT_I_CAMERA));
-  const targetColor = useRef(new THREE.Color().copy(ACT_I_COLOR));
-  const parallaxTarget = useRef(new THREE.Vector3());
-
-  useEffect(() => {
-    if (!(camera instanceof THREE.PerspectiveCamera)) return;
-    camera.fov = size.width < 640 ? 72 : 55;
-    camera.updateProjectionMatrix();
-  }, [camera, size.width]);
-
-  useFrame((state, delta) => {
-    const progress = progressRef.current;
-    sampleCameraPath(progress, targetPos.current, targetColor.current);
-
-    // Layer mouse-parallax on a *copy* of the target so we don't mutate the
-    // shared sampled position between frames.
-    parallaxTarget.current.copy(targetPos.current);
-    parallaxTarget.current.x += state.pointer.x * 0.5;
-    parallaxTarget.current.y += state.pointer.y * 0.3;
-
-    // Framerate-independent lerp toward the target.
-    const lerpFactor = 1 - Math.pow(0.001, delta);
-    camera.position.lerp(parallaxTarget.current, lerpFactor);
-    camera.lookAt(0, 0, 0);
-
-    // Smooth color transition for the scene background.
-    if (scene.background instanceof THREE.Color) {
-      scene.background.lerp(targetColor.current, lerpFactor);
-    } else {
-      scene.background = targetColor.current.clone();
-    }
-    if (scene.fog instanceof THREE.Fog) {
-      scene.fog.color.lerp(targetColor.current, lerpFactor);
-    }
-  });
-
-  return null;
-}
-
-/** Scene contents — the 3 act stubs + minimal lighting. */
-function SceneContents() {
-  const lights = useMemo(
-    () => (
-      <>
-        <ambientLight intensity={0.15} />
-        <directionalLight position={[8, 10, 6]} intensity={0.6} color={"#9fd4ff"} />
-        <pointLight position={[0, 0, 0]} intensity={6} distance={20} color={"#ff4477"} />
-      </>
-    ),
-    [],
+  const uniforms = useMemo(
+    () => ({
+      uTime: { value: 0 },
+      uProgress: { value: progressRef.current },
+      uAspect: { value: size.width / Math.max(1, size.height) },
+      uPointer: { value: new THREE.Vector2() },
+    }),
+    [progressRef, size.height, size.width],
   );
 
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setReducedMotion(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+
+  useFrame((state, delta) => {
+    const material = materialRef.current;
+    if (!material) return;
+
+    if (!reducedMotion) material.uniforms.uTime.value += Math.min(delta, 0.05);
+    material.uniforms.uProgress.value = progressRef.current;
+    material.uniforms.uAspect.value = size.width / Math.max(1, size.height);
+    smoothedPointer.current.lerp(state.pointer, 1 - Math.pow(0.002, delta));
+    material.uniforms.uPointer.value.copy(smoothedPointer.current);
+  });
+
   return (
-    <>
-      {lights}
-      {/* Acts consume scroll progress from context internally */}
-      <ActIGenesis />
-      <ActIIConstellations />
-      <ActIIISignal />
-    </>
+    <mesh frustumCulled={false}>
+      <planeGeometry args={[2, 2]} />
+      <shaderMaterial
+        ref={materialRef}
+        vertexShader={vertexShader}
+        fragmentShader={fragmentShader}
+        uniforms={uniforms}
+        depthTest={false}
+        depthWrite={false}
+      />
+    </mesh>
   );
 }
 
@@ -144,30 +160,11 @@ export default function ScrollDrivenScene() {
     <Canvas
       className="!fixed inset-0"
       style={{ position: "fixed", inset: 0, pointerEvents: "none" }}
-      camera={{ position: [0, 0, 30], fov: 55, near: 0.1, far: 200 }}
-      gl={{
-        antialias: true,
-        alpha: false,
-        powerPreference: "high-performance",
-      }}
-      dpr={[1, 1.5]}
+      camera={{ position: [0, 0, 1] }}
+      gl={{ antialias: false, alpha: false, powerPreference: "high-performance" }}
+      dpr={[1, 1.25]}
     >
-      {/* Initial background; CameraRig takes over from here. */}
-      <color attach="background" args={["#02010a"]} />
-      <fog attach="fog" args={["#02010a", 25, 80]} />
-      <CameraRig />
-      <SceneContents />
-      <EffectComposer multisampling={0}>
-        <Bloom
-          mipmapBlur
-          intensity={0.25}
-          luminanceThreshold={0.82}
-          luminanceSmoothing={0.08}
-        />
-        <ChromaticAberration offset={CHROMATIC_OFFSET} />
-        <Noise opacity={0.02} premultiply />
-        <Vignette offset={0.15} darkness={0.75} />
-      </EffectComposer>
+      <OrganicField />
     </Canvas>
   );
 }

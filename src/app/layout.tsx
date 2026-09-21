@@ -26,9 +26,9 @@ const instrumentSerif = Instrument_Serif({
 
 /* ---------- SEO ---------- */
 const SITE_URL = "https://h1b0b0.github.io";
-const TITLE = "Etienne Mentrel — Cosmic Portfolio";
+const TITLE = "Etienne Mentrel — Développeur créatif & DevOps";
 const DESCRIPTION =
-  "An immersive cinematic journey through the work of Etienne Mentrel — DevOps engineer & creative developer. Three acts: Genesis, Constellations, Signal.";
+  "Portfolio d'Etienne Mentrel, développeur créatif et ingénieur DevOps. Découvrez BlueVidia, une expérience web immersive conçue avec Next.js, Three.js et GLSL.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     template: "%s · Etienne Mentrel",
   },
   description: DESCRIPTION,
-  applicationName: "Cosmic Portfolio",
+  applicationName: "Portfolio — Etienne Mentrel",
   authors: [{ name: "Etienne Mentrel", url: SITE_URL }],
   creator: "Etienne Mentrel",
   keywords: [
@@ -49,6 +49,7 @@ export const metadata: Metadata = {
     "Next.js",
     "WebGL",
     "interactive",
+    "BlueVidia",
   ],
   alternates: {
     canonical: SITE_URL,
@@ -59,14 +60,14 @@ export const metadata: Metadata = {
     url: SITE_URL,
     title: TITLE,
     description: DESCRIPTION,
-    siteName: "Cosmic Portfolio",
-    locale: "en_US",
+    siteName: "Portfolio — Etienne Mentrel",
+    locale: "fr_FR",
     images: [
       {
         url: "/og.png",
         width: 1200,
         height: 630,
-        alt: "Cosmic Portfolio — Etienne Mentrel",
+        alt: "Portfolio créatif — Etienne Mentrel",
       },
     ],
   },
@@ -114,7 +115,7 @@ const jsonLd = {
     },
     {
       "@type": "WebSite",
-      name: "Cosmic Portfolio",
+      name: "Portfolio — Etienne Mentrel",
       url: SITE_URL,
       author: { "@id": SITE_URL + "#person" },
       inLanguage: ["en", "fr"],
@@ -126,7 +127,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="fr">
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased bg-black text-white film-grain`}
       >

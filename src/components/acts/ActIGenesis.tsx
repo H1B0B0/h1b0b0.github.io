@@ -279,7 +279,7 @@ export default function ActIGenesis({ scrollProgress }: ActIGenesisProps) {
   });
 
   return (
-    <group ref={groupRef} position={[0, -1, 0]}>
+    <group ref={groupRef} position={[3.2, -1.6, 0]}>
       {/* Nebula particle cloud */}
       <points geometry={nebulaGeo} material={nebulaMat} />
 

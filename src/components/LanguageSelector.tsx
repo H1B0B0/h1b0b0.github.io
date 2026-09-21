@@ -34,7 +34,7 @@ const LanguageSelector = () => {
   return (
     <div className="relative" ref={dropdownRef}>
       <button
-        className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs font-black tracking-widest text-gray-300 hover:text-white hover:bg-white/10 transition-all duration-300"
+        className="flex min-h-9 items-center gap-2 border-b border-white/20 px-1 text-[9px] font-medium uppercase tracking-[0.18em] text-white/60 transition-colors duration-200 hover:border-white/60 hover:text-white"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -42,7 +42,7 @@ const LanguageSelector = () => {
         <span>{currentLanguage.toUpperCase()}</span>
         <motion.svg
           animate={{ rotate: isOpen ? 180 : 0 }}
-          className="w-3 h-3 text-gray-500"
+          className="h-3 w-3 text-white/35"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -60,19 +60,19 @@ const LanguageSelector = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 15, scale: 0.9 }}
-            animate={{ opacity: 1, y: 12, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            transition={{ type: "spring", damping: 20, stiffness: 350 }}
-            className="absolute right-0 w-40 p-2 bg-[#0a0f1d]/90 backdrop-blur-2xl border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[2000]"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 10 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.18 }}
+            className="absolute right-0 z-[2000] w-36 border border-white/15 bg-black/90 p-1 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
           >
             <div className="flex flex-col gap-1">
               {availableLanguages.map((lang) => (
                 <button
                   key={lang}
-                  className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-300 text-left w-full ${
+                  className={`w-full px-3 py-2.5 text-left text-[9px] font-medium uppercase tracking-[0.18em] transition-colors duration-200 ${
                     currentLanguage === lang
-                      ? "bg-violet-500/20 text-white shadow-[inset_0_0_10px_rgba(139,92,246,0.1)]"
+                      ? "bg-white text-black"
                       : "text-gray-400 hover:text-white hover:bg-white/5"
                   }`}
                   onClick={() => {
@@ -83,9 +83,7 @@ const LanguageSelector = () => {
                   <span className="flex items-center justify-between">
                     {languageNames[lang] || lang}
                     {currentLanguage === lang && (
-                      <div 
-                        className="w-1 h-1 rounded-full bg-violet-400 shadow-[0_0_8px_#a78bfa]" 
-                      />
+                      <div className="h-1 w-1 rounded-full bg-[#ff6b2c]" />
                     )}
                   </span>
                 </button>

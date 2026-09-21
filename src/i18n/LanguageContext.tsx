@@ -10,7 +10,7 @@ type LanguageContextType = {
   availableLanguages: string[];
 };
 
-const defaultLanguage = "en";
+const defaultLanguage = "fr";
 
 // Créer le contexte avec une valeur par défaut
 const LanguageContext = createContext<LanguageContextType>({

@@ -1,89 +1,60 @@
 export interface Translation {
-  navigation: {
-    home: string;
-    about: string;
-    projects: string;
-    skills: string;
-    contact: string;
+  experience: {
+    edition: string;
+    orientation: string;
+    instruction: string;
+    wheelHint: string;
+    openSignal: string;
+    backToMap: string;
+    projectAngles: string;
+    nodes: {
+      bluevidia: { label: string; meta: string; description: string };
+      profile: { label: string; meta: string; description: string };
+      contact: { label: string; meta: string; description: string };
+    };
   };
   intro: {
-    hello: string;
-    titles: string[];
-    description: string;
-    viewProjects: string;
-    getInTouch: string;
-  };
-  about: {
+    eyebrow: string;
     title: string;
-    background: string;
-    paragraph1: string;
-    paragraph2: string;
-    paragraph3: string;
-    downloadResume: string;
-    githubProfile: string;
-  };
-  projects: {
-    title: string;
+    emphasis: string;
     description: string;
-    allProjects: string;
-    featured: string;
-    viewCode: string;
-    demo: string;
-    projectsList: {
-      eclatShop: {
-        title: string;
-        description: string;
-        link: string;
-      };
-      timeManager: {
-        title: string;
-        description: string;
-        link: string;
-      };
-      kuramaChat: {
-        title: string;
-        description: string;
-        link: string;
-      };
-      rogueLike: {
-        title: string;
-        description: string;
-        link: string;
-      };
-      twitchViewerBot: {
-        title: string;
-        description: string;
-        link: string;
-      };
-      kickViewerBot: {
-        title: string;
-        description: string;
-        link: string;
-      };
-    };
+    primaryCta: string;
+    secondaryCta: string;
+    availability: string;
   };
-  skills: {
+  featured: {
+    eyebrow: string;
+    status: string;
+    title: string;
+    subtitle: string;
+    description: string;
+    role: string;
+    roleValue: string;
+    stack: string;
+    stackValue: string;
+    year: string;
+    challenge: string;
+    challengeText: string;
+    approach: string;
+    approachText: string;
+    outcome: string;
+    outcomeText: string;
+    visit: string;
+    live: string;
+  };
+  profile: {
+    eyebrow: string;
     title: string;
     description: string;
-    seeInAction: string;
-    categories: {
-      all: string;
-      frontend: string;
-      backend: string;
-      tools: string;
-      cloud: string;
-    };
-  };
-  contact: {
-    title: string;
-    description: string;
-    sendEmail: string;
-    copyEmail: string;
-    emailCopied: string;
-  };
-  footer: {
-    copyright: string;
-    madeWith: string;
+    proofTitle: string;
+    proofItems: string[];
+    capabilitiesTitle: string;
+    capabilities: string[];
+    contactTitle: string;
+    contactDescription: string;
+    email: string;
+    resume: string;
+    github: string;
   };
   common: {
     loading: string;
@@ -99,240 +70,198 @@ export interface Translation {
   };
 }
 
-export const translations: { [key: string]: Translation } = {
+export const translations: Record<string, Translation> = {
   en: {
-    navigation: {
-      home: "Home",
-      about: "About Me",
-      projects: "My Projects",
-      skills: "My Skills",
-      contact: "Contact Me",
+    experience: {
+      edition: "Spatial portfolio · 2026",
+      orientation: "Choose a signal",
+      instruction: "Move the lens. Bring a world into focus.",
+      wheelHint: "Wheel · arrows · tap",
+      openSignal: "Enter this space",
+      backToMap: "Back to the map",
+      projectAngles: "Change the angle",
+      nodes: {
+        bluevidia: {
+          label: "BlueVidia",
+          meta: "Featured work · Live",
+          description: "An audiovisual identity turned into a living web experience.",
+        },
+        profile: {
+          label: "Profile",
+          meta: "Approach · Capabilities",
+          description: "The person, the systems and the way I build.",
+        },
+        contact: {
+          label: "Contact",
+          meta: "New work · Conversation",
+          description: "Start with the feeling. Then choose the technology.",
+        },
+      },
     },
     intro: {
-      hello: "Hi, I'm Etienne Mentrel",
-      titles: [
-        "DevOps Engineer",
-        "Software Developer",
-        "Tech Enthusiast",
-        "Lifelong Learner",
+      eyebrow: "Creative developer · DevOps engineer",
+      title: "I build digital experiences",
+      emphasis: "worth remembering.",
+      description:
+        "From the first idea to production, I combine creative development, motion and reliable engineering to give ambitious brands a distinctive online presence.",
+      primaryCta: "Discover BlueVidia",
+      secondaryCta: "About me",
+      availability: "Available for selected projects",
+    },
+    featured: {
+      eyebrow: "Featured project · 01",
+      status: "Live experience",
+      title: "BlueVidia",
+      subtitle: "An audiovisual studio deserved a website that moves like an image.",
+      description:
+        "I designed and developed an immersive showcase for BlueVidia: a cinematic, sound-aware experience that turns the studio's craft into a digital journey.",
+      role: "Role",
+      roleValue: "Design & development",
+      stack: "Core",
+      stackValue: "Next.js · Three.js · GLSL",
+      year: "2026",
+      challenge: "01 · Challenge",
+      challengeText: "Translate a premium audiovisual identity without building another static agency site.",
+      approach: "02 · Approach",
+      approachText: "Use rhythm, sound and real-time visual matter as part of the narrative — never as decoration.",
+      outcome: "03 · Result",
+      outcomeText: "A responsive, live experience built around the studio's films, photography and point of view.",
+      visit: "Visit the live website",
+      live: "Live now",
+    },
+    profile: {
+      eyebrow: "Profile · Selected craft",
+      title: "One strong proof beats six forgettable thumbnails.",
+      description:
+        "I am Etienne Mentrel, a developer trained across software, infrastructure and interactive web. I like projects where the technical system and the visual idea have to work as one.",
+      proofTitle: "What BlueVidia demonstrates",
+      proofItems: [
+        "A clear creative direction carried through to production",
+        "Real-time WebGL built for desktop and mobile",
+        "Performance, accessibility and deployment treated as design constraints",
       ],
-      description:
-        "Welcome to my cosmic portfolio. Dive into my universe of projects and see how I blend creativity and technology to craft stellar digital experiences.",
-      viewProjects: "Explore Projects",
-      getInTouch: "Contact Me",
-    },
-    about: {
-      title: "About Me",
-      background: "My Journey",
-      paragraph1:
-        "I started my professional journey right after high school, joining an apprenticeship program at a company specializing in RFID technology.",
-      paragraph2:
-        "Initially trained as a higher-level technician, I discovered my passion for programming on the job, learning Python and taking on numerous projects that transitioned me into a developer role.",
-      paragraph3:
-        "After earning my DUT in Electrical Engineering and Industrial Computing, I pursued my passion for programming at Epitech. Now, as an MSc 2 student, I continue to expand my skills and knowledge.",
-      downloadResume: "View My Resume",
-      githubProfile: "Visit My GitHub",
-    },
-    projects: {
-      title: "My Projects",
-      description:
-        "Take a look at my recent work and personal projects. Each one reflects a unique challenge and a valuable learning experience.",
-      allProjects: "All Projects",
-      featured: "Highlighted",
-      viewCode: "View Code",
-      demo: "Live Demo",
-      projectsList: {
-        eclatShop: {
-          title: "Eclat Shop",
-          description:
-            "A powerful e-commerce platform for selling computer components. Built with Symfony, React, TypeScript, and Docker, it delivers a seamless user experience.",
-          link: "https://github.com/H1B0B0/Eclatshop",
-        },
-        timeManager: {
-          title: "Time Manager",
-          description:
-            "A time tracking app designed for municipal employees to efficiently manage their work hours. It offers tools for employees, managers, and general oversight.",
-          link: "https://github.com/H1B0B0/Time-manager",
-        },
-        kuramaChat: {
-          title: "Kurama Chat",
-          description:
-            "An IRC client and server built with Node.js, Express.js, and React.js. Features include multi-channel support, real-time messaging, and user notifications.",
-          link: "https://github.com/H1B0B0/Kurama-chat",
-        },
-        rogueLike: {
-          title: "Rogue-like in Java",
-          description:
-            "An immersive Rogue-like game developed in two weeks using LibGDX. It features dynamic maps, real-time combat, and inventory management.",
-          link: "https://github.com/H1B0B0/Rogue-like-LibGDX",
-        },
-        twitchViewerBot: {
-          title: "Twitch Viewer-Bot",
-          description:
-            "A GUI tool to generate fake viewers for Twitch streams. Developed in Python, it uses proxies to simulate views.",
-          link: "https://github.com/H1B0B0/twitch-Viewerbot",
-        },
-        kickViewerBot: {
-          title: "Kick Viewer-Bot",
-          description:
-            "A similar tool to Twitch Viewer-Bot, designed for the Kick platform. It generates fake views using proxies.",
-          link: "https://github.com/H1B0B0/Kick-Viewerbot",
-        },
-      },
-    },
-    skills: {
-      title: "My Skills",
-      description:
-        "These are the tools and technologies I use to bring ideas to life. My skillset is ever-growing as I explore new challenges.",
-      seeInAction: "See My Skills in Action",
-      categories: {
-        all: "All Skills",
-        frontend: "Frontend Development",
-        backend: "Backend Development",
-        tools: "Development Tools",
-        cloud: "Cloud Technologies",
-      },
-    },
-    contact: {
-      title: "Get in Touch",
-      description:
-        "Have a project in mind? Let's collaborate and create something extraordinary together.",
-      sendEmail: "Send Me an Email",
-      copyEmail: "Or copy my email address:",
-      emailCopied: "Email address copied!",
-    },
-    footer: {
-      copyright: "© {year} Etienne Mentrel | Cosmic Portfolio",
-      madeWith: "Built with Next.js and a sprinkle of cosmic magic ✨",
+      capabilitiesTitle: "Capabilities",
+      capabilities: [
+        "Creative development",
+        "Next.js & React",
+        "Three.js & GLSL",
+        "Motion systems",
+        "Cloud & DevOps",
+        "Production delivery",
+      ],
+      contactTitle: "Have a project that deserves more than a template?",
+      contactDescription: "Tell me what you want people to feel. We can work out the technology from there.",
+      email: "Start a conversation",
+      resume: "View resume",
+      github: "GitHub profile",
     },
     common: {
-      loading: "Loading...",
+      loading: "Preparing the experience",
     },
     cinematic: {
       acts: {
-        genesis: "Genesis",
-        constellations: "Constellations",
-        signal: "Signal",
+        genesis: "Profile",
+        constellations: "BlueVidia",
+        signal: "Contact",
       },
-      scrollHint: "Scroll to travel",
+      scrollHint: "Scroll to explore",
       actCounter: "{current} / {total}",
     },
   },
   fr: {
-    navigation: {
-      home: "Accueil",
-      about: "À propos de moi",
-      projects: "Mes Projets",
-      skills: "Mes Compétences",
-      contact: "Me Contacter",
+    experience: {
+      edition: "Portfolio spatial · 2026",
+      orientation: "Choisissez un signal",
+      instruction: "Déplacez la lentille. Mettez un univers au point.",
+      wheelHint: "Molette · flèches · toucher",
+      openSignal: "Explorer",
+      backToMap: "Retour à la carte",
+      projectAngles: "Changer d'angle",
+      nodes: {
+        bluevidia: {
+          label: "BlueVidia",
+          meta: "Projet phare · En ligne",
+          description: "Une identité audiovisuelle transformée en expérience web vivante.",
+        },
+        profile: {
+          label: "Profil",
+          meta: "Approche · Savoir-faire",
+          description: "La personne, les systèmes et ma manière de construire.",
+        },
+        contact: {
+          label: "Contact",
+          meta: "Nouveau projet · Échange",
+          description: "Commencer par l'émotion, puis choisir la technologie.",
+        },
+      },
     },
     intro: {
-      hello: "Bonjour, je suis Etienne Mentrel",
-      titles: [
-        "Ingénieur DevOps",
-        "Développeur Logiciel",
-        "Passionné de Technologie",
-        "Apprenant Curieux",
+      eyebrow: "Développeur créatif · Ingénieur DevOps",
+      title: "Je crée des expériences digitales",
+      emphasis: "qui restent en tête.",
+      description:
+        "De la première idée à la mise en production, je réunis développement créatif, mouvement et ingénierie fiable pour donner aux projets ambitieux une vraie présence en ligne.",
+      primaryCta: "Découvrir BlueVidia",
+      secondaryCta: "Mon profil",
+      availability: "Disponible pour des projets sélectionnés",
+    },
+    featured: {
+      eyebrow: "Projet phare · 01",
+      status: "Expérience en ligne",
+      title: "BlueVidia",
+      subtitle: "Un studio audiovisuel méritait un site qui bouge comme une image.",
+      description:
+        "J'ai conçu et développé pour BlueVidia une vitrine immersive : une expérience cinématographique et sonore qui transforme le savoir-faire du studio en parcours digital.",
+      role: "Rôle",
+      roleValue: "Design & développement",
+      stack: "Socle",
+      stackValue: "Next.js · Three.js · GLSL",
+      year: "2026",
+      challenge: "01 · Enjeu",
+      challengeText: "Traduire une identité audiovisuelle premium sans produire un énième site d'agence statique.",
+      approach: "02 · Réponse",
+      approachText: "Faire du rythme, du son et de la matière visuelle en temps réel une partie du récit — jamais un décor gratuit.",
+      outcome: "03 · Résultat",
+      outcomeText: "Une expérience responsive en ligne, construite autour des films, des photographies et du regard du studio.",
+      visit: "Visiter le site en ligne",
+      live: "En ligne",
+    },
+    profile: {
+      eyebrow: "Profil · Savoir-faire sélectionné",
+      title: "Une preuve forte vaut mieux que six vignettes oubliables.",
+      description:
+        "Je suis Etienne Mentrel, développeur formé au logiciel, à l'infrastructure et au web interactif. J'aime les projets où le système technique et l'idée visuelle doivent fonctionner comme un tout.",
+      proofTitle: "Ce que BlueVidia démontre",
+      proofItems: [
+        "Une direction créative cohérente, de l'idée à la production",
+        "Du WebGL temps réel pensé pour ordinateur et mobile",
+        "Performance, accessibilité et déploiement traités comme des contraintes de design",
       ],
-      description:
-        "Bienvenue dans mon portfolio cosmique. Découvrez mes projets et voyez comment je marie créativité et technologie pour créer des expériences numériques uniques.",
-      viewProjects: "Voir mes Projets",
-      getInTouch: "Contactez-moi",
-    },
-    about: {
-      title: "À propos de moi",
-      background: "Mon Parcours",
-      paragraph1:
-        "J'ai débuté ma carrière professionnelle juste après le lycée, en intégrant un programme d'apprentissage dans une entreprise spécialisée en technologie RFID.",
-      paragraph2:
-        "Formé initialement comme technicien supérieur, j'ai découvert ma passion pour la programmation en apprenant Python sur le terrain, ce qui m'a permis de devenir développeur au sein de l'entreprise.",
-      paragraph3:
-        "Après avoir obtenu mon DUT en Génie Électrique et Informatique Industrielle, j'ai poursuivi ma passion pour la programmation à Epitech. Aujourd'hui, en MSc 2, je continue d'élargir mes compétences et mes connaissances.",
-      downloadResume: "Voir mon CV",
-      githubProfile: "Voir mon GitHub",
-    },
-    projects: {
-      title: "Mes Projets",
-      description:
-        "Découvrez mes travaux récents et projets personnels. Chaque projet représente un défi unique et une opportunité d'apprentissage.",
-      allProjects: "Tous les Projets",
-      featured: "À la Une",
-      viewCode: "Voir le Code",
-      demo: "Voir la Démo",
-      projectsList: {
-        eclatShop: {
-          title: "Eclat Shop",
-          description:
-            "Une plateforme e-commerce performante pour la vente de composants informatiques. Développée avec Symfony, React, TypeScript et Docker, elle offre une expérience utilisateur fluide.",
-          link: "https://github.com/H1B0B0/Eclatshop",
-        },
-        timeManager: {
-          title: "Time Manager",
-          description:
-            "Une application de gestion du temps conçue pour les employés municipaux, leur permettant de gérer efficacement leurs heures de travail. Elle propose des outils pour les employés, les managers et la supervision générale.",
-          link: "https://github.com/H1B0B0/Time-manager",
-        },
-        kuramaChat: {
-          title: "Kurama Chat",
-          description:
-            "Un client et serveur IRC développé avec Node.js, Express.js et React.js. Il inclut la gestion multi-canaux, la messagerie en temps réel et les notifications utilisateur.",
-          link: "https://github.com/H1B0B0/Kurama-chat",
-        },
-        rogueLike: {
-          title: "Rogue-like en Java",
-          description:
-            "Un jeu Rogue-like immersif développé en deux semaines avec LibGDX. Il propose des cartes dynamiques, des combats en temps réel et une gestion d'inventaire.",
-          link: "https://github.com/H1B0B0/Rogue-like-LibGDX",
-        },
-        twitchViewerBot: {
-          title: "Twitch Viewer-Bot",
-          description:
-            "Un outil GUI pour générer de faux spectateurs sur Twitch. Développé en Python, il utilise des proxies pour simuler des vues.",
-          link: "https://github.com/H1B0B0/twitch-Viewerbot",
-        },
-        kickViewerBot: {
-          title: "Kick Viewer-Bot",
-          description:
-            "Un outil similaire à Twitch Viewer-Bot, conçu pour la plateforme Kick. Il génère de faux spectateurs en utilisant des proxies.",
-          link: "https://github.com/H1B0B0/Kick-Viewerbot",
-        },
-      },
-    },
-    skills: {
-      title: "Mes Compétences",
-      description:
-        "Voici les outils et technologies que j'utilise pour donner vie à mes idées. Mon expertise s'élargit constamment au fil des défis.",
-      seeInAction: "Voir mes Compétences en Action",
-      categories: {
-        all: "Toutes les Compétences",
-        frontend: "Développement Frontend",
-        backend: "Développement Backend",
-        tools: "Outils de Développement",
-        cloud: "Technologies Cloud",
-      },
-    },
-    contact: {
-      title: "Contactez-moi",
-      description:
-        "Vous avez un projet en tête ? Collaborons et créons ensemble quelque chose d'extraordinaire.",
-      sendEmail: "Envoyez-moi un Email",
-      copyEmail: "Ou copiez mon adresse email :",
-      emailCopied: "Adresse email copiée !",
-    },
-    footer: {
-      copyright: "© {year} Etienne Mentrel | Portfolio Cosmique",
-      madeWith: "Créé avec Next.js et une touche de magie cosmique ✨",
+      capabilitiesTitle: "Savoir-faire",
+      capabilities: [
+        "Développement créatif",
+        "Next.js & React",
+        "Three.js & GLSL",
+        "Systèmes de mouvement",
+        "Cloud & DevOps",
+        "Mise en production",
+      ],
+      contactTitle: "Un projet qui mérite mieux qu'un template ?",
+      contactDescription: "Dis-moi ce que tu veux faire ressentir. On trouvera ensuite la bonne technologie.",
+      email: "Démarrer une conversation",
+      resume: "Voir mon CV",
+      github: "Profil GitHub",
     },
     common: {
-      loading: "Chargement...",
+      loading: "Préparation de l'expérience",
     },
     cinematic: {
       acts: {
-        genesis: "Genèse",
-        constellations: "Constellations",
-        signal: "Signal",
+        genesis: "Profil",
+        constellations: "BlueVidia",
+        signal: "Contact",
       },
-      scrollHint: "Défilez pour voyager",
+      scrollHint: "Défilez pour explorer",
       actCounter: "{current} / {total}",
     },
   },
