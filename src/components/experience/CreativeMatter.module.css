@@ -1,0 +1,92 @@
+.root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #050609;
+  pointer-events: none;
+  isolation: isolate;
+}
+
+.canvas {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.fallback {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(72% 82% at 22% 28%, color-mix(in srgb, var(--matter-a) 25%, transparent), transparent 68%),
+    radial-gradient(68% 74% at 76% 64%, color-mix(in srgb, var(--matter-b) 20%, transparent), transparent 72%),
+    linear-gradient(132deg, #040509 0%, #090b12 48%, #040509 100%);
+}
+
+.fallback::before,
+.fallback::after {
+  content: "";
+  position: absolute;
+  inset: -24%;
+  will-change: transform;
+}
+
+.fallback::before {
+  border-radius: 38% 62% 47% 53% / 57% 38% 62% 43%;
+  background:
+    radial-gradient(ellipse at 42% 46%, color-mix(in srgb, var(--matter-a) 32%, transparent), transparent 54%),
+    radial-gradient(ellipse at 62% 54%, color-mix(in srgb, var(--matter-c) 20%, transparent), transparent 46%);
+  filter: blur(38px) saturate(118%);
+  opacity: 0.76;
+  transform: rotate(-8deg) scale(0.82);
+  animation: matter-breathe 16s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+}
+
+.fallback::after {
+  inset: 9% -18%;
+  background: repeating-linear-gradient(
+    112deg,
+    transparent 0 8%,
+    color-mix(in srgb, var(--matter-b) 13%, transparent) 8.4%,
+    transparent 8.8% 17%
+  );
+  filter: blur(10px);
+  opacity: calc(0.22 + var(--matter-energy, 0) * 0.2);
+  transform: translate3d(calc(var(--matter-energy, 0) * 3%), 0, 0) skewX(-8deg);
+}
+
+.trace {
+  position: absolute;
+  inset: 12%;
+  border: 1px solid color-mix(in srgb, var(--matter-c) 18%, transparent);
+  border-radius: 43% 57% 61% 39% / 52% 43% 57% 48%;
+  opacity: calc(0.16 + var(--matter-visited, 0) * 0.06);
+  transform: rotate(7deg) scale(calc(0.92 + var(--matter-visited, 0) * 0.012));
+}
+
+.fallbackVisible {
+  opacity: 1;
+}
+
+.fallbackOverlay {
+  z-index: 2;
+  opacity: 1;
+  transition: opacity 240ms ease;
+}
+
+@keyframes matter-breathe {
+  from {
+    transform: translate3d(-2%, 1%, 0) rotate(-8deg) scale(0.8);
+  }
+  to {
+    transform: translate3d(3%, -2%, 0) rotate(5deg) scale(0.92);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fallback::before {
+    animation: none;
+  }
+}
+

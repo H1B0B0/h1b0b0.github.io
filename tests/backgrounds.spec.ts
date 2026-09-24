@@ -1,148 +1,233 @@
-import { expect, test } from "playwright/test";
+import { expect, test, type Page } from "playwright/test";
 
 test.use({ channel: "chrome", locale: "fr-FR", viewport: { width: 375, height: 812 } });
-const PORTFOLIO_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+const PORTFOLIO_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3001";
 
-async function openPortfolio(page: import("playwright/test").Page, hash = "") {
-  await page.emulateMedia({ reducedMotion: "reduce" });
+async function openPortfolio(page: Page, hash = "", reducedMotion = true) {
+  await page.emulateMedia({ reducedMotion: reducedMotion ? "reduce" : "no-preference" });
   await page.addInitScript(() => window.localStorage.clear());
   await page.goto(`${PORTFOLIO_URL}/${hash}`);
+  await page.locator("[aria-busy='false']").waitFor();
 }
 
-test("the fixed spatial hub has one WebGL canvas and no overflow", async ({ page }) => {
+test("the living index is immediately understandable and keeps one WebGL canvas", async ({ page }) => {
   await openPortfolio(page);
-  await page.getByRole("button", { name: "Explorer" }).waitFor();
-
+  await expect(page.getByRole("heading", { name: /Je construis des idées/ })).toBeVisible();
+  await expect(page.getByRole("main")).toHaveCount(1);
   await expect(page.locator("canvas")).toHaveCount(1);
-  const dimensions = await page.evaluate(() => ({
+
+  await page.keyboard.press("Tab");
+  await expect(page.getByRole("link", { name: "Aller au contenu principal" })).toBeFocused();
+
+  const destinations = page.locator("[data-experience-index] nav button");
+  await expect(destinations).toHaveCount(4);
+  await expect(destinations).toContainText(["Travaux", "Laboratoire", "Profil", "Contact"]);
+
+  const viewport = await page.evaluate(() => ({
     width: document.documentElement.scrollWidth,
     height: document.documentElement.scrollHeight,
-    viewportWidth: window.innerWidth,
-    viewportHeight: window.innerHeight,
+    viewportWidth: innerWidth,
+    viewportHeight: innerHeight,
   }));
-  expect(dimensions.width).toBe(dimensions.viewportWidth);
-  expect(dimensions.height).toBe(dimensions.viewportHeight);
+  expect(viewport.width).toBe(viewport.viewportWidth);
+  expect(viewport.height).toBe(viewport.viewportHeight);
 });
 
-test("the hub exposes three non-linear destinations", async ({ page }) => {
-  await openPortfolio(page);
-  await page.getByRole("button", { name: "Explorer" }).waitFor();
-
-  const destinations = page.locator("[data-lens-stage] button");
-  await expect(destinations).toHaveCount(3);
-  await expect(destinations.nth(0)).toContainText("BlueVidia");
-  await expect(destinations.nth(1)).toContainText("Profil");
-  await expect(destinations.nth(2)).toContainText("Contact");
+test("Work frames BlueVidia as a delivered client commission", async ({ page }) => {
+  await openPortfolio(page, "#work");
+  const work = page.locator('[data-space="work"]');
+  await expect(work).toBeVisible();
+  await expect(work.getByRole("heading", { name: "BlueVidia", exact: true })).toBeVisible();
+  await expect(work.getByText(/Commande client · Projet phare/)).toBeVisible();
+  await expect(work.locator('a[href="https://bluevidia.com"]')).toHaveCount(1);
+  await expect(page.locator('a[href*="EclatShop"], a[href*="Viewerbot"], a[href*="TimeManager"]')).toHaveCount(0);
 });
 
-test("BlueVidia is the only showcased project", async ({ page }) => {
-  await openPortfolio(page, "#bluevidia");
-  const space = page.locator('[data-space="bluevidia"]');
-  await space.waitFor();
+test("the BlueVidia narrative remains interactive without owning the portfolio", async ({ page }) => {
+  await openPortfolio(page, "#work");
+  const work = page.locator('[data-space="work"]');
+  const viewport = work.locator("[data-case-viewport]");
+  const initialHeight = await viewport.evaluate((element) => element.getBoundingClientRect().height);
+  await expect(work.locator("video")).toHaveCount(0);
+  await expect(work.locator('img[src*="cloudfront"]')).toHaveCount(0);
 
-  await expect(space.getByRole("heading", { name: "BlueVidia", exact: true }).first()).toBeVisible();
-  await expect(space.locator('a[href="https://bluevidia.com"]')).toHaveCount(1);
-  await expect(
-    page.locator('a[href*="EclatShop"], a[href*="Viewerbot"], a[href*="TimeManager"]'),
-  ).toHaveCount(0);
-});
-
-test("project angles update the editorial narrative", async ({ page }) => {
-  await openPortfolio(page, "#bluevidia");
-  const space = page.locator('[data-space="bluevidia"]');
-  await space.waitFor();
-
-  await space.getByRole("button", { name: /02 · Réponse/i }).click();
-  await expect(space.getByRole("heading", { level: 2 })).toHaveText("L'image devient l'interface.");
-  await expect(space.getByText(/matière visuelle en temps réel/)).toBeVisible();
-  const pointOfView = space.getByRole("slider", { name: "Faire varier le point de vue" });
+  const chapters = work.getByLabel("Explorer les trois temps du projet");
+  await chapters.getByRole("button", { name: /Réponse/ }).click();
+  await expect(work.getByRole("heading", { level: 3 })).toHaveText("L'image devient l'interface.");
+  const pointOfView = work.getByRole("slider", { name: "Faire varier le point de vue" });
   await expect(pointOfView).toBeVisible();
   await pointOfView.press("End");
   await expect(pointOfView).toHaveValue("100");
+  expect(await viewport.evaluate((element) => element.getBoundingClientRect().height)).toBeCloseTo(initialHeight, 0);
+
+  await chapters.getByRole("button", { name: /Résultat/ }).click();
+  await expect(work.getByRole("heading", { level: 3 })).toHaveText("Une expérience réellement en ligne.");
+  expect(await viewport.evaluate((element) => element.getBoundingClientRect().height)).toBeCloseTo(initialHeight, 0);
 });
 
-test("the film chapter can enter and leave its full-frame treatment", async ({ page }) => {
-  await openPortfolio(page, "#bluevidia");
-  const space = page.locator('[data-space="bluevidia"]');
-  await space.getByRole("button", { name: "Plein cadre ↗" }).click();
-  await expect(space).toHaveClass(/is-projecting/);
-  await space.getByRole("button", { name: "Refermer ↙" }).click();
-  await expect(space).not.toHaveClass(/is-projecting/);
+test("the Lab exposes three honest manipulable studies", async ({ page }) => {
+  await openPortfolio(page, "#lab");
+  const lab = page.locator('[data-space="lab"]');
+  await expect(lab.getByRole("heading", { name: /créativité se prouve/ })).toBeVisible();
+  await expect(lab.getByRole("heading", { level: 2 })).toContainText(["Matière", "Typographie", "Interaction / système"]);
+
+  const density = lab.getByRole("slider", { name: "Comprimer la matière" });
+  await density.press("End");
+  await expect(density).toHaveValue("100");
+  const type = lab.getByRole("slider", { name: "Mettre le mot sous tension" });
+  await type.press("End");
+  await expect(type).toHaveValue("100");
+
+  const propagate = lab.getByRole("button", { name: "Propager" });
+  const route = [
+    { intensity: "0.2", state: "Forme" },
+    { intensity: "0.4", state: "Mouvement" },
+    { intensity: "0.6", state: "Règle" },
+    { intensity: "0.8", state: "Retour" },
+    { intensity: "1", state: "Boucle complète" },
+  ];
+  for (const step of route) {
+    await expect(propagate).toHaveAttribute("data-sfx-intensity", step.intensity);
+    await propagate.click();
+    await expect(lab.getByRole("status").filter({ hasText: step.state })).toBeVisible();
+  }
+  await expect(propagate).toHaveAttribute("data-sfx-intensity", "0");
+  await propagate.click();
+  await expect(lab.getByRole("status").filter({ hasText: "Origine" })).toBeVisible();
+  await expect(propagate).toHaveAttribute("data-sfx-intensity", "0.2");
+
+  const alignment = await lab.locator("article").last().evaluate((article) => {
+    const nodes = Array.from(article.querySelectorAll<HTMLElement>("[data-active] b"));
+    const path = article.querySelector<HTMLElement>("[class*='systemPath']");
+    if (nodes.length !== 6 || !path) return null;
+    const first = nodes[0].getBoundingClientRect();
+    const last = nodes[5].getBoundingClientRect();
+    const line = path.getBoundingClientRect();
+    return {
+      firstDelta: Math.abs(first.left + first.width / 2 - line.left),
+      lastDelta: Math.abs(last.left + last.width / 2 - line.right),
+    };
+  });
+  expect(alignment).not.toBeNull();
+  expect(alignment!.firstDelta).toBeLessThan(1);
+  expect(alignment!.lastDelta).toBeLessThan(1);
 });
 
-test("changing language updates both the interface and document language", async ({ page }) => {
+test("sound effects are controllable and persist the visitor preference", async ({ page }) => {
+  await openPortfolio(page, "#lab");
+  const sound = page.getByRole("button", { name: "Désactiver les effets sonores" });
+  await expect(sound).toHaveAttribute("aria-pressed", "true");
+  await sound.click();
+  await expect(page.getByRole("button", { name: "Activer les effets sonores" })).toHaveAttribute("aria-pressed", "false");
+  await expect.poll(() => page.evaluate(() => window.localStorage.getItem("portfolio:sfx-enabled"))).toBe("false");
+});
+
+test("Profile demonstrates a five-step method with evidence", async ({ page }) => {
+  await openPortfolio(page, "#profile");
+  const profile = page.locator('[data-space="profile-v2"]');
+  await expect(profile).toBeVisible();
+  const process = profile.getByRole("navigation", { name: "Processus interactif" });
+  await expect(process.getByRole("button")).toHaveCount(5);
+  expect(await process.evaluate((element) => getComputedStyle(element).flexDirection)).toBe("row");
+  for (const step of ["Cadrer", "Prototyper", "Donner forme", "Ingénier", "Livrer"]) {
+    await process.getByRole("button", { name: new RegExp(step) }).click();
+    await expect(profile.getByRole("heading", { level: 2, name: step })).toBeVisible();
+  }
+  await process.getByRole("button", { name: /Ingénier/ }).click();
+  await expect(profile.getByText(/fallbacks/).first()).toBeVisible();
+});
+
+test("Contact recomposes the visit and keeps direct actions", async ({ page }) => {
+  await openPortfolio(page, "#contact");
+  const contact = page.locator('[data-space="contact-v2"]');
+  await expect(contact.getByRole("link", { name: /Écrire un email/ })).toHaveAttribute("href", "mailto:etienne.mentrel@gmail.com");
+  await contact.getByRole("button", { name: /Copier l’adresse email/ }).click();
+  await expect(contact.getByText(/Adresse copiée|copie automatique est indisponible/).first()).toBeVisible();
+  await expect(contact.getByText(/aucune donnée collectée/)).toBeVisible();
+  await expect(contact.getByText(/La prochaine trace peut être la vôtre/).first()).toBeVisible();
+});
+
+test("persistent labeled navigation connects every internal space", async ({ page }) => {
+  await openPortfolio(page, "#work");
+  const navigation = page.getByRole("navigation", { name: "Navigation principale" });
+  const work = page.locator('[data-space="work"]');
+  await work.evaluate((element) => element.scrollTo(0, element.scrollHeight));
+  expect(await work.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+  await navigation.getByRole("button", { name: /Profil/ }).click();
+  await expect(page).toHaveURL(/#profile$/);
+  const profile = page.locator('[data-space="profile-v2"]');
+  await expect(profile).toBeVisible();
+  await expect.poll(() => profile.evaluate((element) => element.scrollTop)).toBe(0);
+  await page.getByRole("navigation", { name: "Navigation principale" }).getByRole("button", { name: /Contact/ }).click();
+  await expect(page).toHaveURL(/#contact$/);
+});
+
+test("language switching updates content and document language", async ({ page }) => {
   await openPortfolio(page, "#contact");
   await page.getByRole("button", { name: "FR" }).click();
   await page.getByRole("button", { name: "English" }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page.getByRole("heading", { name: /deserves more than a template/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /traces become a starting point/i })).toBeVisible();
 });
 
-test("the profile keeps its six selected capabilities visible", async ({ page }) => {
-  await openPortfolio(page, "#profile");
-  const profile = page.locator('[data-space="profile"]');
-  await profile.waitFor();
+for (const viewport of [
+  { width: 320, height: 568 },
+  { width: 375, height: 812 },
+  { width: 768, height: 900 },
+  { width: 1024, height: 900 },
+  { width: 1440, height: 900 },
+]) {
+  test(`all spaces fit ${viewport.width}px without rail collisions or tiny targets`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    const spaces = [
+      ["work", '[data-space="work"]'],
+      ["lab", '[data-space="lab"]'],
+      ["profile", '[data-space="profile-v2"]'],
+      ["contact", '[data-space="contact-v2"]'],
+    ] as const;
 
-  const capabilities = profile.locator("[data-capability-list] button");
-  await expect(capabilities).toHaveCount(6);
-  await capabilities.filter({ hasText: "Cloud & DevOps" }).click();
-  await expect(capabilities.filter({ hasText: "Cloud & DevOps" })).toHaveAttribute("aria-pressed", "true");
-  await expect(profile.locator(".capability-note")).toContainText("infrastructure");
-  await expect(profile.locator(".capability-note h2")).toHaveText("Cloud & DevOps");
-});
-
-test("the persistent optical rail connects every space", async ({ page }) => {
-  await openPortfolio(page, "#contact");
-  const rail = page.getByRole("navigation", { name: "Choisissez un signal" });
-  await rail.getByRole("button", { name: "Profil" }).click();
-  await expect(page).toHaveURL(/#profile$/);
-  await expect(page.locator('[data-space="profile"]')).toBeVisible();
-});
-
-test("the contact address exposes a useful copied state", async ({ page }) => {
-  await openPortfolio(page, "#contact");
-  await page.getByRole("button", { name: /etienne\.mentrel/i }).click();
-  await expect(page.getByText("Adresse copiée — à vous d'écrire.")).toBeVisible();
-});
-
-for (const width of [320, 768, 1024, 1440]) {
-  test(`spaces fit the ${width}px viewport and keep usable targets`, async ({ page }) => {
-    await page.setViewportSize({ width, height: width === 320 ? 568 : 900 });
-    for (const section of ["profile", "bluevidia", "contact"]) {
-      await openPortfolio(page, `#${section}`);
-      const space = page.locator(`[data-space="${section}"]`);
+    for (const [hash, selector] of spaces) {
+      await openPortfolio(page, `#${hash}`);
+      const space = page.locator(selector);
       await space.waitFor();
       const geometry = await space.evaluate((element) => ({
-        overflow: element.scrollWidth > element.clientWidth,
-        smallTargets: Array.from(element.querySelectorAll("button, a")).filter((target) => {
+        overflow: element.scrollWidth > element.clientWidth + 1,
+        smallTargets: Array.from(element.querySelectorAll("button, a, input")).filter((target) => {
           const rect = target.getBoundingClientRect();
-          return rect.width > 0 && rect.height > 0 && rect.height < 43;
+          return rect.width > 0 && rect.height > 0 && (rect.height < 43 || rect.width < 32);
         }).length,
       }));
-      expect(geometry).toEqual({ overflow: false, smallTargets: 0 });
+      expect(geometry, `${hash} at ${viewport.width}px`).toEqual({ overflow: false, smallTargets: 0 });
+
+      const rail = page.getByRole("navigation", { name: "Navigation principale" });
+      await expect(rail).toBeVisible();
+      const collision = await page.evaluate(({ contentSelector }) => {
+        const content = document.querySelector(contentSelector)?.querySelector("h1")?.getBoundingClientRect();
+        const nav = Array.from(document.querySelectorAll("nav")).find((node) => node.getAttribute("aria-label") === "Navigation principale")?.getBoundingClientRect();
+        if (!content || !nav || innerWidth <= 900) return false;
+        return content.left < nav.right;
+      }, { contentSelector: selector });
+      expect(collision, `${hash} rail collision at ${viewport.width}px`).toBe(false);
     }
   });
 }
 
-test("Escape returns from a space to the hub", async ({ page }) => {
+test("Escape returns to the living index", async ({ page }) => {
   await openPortfolio(page, "#contact");
-  await page.getByRole("heading", { name: /Un projet qui mérite/ }).waitFor();
-
   await page.keyboard.press("Escape");
-
   await expect(page).not.toHaveURL(/#contact$/);
-  await expect(page.getByRole("button", { name: "Explorer" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Je construis des idées/ })).toBeVisible();
 });
 
-test("the shader reports no compilation errors", async ({ page }) => {
-  const shaderErrors: string[] = [];
+test("full-motion transitions and the shader report no runtime errors", async ({ page }) => {
+  const errors: string[] = [];
   page.on("console", (message) => {
-    if (message.type() === "error" && message.text().includes("Shader Error")) {
-      shaderErrors.push(message.text());
-    }
+    if (message.type() === "error") errors.push(message.text());
   });
 
-  await openPortfolio(page);
-  await page.getByRole("button", { name: "Explorer" }).waitFor();
-  expect(shaderErrors).toEqual([]);
+  await openPortfolio(page, "", false);
+  await page.getByRole("button", { name: /Travaux/ }).click();
+  await expect(page).toHaveURL(/#work$/);
+  await expect(page.locator('[data-space="work"]')).toBeVisible();
+  expect(errors.filter((error) => /shader|webgl|hydration/i.test(error))).toEqual([]);
 });

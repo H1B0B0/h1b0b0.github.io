@@ -28,7 +28,7 @@ const instrumentSerif = Instrument_Serif({
 const SITE_URL = "https://h1b0b0.github.io";
 const TITLE = "Etienne Mentrel — Développeur créatif & DevOps";
 const DESCRIPTION =
-  "Portfolio d'Etienne Mentrel, développeur créatif et ingénieur DevOps. Découvrez BlueVidia, une expérience web immersive conçue avec Next.js, Three.js et GLSL.";
+  "Portfolio d'Etienne Mentrel, développeur créatif et ingénieur DevOps. Des expériences web singulières où direction artistique, interaction et ingénierie fonctionnent comme un tout.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -49,7 +49,8 @@ export const metadata: Metadata = {
     "Next.js",
     "WebGL",
     "interactive",
-    "BlueVidia",
+    "creative coding",
+    "direction artistique",
   ],
   alternates: {
     canonical: SITE_URL,
@@ -129,7 +130,7 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased bg-black text-white film-grain`}
+        className={`${geistSans.variable} ${geistMono.variable} ${instrumentSerif.variable} antialiased bg-black text-white`}
       >
         <LanguageProvider>{children}</LanguageProvider>
         <script

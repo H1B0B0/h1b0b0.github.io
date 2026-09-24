@@ -18,27 +18,36 @@ export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps)
   }, [onLoadingComplete]);
 
   useEffect(() => {
-    const startedAt = performance.now();
-    let frameId = 0;
+    let cancelled = false;
     let completionTimer = 0;
+    let safetyTimer = 0;
 
-    const tick = (now: number) => {
-      const next = Math.min(100, ((now - startedAt) / 900) * 100);
-      setProgress(next);
-
-      if (next < 100) {
-        frameId = requestAnimationFrame(tick);
-        return;
-      }
-
+    const complete = () => {
+      if (cancelled) return;
+      setProgress(100);
       completionTimer = window.setTimeout(() => completionRef.current?.(), 180);
     };
 
-    frameId = requestAnimationFrame(tick);
+    const onSceneReady = () => complete();
+    window.addEventListener("portfolio:scene-ready", onSceneReady, { once: true });
+
+    setProgress(18);
+    Promise.resolve(document.fonts?.ready)
+      .catch(() => undefined)
+      .then(() => {
+        if (cancelled) return;
+        setProgress(68);
+        if (document.documentElement.dataset.sceneReady === "true") complete();
+      });
+
+    // A slow or unsupported GPU must never trap the visitor behind the loader.
+    safetyTimer = window.setTimeout(complete, 1800);
 
     return () => {
-      cancelAnimationFrame(frameId);
+      cancelled = true;
+      window.removeEventListener("portfolio:scene-ready", onSceneReady);
       window.clearTimeout(completionTimer);
+      window.clearTimeout(safetyTimer);
     };
   }, []);
 
@@ -66,8 +75,8 @@ export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps)
               {t.common.loading}
             </p>
             <h1 className="mt-5 max-w-4xl text-balance text-[clamp(3.5rem,9vw,8rem)] font-medium leading-[0.82] tracking-[-0.065em]">
-              Creative
-              <span className="font-display block text-white/55">development.</span>
+              Ideas become
+              <span className="font-display block text-white/55">interfaces.</span>
             </h1>
           </div>
 
@@ -84,7 +93,7 @@ export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps)
             />
           </div>
           <div className="mt-4 flex items-center justify-between cinematic-mono text-[8px] uppercase tracking-[0.18em] text-white/30">
-            <span>Next.js · Three.js · DevOps</span>
+            <span>Form · Motion · System</span>
             <span className="tabular-nums">{roundedProgress}%</span>
           </div>
         </div>

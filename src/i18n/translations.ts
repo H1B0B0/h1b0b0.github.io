@@ -8,6 +8,8 @@ export interface Translation {
     backToMap: string;
     projectAngles: string;
     nodes: {
+      work: { label: string; meta: string; description: string };
+      lab: { label: string; meta: string; description: string };
       bluevidia: { label: string; meta: string; description: string };
       profile: { label: string; meta: string; description: string };
       contact: { label: string; meta: string; description: string };
@@ -81,6 +83,16 @@ export const translations: Record<string, Translation> = {
       backToMap: "Back to the map",
       projectAngles: "Change the angle",
       nodes: {
+        work: {
+          label: "Work",
+          meta: "Commissioned · Delivered",
+          description: "Real work, constraints and the ideas that survived production.",
+        },
+        lab: {
+          label: "Lab",
+          meta: "Self-initiated · In progress",
+          description: "Small experiments where material, type and interaction are allowed to misbehave.",
+        },
         bluevidia: {
           label: "BlueVidia",
           meta: "Featured work · Live",
@@ -178,6 +190,16 @@ export const translations: Record<string, Translation> = {
       backToMap: "Retour à la carte",
       projectAngles: "Changer d'angle",
       nodes: {
+        work: {
+          label: "Travaux",
+          meta: "Commandes · Livrées",
+          description: "Des projets réels, leurs contraintes et les idées qui ont résisté à la production.",
+        },
+        lab: {
+          label: "Laboratoire",
+          meta: "Recherche personnelle · En cours",
+          description: "De courtes expériences où matière, typographie et interaction peuvent déborder.",
+        },
         bluevidia: {
           label: "BlueVidia",
           meta: "Projet phare · En ligne",
