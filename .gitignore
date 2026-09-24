@@ -44,3 +44,4 @@ next-env.d.ts
 .omo
 docs/experience-v2.md
 scripts/visual-audit-v2.mjs
+scripts/soty-runtime-audit.mjs
