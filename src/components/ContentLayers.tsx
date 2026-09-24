@@ -34,6 +34,11 @@ const LENS_SIGNAL_POSITIONS = [
 ] as const;
 
 const BLUEVIDIA_FALLBACK = "https://dabvh53eklx61.cloudfront.net/2U9A0008.jpg";
+const BLUEVIDIA_STILLS = [
+  "https://dabvh53eklx61.cloudfront.net/2U9A0008.jpg",
+  "https://dabvh53eklx61.cloudfront.net/2U9A0041.jpg",
+  "https://dabvh53eklx61.cloudfront.net/Artsartorial.jpg",
+] as const;
 
 function Arrow({ back = false, diagonal = false }: { back?: boolean; diagonal?: boolean }) {
   const path = back
@@ -229,6 +234,12 @@ export default function ContentLayers() {
         </div>
       </header>
 
+      <ExperienceRail
+        activeSpace={activeSpace}
+        focusedNode={focusedNode}
+        onTravel={travelTo}
+      />
+
       <AnimatePresence mode="wait">
         {activeSpace === "orbit" ? (
           <OrientationHub
@@ -286,6 +297,49 @@ export default function ContentLayers() {
       </AnimatePresence>
 
     </main>
+  );
+}
+
+function ExperienceRail({
+  activeSpace,
+  focusedNode,
+  onTravel,
+}: {
+  activeSpace: SpaceId;
+  focusedNode: NodeId;
+  onTravel: (space: SpaceId) => void;
+}) {
+  const { t } = useLanguage();
+  const stops: Array<{ id: SpaceId; label: string }> = [
+    { id: "orbit", label: "Index" },
+    ...NODE_ORDER.map((id) => ({ id, label: t.experience.nodes[id].label })),
+  ];
+
+  return (
+    <nav
+      aria-label={t.experience.orientation}
+      className={`experience-rail ${activeSpace === "contact" ? "is-light" : ""}`}
+    >
+      <span className="experience-rail-line" aria-hidden="true" />
+      {stops.map((stop, index) => {
+        const active = activeSpace === stop.id;
+        const previewed = activeSpace === "orbit" && stop.id === focusedNode;
+        return (
+          <button
+            type="button"
+            key={stop.id}
+            aria-current={active ? "page" : undefined}
+            aria-label={stop.label}
+            onClick={() => onTravel(stop.id)}
+            className={active ? "is-active" : previewed ? "is-previewed" : ""}
+          >
+            <span className="experience-rail-index">{String(index).padStart(2, "0")}</span>
+            <span className="experience-rail-dot" aria-hidden="true" />
+            <span className="experience-rail-label">{stop.label}</span>
+          </button>
+        );
+      })}
+    </nav>
   );
 }
 
@@ -497,17 +551,22 @@ function BlueVidiaSpace({ angle, onAngleChange }: { angle: number; onAngleChange
   const videoRef = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
   const [projecting, setProjecting] = useState(false);
-  useEffect(() => {
-    if (angle !== 0) {
-      setProjecting(false);
-      videoRef.current?.pause();
-    } else if (reducedMotion) videoRef.current?.pause();
-    else void videoRef.current?.play().catch(() => setPlaying(false));
-  }, [reducedMotion, angle]);
   const tiltX = useMotionValue(0);
   const tiltY = useMotionValue(0);
   const smoothTiltX = useSpring(tiltX, { damping: 24, stiffness: 150, mass: 0.8 });
   const smoothTiltY = useSpring(tiltY, { damping: 24, stiffness: 150, mass: 0.8 });
+
+  useEffect(() => {
+    if (angle !== 0) {
+      setProjecting(false);
+      videoRef.current?.pause();
+    } else if (reducedMotion) {
+      videoRef.current?.pause();
+    } else {
+      void videoRef.current?.play().catch(() => setPlaying(false));
+    }
+  }, [angle, reducedMotion]);
+
   const angles = [
     { label: t.featured.challenge, title: t.featured.subtitle, text: t.featured.challengeText },
     { label: t.featured.approach, title: t.featured.title, text: t.featured.approachText },
@@ -515,122 +574,193 @@ function BlueVidiaSpace({ angle, onAngleChange }: { angle: number; onAngleChange
   ];
   const current = angles[angle];
   const currentLabel = current.label.replace(/^0\d\s*·\s*/, "");
-  const portalShapes = ["48% 52% 46% 54% / 52% 45% 55% 48%", "3%", "12% 12% 3% 3%"];
+  const gateShapes = [
+    "inset(4% 7% 5% 6% round 46% 54% 48% 52% / 52% 44% 56% 48%)",
+    "inset(2% 2% 2% 2% round 2px)",
+    "inset(2% 2% 2% 2% round 28px 4px 28px 4px)",
+  ];
+
+  const nudgeAngle = (direction: number) => {
+    onAngleChange((angle + direction + angles.length) % angles.length);
+  };
 
   return (
     <motion.section
       data-space="bluevidia"
-      className={`space-shell project-space ${projecting ? "is-projecting" : ""}`}
+      className={`space-shell project-space bv-space ${projecting ? "is-projecting" : ""}`}
       initial={{ opacity: 0, scale: 0.985 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.015 }}
       transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
     >
-      <h1 className="sr-only">BlueVidia</h1>
-      <div className="project-layout">
-        <div className="project-copy">
-          <div>
-            <SectionLabel>{t.featured.eyebrow}</SectionLabel>
-            <p aria-hidden="true" className="mt-5 text-[clamp(3.5rem,8vw,8.5rem)] font-medium leading-[0.7] tracking-[-0.085em] text-white">
-              BlueVidia
-            </p>
-          </div>
+      <div className="bv-case">
+        <div className="bv-case-head">
+          <SectionLabel>{t.featured.eyebrow}</SectionLabel>
+          <p className="bv-live"><span />{t.featured.live} · bluevidia.com</p>
+        </div>
 
+        <div className="bv-masthead">
+          <h1>BlueVidia</h1>
+          <div aria-hidden="true" className="bv-masthead-side">
+            <span>BV / 24—26</span>
+            <span>{currentLanguage === "fr" ? "Image · son · mouvement" : "Image · sound · movement"}</span>
+          </div>
+        </div>
+
+        <div className="bv-composition">
           <AnimatePresence mode="wait">
             <motion.div
               key={angle}
-              initial={{ opacity: 0, y: 18 }}
+              className="project-story bv-story"
+              initial={{ opacity: 0, y: 22 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-              className="project-story max-w-lg"
+              exit={{ opacity: 0, y: -14 }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
             >
-              <p className="cinematic-mono text-[8px] uppercase tracking-[0.2em] text-[#ff6b2c]">
-                0{angle + 1} / 03 · {currentLabel}
-              </p>
-              <h2 className="mt-3 max-w-[15ch] text-balance text-[clamp(1.65rem,3.1vw,3.7rem)] font-medium leading-[0.94] tracking-[-0.05em] text-white">
-                {current.title}
-              </h2>
-              <p className="mt-4 max-w-md text-pretty text-sm leading-relaxed text-white/65">
-                {current.text}
-              </p>
+              <p className="bv-story-index">0{angle + 1} / 03 · {currentLabel}</p>
+              <h2>{current.title}</h2>
+              <p>{current.text}</p>
+              <dl className="bv-facts">
+                <div><dt>{t.featured.role}</dt><dd>{t.featured.roleValue}</dd></div>
+                <div><dt>{t.featured.stack}</dt><dd>{t.featured.stackValue}</dd></div>
+              </dl>
             </motion.div>
           </AnimatePresence>
-        </div>
 
-        <div
-          className="project-stage"
-          data-chapter={angle}
-          onPointerMove={(event) => {
-            if (reducedMotion || event.pointerType !== "mouse" || angle === 1) return;
-            const bounds = event.currentTarget.getBoundingClientRect();
-            tiltY.set(((event.clientX - bounds.left) / bounds.width - 0.5) * 8);
-            tiltX.set(((event.clientY - bounds.top) / bounds.height - 0.5) * -6);
-          }}
-          onPointerLeave={() => {
-            tiltX.set(0);
-            tiltY.set(0);
-          }}
-        >
-          <motion.div
-            className="project-aperture"
-            style={{ rotateX: reducedMotion ? 0 : smoothTiltX, rotateY: reducedMotion ? 0 : smoothTiltY, transformPerspective: 1200 }}
-            animate={{ borderRadius: projecting ? "2%" : portalShapes[angle], rotateZ: projecting || reducedMotion ? 0 : [-1.2, 0.8, -0.4][angle], inset: projecting ? "0%" : "5%" }}
-            transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <Image src={BLUEVIDIA_FALLBACK} alt="" fill unoptimized sizes="(min-width: 768px) 65vw, 100vw" className="object-cover opacity-45" />
-            <video
-              ref={videoRef}
-              src="https://dabvh53eklx61.cloudfront.net/SterlingDio.mp4"
-              poster={BLUEVIDIA_FALLBACK}
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              onPlay={() => setPlaying(true)}
-              onPause={() => setPlaying(false)}
-              className={`absolute inset-0 size-full object-cover object-[center_35%] saturate-[.85] contrast-[1.06] ${angle === 0 ? "opacity-100" : "opacity-15"}`}
-            />
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(18,43,150,.32),transparent_42%,rgba(0,0,0,.42))]" />
-            <AnimatePresence mode="wait">
-              {angle === 1 && <motion.div key="layers" className="project-study-panel" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><ProjectLayers french={currentLanguage === "fr"} /></motion.div>}
-              {angle === 2 && <motion.div key="delivery" className="project-delivery" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                <span className="delivery-status"><i />{t.featured.live}</span>
-                <p className="delivery-title">BlueVidia<span>.com ↗</span></p>
-                <p>{currentLanguage === "fr" ? "De l'idée au site que vous pouvez explorer." : "From an idea to a website you can explore."}</p>
-                <dl>
-                  <div><dt>{t.featured.role}</dt><dd>{t.featured.roleValue}</dd></div>
-                  <div><dt>{t.featured.stack}</dt><dd>{t.featured.stackValue}</dd></div>
-                </dl>
-                <span className="delivery-credit">{currentLanguage === "fr" ? "Site : Etienne Mentrel · Images : BlueVidia" : "Website: Etienne Mentrel · Imagery: BlueVidia"}</span>
-              </motion.div>}
-            </AnimatePresence>
-            <div className="sr-only">
-              <span className="flex items-center gap-2"><span className="size-1.5 rounded-full bg-[#ff6b2c]" />{t.featured.live}</span>
-              <span>bluevidia.com</span>
-            </div>
-            <div className="sr-only">
-              <p className="text-[clamp(2.8rem,7vw,7.5rem)] font-semibold leading-[.7] tracking-[-.085em] text-[#f5f0e7]">BlueVidia</p>
-              <p className="mt-4 cinematic-mono text-[7px] uppercase tracking-[.2em] text-white/60">Film · photo · direction visuelle</p>
-            </div>
-          </motion.div>
+          <div className="bv-stage-wrap">
+            <motion.div
+              className="project-stage bv-stage"
+              data-chapter={angle}
+              drag={reducedMotion || projecting ? false : "x"}
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.16}
+              onDragEnd={(_, info) => {
+                if (Math.abs(info.offset.x) > 55) nudgeAngle(info.offset.x < 0 ? 1 : -1);
+              }}
+              onPointerMove={(event) => {
+                if (reducedMotion || event.pointerType !== "mouse" || angle === 1 || projecting) return;
+                const bounds = event.currentTarget.getBoundingClientRect();
+                tiltY.set(((event.clientX - bounds.left) / bounds.width - 0.5) * 5);
+                tiltX.set(((event.clientY - bounds.top) / bounds.height - 0.5) * -4);
+              }}
+              onPointerLeave={() => {
+                tiltX.set(0);
+                tiltY.set(0);
+              }}
+            >
+              <div className="bv-perforations bv-perforations-left" aria-hidden="true">
+                {Array.from({ length: 7 }, (_, index) => <i key={index} />)}
+              </div>
+              <div className="bv-perforations bv-perforations-right" aria-hidden="true">
+                {Array.from({ length: 7 }, (_, index) => <i key={index} />)}
+              </div>
 
-          <motion.div
-            aria-hidden="true"
-            className="pointer-events-none absolute inset-[0_6%_0_0] border border-white/10"
-            animate={{ borderRadius: portalShapes[(angle + 1) % portalShapes.length], rotate: [2, -1, 1][angle] }}
-            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-          />
-          <div className="project-media-tools">
-            <span>{angle === 0 ? (currentLanguage === "fr" ? "Images du studio" : "Studio footage") : angle === 1 ? (currentLanguage === "fr" ? "Glissez pour explorer" : "Slide to explore") : (currentLanguage === "fr" ? "Design & développement" : "Design & development")} / BlueVidia</span>
-            <div className={angle === 0 ? "" : "invisible"} aria-hidden={angle !== 0} inert={angle !== 0}>
-              <button type="button" onClick={() => { if (playing) videoRef.current?.pause(); else void videoRef.current?.play().catch(() => setPlaying(false)); }} aria-label={playing ? "Pause" : (currentLanguage === "fr" ? "Lire la vidéo" : "Play video")}>{playing ? "Ⅱ" : "▶"}</button>
-              <button type="button" aria-pressed={projecting} onClick={() => setProjecting(!projecting)}>{currentLanguage === "fr" ? (projecting ? "Refermer ↙" : "Plein cadre ↗") : (projecting ? "Close frame ↙" : "Open frame ↗")}</button>
+              <motion.div
+                className="project-aperture bv-aperture"
+                style={{
+                  rotateX: reducedMotion ? 0 : smoothTiltX,
+                  rotateY: reducedMotion ? 0 : smoothTiltY,
+                  transformPerspective: 1400,
+                }}
+                animate={{
+                  clipPath: projecting ? "inset(0% 0% 0% 0% round 0px)" : gateShapes[angle],
+                  scale: projecting ? 1 : [0.985, 1, 0.99][angle],
+                }}
+                transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`still-${angle}`}
+                    className="absolute inset-0"
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <Image
+                      src={BLUEVIDIA_STILLS[angle]}
+                      alt=""
+                      fill
+                      unoptimized
+                      sizes="(min-width: 1200px) 60vw, 100vw"
+                      className="object-cover saturate-[.78] contrast-[1.08]"
+                    />
+                  </motion.div>
+                </AnimatePresence>
+                <video
+                  ref={videoRef}
+                  src="https://dabvh53eklx61.cloudfront.net/SterlingDio.mp4"
+                  poster={BLUEVIDIA_FALLBACK}
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  onPlay={() => setPlaying(true)}
+                  onPause={() => setPlaying(false)}
+                  className={`absolute inset-0 size-full object-cover object-[center_35%] saturate-[.82] contrast-[1.07] transition-opacity duration-700 ${angle === 0 ? "opacity-100" : "opacity-0"}`}
+                />
+                <div className="bv-image-grade" aria-hidden="true" />
+
+                <AnimatePresence mode="wait">
+                  {angle === 1 && (
+                    <motion.div key="layers" className="project-study-panel" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+                      <ProjectLayers french={currentLanguage === "fr"} />
+                    </motion.div>
+                  )}
+                  {angle === 2 && (
+                    <motion.div key="delivery" className="project-delivery" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                      <span className="delivery-status"><i />{t.featured.live}</span>
+                      <p className="delivery-title">BlueVidia<span>.com ↗</span></p>
+                      <p>{currentLanguage === "fr" ? "Une direction créative devenue un site réel, responsive et accessible en ligne." : "A creative direction turned into a real, responsive website you can visit."}</p>
+                      <span className="delivery-credit">{currentLanguage === "fr" ? "Conception & développement : Etienne Mentrel · Images : BlueVidia" : "Design & development: Etienne Mentrel · Imagery: BlueVidia"}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <span className="bv-frame-number" aria-hidden="true">0{angle + 1}</span>
+              </motion.div>
+
+              <div className="project-media-tools">
+                <span>{currentLanguage === "fr" ? "Glisser le photogramme" : "Drag the frame"} · 0{angle + 1}</span>
+                <div className={angle === 0 ? "" : "invisible"} aria-hidden={angle !== 0} inert={angle !== 0}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (playing) videoRef.current?.pause();
+                      else void videoRef.current?.play().catch(() => setPlaying(false));
+                    }}
+                    aria-label={playing ? "Pause" : (currentLanguage === "fr" ? "Lire la vidéo" : "Play video")}
+                  >
+                    {playing ? "Ⅱ" : "▶"}
+                  </button>
+                  <button type="button" aria-pressed={projecting} onClick={() => setProjecting(!projecting)}>
+                    {currentLanguage === "fr" ? (projecting ? "Refermer ↙" : "Plein cadre ↗") : (projecting ? "Close frame ↙" : "Open frame ↗")}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+
+            <div className="bv-contact-sheet" aria-label={t.experience.projectAngles}>
+              {angles.map((item, index) => (
+                <button
+                  type="button"
+                  key={`frame-${item.label}`}
+                  onClick={() => onAngleChange(index)}
+                  aria-label={`${currentLanguage === "fr" ? "Photogramme" : "Frame"} 0${index + 1}`}
+                  aria-pressed={angle === index}
+                >
+                  <span className="bv-thumb">
+                    <Image src={BLUEVIDIA_STILLS[index]} alt="" fill unoptimized sizes="120px" className="object-cover" />
+                    <i aria-hidden="true" />
+                  </span>
+                  <span>0{index + 1}</span>
+                </button>
+              ))}
             </div>
           </div>
         </div>
 
-        <div className="project-controls">
+        <div className="project-controls bv-controls">
           <div className="grid flex-1 grid-cols-3" aria-label={t.experience.projectAngles}>
             {angles.map((item, index) => (
               <button
@@ -639,19 +769,14 @@ function BlueVidiaSpace({ angle, onAngleChange }: { angle: number; onAngleChange
                 onClick={() => onAngleChange(index)}
                 aria-pressed={angle === index}
                 aria-label={item.label}
-                className={`relative min-h-10 text-left cinematic-mono text-[7px] uppercase tracking-[0.13em] transition-colors duration-300 ${angle === index ? "text-white" : "text-white/35 hover:text-white/75"}`}
               >
-                <motion.span className="absolute inset-x-0 -top-[13px] h-px origin-left bg-[#ff6b2c]" animate={{ scaleX: angle === index ? 1 : 0 }} />
-                {item.label}
+                <motion.span className="bv-control-progress" animate={{ scaleX: angle === index ? 1 : 0 }} />
+                <span>0{index + 1}</span>
+                <span>{item.label.replace(/^0\d\s*·\s*/, "")}</span>
               </button>
             ))}
           </div>
-          <a
-            href="https://bluevidia.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex min-h-10 items-center gap-3 rounded-full bg-[#f5f0e7] px-5 text-[8px] font-semibold uppercase tracking-[0.14em] text-black transition-transform duration-300 hover:-translate-y-0.5"
-          >
+          <a href="https://bluevidia.com" target="_blank" rel="noopener noreferrer">
             <span>{t.featured.visit}</span><Arrow diagonal />
           </a>
         </div>
@@ -736,6 +861,13 @@ function ProfileSpace({ resumeUrl }: { resumeUrl: string }) {
         </div>
 
         <div className="profile-stage">
+          <div className="profile-negative-rail" aria-hidden="true">
+            {t.profile.capabilities.map((_, index) => (
+              <span key={`negative-${index}`} className={activeCapability === index ? "is-active" : ""}>
+                <i />0{index + 1}
+              </span>
+            ))}
+          </div>
           <motion.div
             className="profile-portrait"
             animate={{ borderRadius: reducedMotion ? "46%" : capabilityShapes[activeCapability] }}
@@ -743,6 +875,14 @@ function ProfileSpace({ resumeUrl }: { resumeUrl: string }) {
           >
             <Image src="/avatar.jpg" alt="Etienne Mentrel" fill priority sizes="(min-width: 768px) 40vw, 70vw" className="object-cover object-[58%_center] saturate-[.8] contrast-[1.06]" />
             <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_45%,rgba(1,3,9,.78)_100%)]" />
+            <motion.div
+              aria-hidden="true"
+              className="profile-scan-line"
+              animate={{ top: `${16 + activeCapability * 12.5}%` }}
+              transition={{ type: "spring", stiffness: 90, damping: 20 }}
+            />
+            <div className="profile-focus-mark" aria-hidden="true"><i /><i /></div>
+            <span className="profile-frame-code" aria-hidden="true">EM — F0{activeCapability + 1} · 2026</span>
             <div className="absolute inset-x-[17%] bottom-7 flex flex-col items-center text-center md:bottom-10">
               <div className="flex flex-col items-center">
                 <p className="cinematic-mono text-[9px] uppercase tracking-[0.12em] text-white/75">Etienne Mentrel</p>
@@ -816,7 +956,7 @@ function ContactSpace({ resumeUrl }: { resumeUrl: string }) {
   return (
     <motion.section
       data-space="contact"
-      className="space-shell contact-space contact-light"
+      className={`space-shell contact-space contact-light ${copied ? "is-exposed" : ""}`}
       initial={{ opacity: 0, scale: 0.975 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 1.02 }}
@@ -850,26 +990,40 @@ function ContactSpace({ resumeUrl }: { resumeUrl: string }) {
             <p className="mt-5 max-w-md text-pretty text-xs leading-relaxed text-white/52 md:text-sm">{t.profile.contactDescription}</p>
           </div>
 
-          <div className="contact-action relative z-20 flex flex-col items-center justify-center gap-5">
-            <motion.a
-              href="mailto:etienne.mentrel@gmail.com"
+          <motion.div className="contact-action contact-console relative z-20" style={{ x: smoothPullX, y: smoothPullY }}>
+            <p className="contact-console-kicker">
+              <span>To</span>
+              <span>{currentLanguage === "fr" ? "Prochain projet" : "Next project"}</span>
+              <span>2026</span>
+            </p>
+            <button
+              className="contact-address"
+              type="button"
               data-cursor="view"
-              className="group relative flex aspect-square w-[clamp(11rem,23vw,18rem)] items-center justify-center rounded-full border border-white/45 bg-black/30 text-center text-white backdrop-blur-sm"
-              whileHover={{ scale: 1.06, borderColor: "#ff6b2c", backgroundColor: "rgba(255,107,44,.88)", color: "#050505" }}
-              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              onClick={async () => {
+                try {
+                  await navigator.clipboard.writeText("etienne.mentrel@gmail.com");
+                  setCopied(true);
+                  setCopyFailed(false);
+                } catch {
+                  setCopyFailed(true);
+                }
+              }}
             >
-              <span className="max-w-[9rem] text-[10px] font-semibold uppercase leading-relaxed tracking-[0.17em]">{t.profile.email}</span>
-              <span className="absolute right-[18%] top-[18%] transition-transform duration-300 group-hover:translate-x-1 group-hover:-translate-y-1"><Arrow diagonal /></span>
-              <span className="absolute bottom-[16%] cinematic-mono text-[9px] uppercase tracking-[0.12em] opacity-60">{currentLanguage === "fr" ? "À vous de jouer" : "Your move"}</span>
-            </motion.a>
-            <button className="copy-email" type="button" onClick={async () => {
-              try { await navigator.clipboard.writeText("etienne.mentrel@gmail.com"); setCopied(true); setCopyFailed(false); }
-              catch { setCopyFailed(true); }
-            }}>
-              <span>etienne.mentrel@gmail.com</span><span aria-live="polite">{copied ? (currentLanguage === "fr" ? "Copié ✓" : "Copied ✓") : (currentLanguage === "fr" ? "Copier ↗" : "Copy ↗")}</span>
+              <span>etienne.mentrel</span>
+              <span>@gmail.com</span>
+              <i aria-hidden="true"><Arrow diagonal /></i>
             </button>
-            {copyFailed && <p role="status" className="text-xs text-white/70">{currentLanguage === "fr" ? "Sélectionnez l'adresse ci-dessus pour la copier." : "Select the address above to copy it."}</p>}
-          </div>
+            <div className="contact-console-footer">
+              <span aria-live="polite">
+                {copied
+                  ? (currentLanguage === "fr" ? "Adresse copiée — à vous d'écrire." : "Address copied — your move.")
+                  : (currentLanguage === "fr" ? "Cliquer pour copier l'adresse" : "Click to copy the address")}
+              </span>
+              <a href="mailto:etienne.mentrel@gmail.com">{t.profile.email}<Arrow diagonal /></a>
+            </div>
+            {copyFailed && <p role="status" className="contact-copy-failed">{currentLanguage === "fr" ? "Sélectionnez l'adresse ci-dessus pour la copier." : "Select the address above to copy it."}</p>}
+          </motion.div>
         </div>
 
         <div className="contact-footer">

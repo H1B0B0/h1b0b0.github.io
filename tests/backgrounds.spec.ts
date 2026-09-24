@@ -1,6 +1,6 @@
 import { expect, test } from "playwright/test";
 
-test.use({ channel: "chrome", viewport: { width: 375, height: 812 } });
+test.use({ channel: "chrome", locale: "fr-FR", viewport: { width: 375, height: 812 } });
 const PORTFOLIO_URL = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
 
 async function openPortfolio(page: import("playwright/test").Page, hash = "") {
@@ -61,12 +61,12 @@ test("project angles update the editorial narrative", async ({ page }) => {
   await expect(pointOfView).toHaveValue("100");
 });
 
-test("leaving the film chapter closes its full-frame treatment", async ({ page }) => {
+test("the film chapter can enter and leave its full-frame treatment", async ({ page }) => {
   await openPortfolio(page, "#bluevidia");
   const space = page.locator('[data-space="bluevidia"]');
   await space.getByRole("button", { name: "Plein cadre ↗" }).click();
   await expect(space).toHaveClass(/is-projecting/);
-  await space.getByRole("button", { name: /02 · Réponse/i }).click();
+  await space.getByRole("button", { name: "Refermer ↙" }).click();
   await expect(space).not.toHaveClass(/is-projecting/);
 });
 
@@ -89,6 +89,20 @@ test("the profile keeps its six selected capabilities visible", async ({ page })
   await expect(capabilities.filter({ hasText: "Cloud & DevOps" })).toHaveAttribute("aria-pressed", "true");
   await expect(profile.locator(".capability-note")).toContainText("infrastructure");
   await expect(profile.locator(".capability-note h2")).toHaveText("Cloud & DevOps");
+});
+
+test("the persistent optical rail connects every space", async ({ page }) => {
+  await openPortfolio(page, "#contact");
+  const rail = page.getByRole("navigation", { name: "Choisissez un signal" });
+  await rail.getByRole("button", { name: "Profil" }).click();
+  await expect(page).toHaveURL(/#profile$/);
+  await expect(page.locator('[data-space="profile"]')).toBeVisible();
+});
+
+test("the contact address exposes a useful copied state", async ({ page }) => {
+  await openPortfolio(page, "#contact");
+  await page.getByRole("button", { name: /etienne\.mentrel/i }).click();
+  await expect(page.getByText("Adresse copiée — à vous d'écrire.")).toBeVisible();
 });
 
 for (const width of [320, 768, 1024, 1440]) {
