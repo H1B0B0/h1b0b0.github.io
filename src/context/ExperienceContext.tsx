@@ -26,6 +26,7 @@ export type CreativeTrace = Record<CreativeChannel, number>;
 
 type ExperienceContextValue = {
   destination: ExperienceDestination;
+  previewDestination: ExperienceDestination | null;
   visited: ExperienceDestination[];
   trace: CreativeTrace;
   pulse: number;
@@ -33,6 +34,7 @@ type ExperienceContextValue = {
   pointerEnergy: number;
   pointerEnergyRef: React.MutableRefObject<number>;
   travelTo: (destination: ExperienceDestination) => void;
+  setPreviewDestination: (destination: ExperienceDestination | null) => void;
   addTrace: (channel: CreativeChannel, amount?: number) => void;
   setPointerEnergy: (energy: number) => void;
 };
@@ -51,6 +53,7 @@ function clamp01(value: number) {
 
 export function ExperienceProvider({ children }: { children: ReactNode }) {
   const [destination, setDestination] = useState<ExperienceDestination>("index");
+  const [previewDestination, setPreviewDestination] = useState<ExperienceDestination | null>(null);
   const [visited, setVisited] = useState<ExperienceDestination[]>(["index"]);
   const [trace, setTrace] = useState<CreativeTrace>(INITIAL_TRACE);
   const [pulse, setPulse] = useState(0);
@@ -64,6 +67,7 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
 
   const travelTo = useCallback((nextDestination: ExperienceDestination) => {
     setDestination(nextDestination);
+    setPreviewDestination(null);
     setVisited((current) =>
       current.includes(nextDestination) ? current : [...current, nextDestination],
     );
@@ -87,6 +91,7 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ExperienceContextValue>(
     () => ({
       destination,
+      previewDestination,
       visited,
       trace,
       pulse,
@@ -94,10 +99,11 @@ export function ExperienceProvider({ children }: { children: ReactNode }) {
       pointerEnergy,
       pointerEnergyRef,
       travelTo,
+      setPreviewDestination,
       addTrace,
       setPointerEnergy,
     }),
-    [addTrace, destination, pointerEnergy, pulse, sessionSeed, setPointerEnergy, trace, travelTo, visited],
+    [addTrace, destination, pointerEnergy, previewDestination, pulse, sessionSeed, setPointerEnergy, trace, travelTo, visited],
   );
 
   return <ExperienceContext.Provider value={value}>{children}</ExperienceContext.Provider>;

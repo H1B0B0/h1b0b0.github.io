@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { CreativeDestination } from "./CreativeMatter";
 import styles from "./ExperienceIndex.module.css";
@@ -65,6 +65,7 @@ export default function ExperienceIndex({
   const lastPointRef = useRef({ x: 0, y: 0, time: 0 });
   const callbackFrameRef = useRef(0);
   const pendingEnergyRef = useRef(0);
+  const [previewedDestination, setPreviewedDestination] = useState<IndexDestination | null>(null);
   const visitedSet = new Set(visited);
 
   const emitEnergy = useCallback(
@@ -106,6 +107,7 @@ export default function ExperienceIndex({
   const handlePointerLeave = () => {
     lastPointRef.current.time = 0;
     emitEnergy(0.08);
+    setPreviewedDestination(null);
     onPreviewDestination?.(null);
   };
 
@@ -120,6 +122,7 @@ export default function ExperienceIndex({
       ref={rootRef}
       className={`${styles.index} ${className}`}
       data-experience-index
+      data-preview={previewedDestination?.id}
       aria-labelledby="experience-index-title"
       onPointerMove={handlePointerMove}
       onPointerDown={() => emitEnergy(1)}
@@ -142,9 +145,16 @@ export default function ExperienceIndex({
 
         <div className={styles.instrument} aria-hidden="true">
           <div className={styles.instrumentMeta}>
-            <span>{matterLabel}</span>
+            <span>
+              {previewedDestination
+                ? `${String(destinations.indexOf(previewedDestination) + 1).padStart(2, "0")} / ${previewedDestination.label}`
+                : matterLabel}
+            </span>
             <span>{String(visitedSet.size).padStart(2, "0")} {tracesLabel}</span>
           </div>
+          <span className={styles.instrumentWord}>
+            {previewedDestination?.label ?? "Trace"}
+          </span>
           <div className={styles.channels}>
             {channelItems.map((channel) => (
               <span
@@ -173,15 +183,21 @@ export default function ExperienceIndex({
               aria-label={`${destination.label}${wasVisited ? ` · ${visitedLabel}` : ""}`}
               onPointerEnter={() => {
                 emitEnergy(0.48);
+                setPreviewedDestination(destination);
                 onPreviewDestination?.(destination.id);
               }}
-              onPointerLeave={() => onPreviewDestination?.(null)}
+              onPointerLeave={() => {
+                setPreviewedDestination(null);
+                onPreviewDestination?.(null);
+              }}
               onFocus={() => {
                 emitEnergy(0.48);
+                setPreviewedDestination(destination);
                 onPreviewDestination?.(destination.id);
               }}
               onBlur={() => {
                 emitEnergy(0.08);
+                setPreviewedDestination(null);
                 onPreviewDestination?.(null);
               }}
               onClick={() => {

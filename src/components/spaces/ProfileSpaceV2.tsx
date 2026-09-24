@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 import { useLanguage } from "@/i18n/LanguageContext";
+import type { CreativeTrace } from "@/context/ExperienceContext";
 
 import styles from "./profile-contact.module.css";
 
@@ -22,6 +23,7 @@ export type ProfileSpaceV2Props = {
   resumeUrl: string;
   visitedDestinations?: readonly string[];
   traceLevel?: number;
+  trace?: Partial<CreativeTrace>;
   onTrace?: (amount: number) => void;
 };
 
@@ -176,6 +178,7 @@ export default function ProfileSpaceV2({
   resumeUrl,
   visitedDestinations = [],
   traceLevel = 0,
+  trace = {},
   onTrace,
 }: ProfileSpaceV2Props) {
   const { currentLanguage } = useLanguage();
@@ -194,6 +197,7 @@ export default function ProfileSpaceV2({
         visited: "espaces explorés",
         resume: "Voir mon CV",
         github: "Profil GitHub",
+        channels: { form: "Forme", motion: "Mouvement", system: "Système" },
       }
     : {
         eyebrow: "Profile · method in motion",
@@ -208,6 +212,7 @@ export default function ProfileSpaceV2({
         visited: "spaces explored",
         resume: "View resume",
         github: "GitHub profile",
+        channels: { form: "Form", motion: "Motion", system: "System" },
       };
   const steps = PROCESS_COPY[language];
   const [activeStepId, setActiveStepId] = useState<ProcessStepId>("frame");
@@ -325,11 +330,24 @@ export default function ProfileSpaceV2({
               <span>{copy.journey}</span>
               <strong>{String(visitedCount).padStart(2, "0")}</strong>
               <small>{copy.visited}</small>
-              <div className={styles.traceTrack} aria-hidden="true">
-                <i style={{ transform: `scaleX(${normalizedTrace})` }} />
+              <div className={styles.traceChannels}>
+                {(["form", "motion", "system"] as const).map((channel) => {
+                  const value = Math.max(0, Math.min(1, trace[channel] ?? normalizedTrace));
+                  return (
+                    <div key={channel}>
+                      <span>{copy.channels[channel]}</span>
+                      <i aria-hidden="true"><b style={{ transform: `scaleX(${value})` }} /></i>
+                      <output>{Math.round(value * 100)}</output>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
+
+          <p className={styles.srOnly} aria-live="polite">
+            {copy.journey} — {copy.channels.form}: {Math.round(Math.max(0, Math.min(1, trace.form ?? normalizedTrace)) * 100)}; {copy.channels.motion}: {Math.round(Math.max(0, Math.min(1, trace.motion ?? normalizedTrace)) * 100)}; {copy.channels.system}: {Math.round(Math.max(0, Math.min(1, trace.system ?? normalizedTrace)) * 100)}.
+          </p>
 
           <article className={styles.evidencePanel} aria-live="polite" aria-atomic="true">
             <p className={styles.panelLabel}>{copy.evidence}</p>

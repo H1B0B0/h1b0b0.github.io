@@ -173,6 +173,31 @@
   text-transform: uppercase;
 }
 
+.instrumentWord {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  overflow: hidden;
+  color: transparent;
+  font-size: clamp(2.4rem, 4.7vw, 4.9rem);
+  font-weight: 560;
+  line-height: .78;
+  letter-spacing: -.07em;
+  text-align: center;
+  text-overflow: clip;
+  -webkit-text-stroke: 1px #ffffff1c;
+  text-transform: uppercase;
+  transform: translateY(-50%);
+  transition: opacity 160ms ease-out, transform 160ms ease-out;
+  white-space: nowrap;
+}
+
+.index[data-preview] .instrumentWord {
+  opacity: .82;
+  transform: translateY(-50%) scale(1.035);
+}
+
 .channels {
   position: absolute;
   inset: 28% 14% 18%;
@@ -391,6 +416,7 @@
 
   .hero {
     display: block;
+    padding-top: 3rem;
   }
 
   .title {

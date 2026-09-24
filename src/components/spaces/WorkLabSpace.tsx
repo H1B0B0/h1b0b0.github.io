@@ -27,6 +27,7 @@ export type WorkLabTrace = {
 export type WorkLabSpaceProps = {
   view: WorkLabView;
   language?: WorkLabLanguage;
+  channels?: Partial<Record<CreativeChannel, number>>;
   className?: string;
   headingRef?: Ref<HTMLHeadingElement>;
   onNavigate?: (destination: WorkLabView) => void;
@@ -199,6 +200,7 @@ const CHAPTER_CHANNELS: readonly CreativeChannel[] = ["form", "motion", "system"
 export default function WorkLabSpace({
   view,
   language = "fr",
+  channels = {},
   className,
   headingRef,
   onNavigate,
@@ -206,6 +208,9 @@ export default function WorkLabSpace({
 }: WorkLabSpaceProps) {
   const copy = COPY[language];
   const rootClassName = [styles.shell, styles[view], className].filter(Boolean).join(" ");
+  const channelCopy = language === "fr"
+    ? { title: "Signal de visite", form: "Forme", motion: "Mouvement", system: "Système" }
+    : { title: "Journey signal", form: "Form", motion: "Motion", system: "System" };
 
   const navigate = (destination: WorkLabView) => {
     onTrace?.({ source: view, channel: "system", action: "navigate" });
@@ -225,24 +230,40 @@ export default function WorkLabSpace({
             <p className={styles.intro}>{view === "work" ? copy.work.intro : copy.lab.intro}</p>
           </div>
 
-          {onNavigate ? (
-            <nav className={styles.localNavigation} aria-label={copy.navigation}>
-              <button
-                type="button"
-                aria-current={view === "work" ? "page" : undefined}
-                onClick={() => navigate("work")}
-              >
-                <span>01</span>{copy.workNav}
-              </button>
-              <button
-                type="button"
-                aria-current={view === "lab" ? "page" : undefined}
-                onClick={() => navigate("lab")}
-              >
-                <span>02</span>{copy.labNav}
-              </button>
-            </nav>
-          ) : null}
+          <div className={styles.headerTools}>
+            {onNavigate ? (
+              <nav className={styles.localNavigation} aria-label={copy.navigation}>
+                <button
+                  type="button"
+                  aria-current={view === "work" ? "page" : undefined}
+                  onClick={() => navigate("work")}
+                >
+                  <span>01</span>{copy.workNav}
+                </button>
+                <button
+                  type="button"
+                  aria-current={view === "lab" ? "page" : undefined}
+                  onClick={() => navigate("lab")}
+                >
+                  <span>02</span>{copy.labNav}
+                </button>
+              </nav>
+            ) : null}
+
+            <aside className={styles.signalLedger} aria-labelledby={`${view}-signal-title`}>
+              <p id={`${view}-signal-title`}>{channelCopy.title}</p>
+              {CHAPTER_CHANNELS.map((channel) => {
+                const value = Math.max(0, Math.min(1, channels[channel] ?? 0));
+                return (
+                  <div key={channel}>
+                    <span>{channelCopy[channel]}</span>
+                    <i aria-hidden="true"><b style={{ transform: `scaleX(${value})` }} /></i>
+                    <output>{Math.round(value * 100).toString().padStart(2, "0")}</output>
+                  </div>
+                );
+              })}
+            </aside>
+          </div>
         </header>
 
         {view === "work" ? (

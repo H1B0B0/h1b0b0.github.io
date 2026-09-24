@@ -68,6 +68,7 @@ export default function ContentLayersV2() {
   const { enabled: sfxEnabled, toggle: toggleSfx } = useSfx();
   const {
     destination,
+    setPreviewDestination,
     visited,
     trace,
     travelTo: setDestination,
@@ -224,11 +225,38 @@ export default function ContentLayersV2() {
   const handleLocalWorkNavigation = (view: WorkLabView) => travelTo(view);
   const currentLabel = destination === "index" ? "Index" : destinationCopy(destination).label;
   const transitionColors = transitionTarget ? TRANSITION_COLORS[transitionTarget] : TRANSITION_COLORS.index;
+  const sectionTitle = destination === "index"
+    ? language === "fr" ? "Développeur créatif & ingénieur" : "Creative developer & engineer"
+    : currentLabel;
+  const pageTitle = `${sectionTitle} — Etienne Mentrel`;
+
+  useEffect(() => {
+    const applyTitle = () => {
+      if (document.title !== pageTitle) document.title = pageTitle;
+    };
+    applyTitle();
+    const observer = new MutationObserver(applyTitle);
+    observer.observe(document.head, { childList: true, subtree: true, characterData: true });
+    return () => observer.disconnect();
+  }, [pageTitle]);
 
   return (
     <>
     <a className={styles.skipLink} href="#main-experience">{copy.skip}</a>
-    <main id="main-experience" className={styles.root} data-destination={destination}>
+    <main
+      id="main-experience"
+      className={styles.root}
+      data-destination={destination}
+      style={{
+        "--trace-form": trace.form,
+        "--trace-motion": trace.motion,
+        "--trace-system": trace.system,
+        "--trace-completion": traceLevel,
+        "--trace-angle": `${(trace.motion - 0.5) * 12}deg`,
+        "--trace-scale": 0.96 + trace.form * 0.06,
+        "--trace-shift": `${(trace.system - 0.5) * 24}px`,
+      } as React.CSSProperties}
+    >
       <button
         type="button"
         className={styles.soundToggle}
@@ -251,7 +279,12 @@ export default function ContentLayersV2() {
 
       {destination !== "index" ? (
         <header className={styles.header}>
-          <button type="button" className={styles.back} onClick={() => travelTo("index")}>
+          <button
+            type="button"
+            className={styles.back}
+            aria-label={copy.back}
+            onClick={() => travelTo("index")}
+          >
             <span className={styles.backIcon}><Arrow back /></span>
             <span>{copy.back}</span>
           </button>
@@ -312,6 +345,9 @@ export default function ContentLayersV2() {
                 if (isDestination(next)) travelTo(next);
               }}
               onPointerEnergyChange={setPointerEnergy}
+              onPreviewDestination={(next) => {
+                setPreviewDestination(next && isDestination(next) ? next : null);
+              }}
             />
           </motion.div>
         ) : destination === "work" || destination === "lab" ? (
@@ -326,6 +362,7 @@ export default function ContentLayersV2() {
             <WorkLabSpace
               view={destination}
               language={language}
+              channels={trace}
               headingRef={headingRef}
               onNavigate={handleLocalWorkNavigation}
               onTrace={handleWorkTrace}
@@ -338,6 +375,7 @@ export default function ContentLayersV2() {
               resumeUrl={resumeUrl}
               visitedDestinations={visited}
               traceLevel={traceLevel}
+              trace={trace}
               onTrace={(amount) => addTrace("system", amount)}
             />
           </motion.div>
@@ -347,6 +385,7 @@ export default function ContentLayersV2() {
               resumeUrl={resumeUrl}
               visitedDestinations={visited}
               traceLevel={traceLevel}
+              trace={trace}
               onTrace={(amount) => addTrace("motion", amount)}
             />
           </motion.div>
@@ -357,6 +396,7 @@ export default function ContentLayersV2() {
         {transitionTarget ? (
           <motion.div
             className={styles.transition}
+            data-target={transitionTarget}
             aria-hidden="true"
             style={{
               "--transition-a": transitionColors[0],
@@ -380,7 +420,12 @@ export default function ContentLayersV2() {
               animate={{ opacity: [0, 1, 0], y: [8, 0, -8] }}
               transition={{ duration: 0.58, times: [0, 0.42, 1], ease: "easeOut" }}
             >
-              {transitionTarget === "index" ? "Index" : destinationCopy(transitionTarget).label}
+              <span>
+                {String(EXPERIENCE_DESTINATIONS.indexOf(transitionTarget)).padStart(2, "0")}
+                {" · "}
+                {language === "fr" ? "Matière en recomposition" : "Matter recomposing"}
+              </span>
+              <strong>{transitionTarget === "index" ? "Index" : destinationCopy(transitionTarget).label}</strong>
             </motion.p>
           </motion.div>
         ) : null}

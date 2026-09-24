@@ -56,6 +56,7 @@
 .back {
   display: inline-flex;
   width: fit-content;
+  min-width: 44px;
   min-height: 44px;
   align-items: center;
   gap: 10px;
@@ -129,7 +130,7 @@
   padding: 7px 3px;
   border: 0;
   border-bottom: 1px solid #ffffff18;
-  color: #ffffff70;
+  color: #ffffffa3;
   background: transparent;
   cursor: pointer;
 }
@@ -141,6 +142,10 @@
 .rail button[aria-current="page"] {
   color: #101114;
   background: #f1eee6;
+}
+
+.rail button[aria-current="page"] span {
+  color: #963417;
 }
 
 .rail span,
@@ -164,9 +169,40 @@
   grid-template-rows: repeat(4, 1fr);
   overflow: hidden;
   pointer-events: auto;
+  isolation: isolate;
+}
+
+.transition::before,
+.transition::after {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+  translate: -50% -50%;
+}
+
+.transition::before {
+  width: min(62vw, 44rem);
+  border: 1px solid color-mix(in srgb, var(--transition-b) 78%, white 22%);
+  box-shadow:
+    0 0 0 clamp(1.5rem, 5vw, 5rem) color-mix(in srgb, var(--transition-b) 7%, transparent),
+    0 0 8rem color-mix(in srgb, var(--transition-b) 38%, transparent);
+}
+
+.transition::after {
+  width: min(19vw, 11rem);
+  background: radial-gradient(circle at 36% 31%, #fff, var(--transition-b) 11%, transparent 68%);
+  filter: saturate(135%);
+  opacity: .72;
 }
 
 .transition > span {
+  position: relative;
+  z-index: 1;
   display: block;
   background: var(--transition-a);
   border-bottom: 1px solid color-mix(in srgb, var(--transition-b) 35%, transparent);
@@ -178,14 +214,46 @@
 }
 
 .transition p {
+  z-index: 3;
+  display: grid;
+  gap: clamp(.75rem, 2vw, 1.5rem);
+  justify-items: center;
   position: absolute;
   inset: 50% auto auto 50%;
   margin: 0;
   color: #fff;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.transition p span {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: clamp(.55rem, .8vw, .75rem);
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+
+.transition p strong {
   font-size: clamp(3rem, 10vw, 9rem);
   font-weight: 520;
-  line-height: 0.8;
-  transform: translate(-50%, -50%);
+  line-height: .8;
+  letter-spacing: -.07em;
+}
+
+.transition[data-target="lab"]::before {
+  border-radius: 43% 57% 61% 39% / 55% 42% 58% 45%;
+  transform: rotate(11deg);
+}
+
+.transition[data-target="profile"]::before {
+  border-radius: 0;
+  transform: rotate(45deg) scale(.72);
+}
+
+.transition[data-target="contact"] p,
+.transition[data-target="contact"]::before {
+  color: #111318;
 }
 
 .srStatus {
@@ -257,7 +325,13 @@
 
 .root[data-destination="contact"] .back,
 .root[data-destination="contact"] .currentSpace {
-  color: #111318a8;
+  color: #111318;
+}
+
+.root[data-destination="contact"] .header {
+  padding: 4px 6px;
+  border: 1px solid #11131824;
+  background: #ece8df;
 }
 
 .root[data-destination="contact"] .backIcon {
@@ -275,8 +349,16 @@
 
 .root[data-destination="contact"] .soundToggle {
   border-color: #11131838;
-  color: #111318b5;
-  background: #f1eee6d9;
+  color: #111318;
+  background: #ece8df;
+}
+
+.root[data-destination="contact"] .soundToggle em {
+  color: #8f2f12;
+}
+
+.root[data-destination="contact"] .currentSpace span {
+  color: #8f2f12;
 }
 
 .root[data-destination="contact"] .soundToggle:hover,
@@ -297,6 +379,9 @@
     right: 16px;
     left: 16px;
     grid-template-columns: 1fr auto;
+    padding: 4px 6px;
+    border: 1px solid #ffffff18;
+    background: #07080bf2;
   }
 
   .currentSpace {
@@ -315,7 +400,7 @@
   }
 
   .root[data-destination="index"] .soundToggle {
-    top: max(52px, calc(env(safe-area-inset-top) + 40px));
+    top: max(76px, calc(env(safe-area-inset-top) + 64px));
     right: 20px;
   }
 

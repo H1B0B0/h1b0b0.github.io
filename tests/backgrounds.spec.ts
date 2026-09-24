@@ -23,6 +23,11 @@ test("the living index is immediately understandable and keeps one WebGL canvas"
   await expect(destinations).toHaveCount(4);
   await expect(destinations).toContainText(["Travaux", "Laboratoire", "Profil", "Contact"]);
 
+  await page.getByRole("button", { name: /Laboratoire/ }).hover();
+  await expect(page.locator("[data-creative-matter]")).toHaveAttribute("data-destination", "lab");
+  await page.locator("[data-experience-index] h1").hover();
+  await expect(page.locator("[data-creative-matter]")).toHaveAttribute("data-destination", "index");
+
   const viewport = await page.evaluate(() => ({
     width: document.documentElement.scrollWidth,
     height: document.documentElement.scrollHeight,
@@ -35,6 +40,7 @@ test("the living index is immediately understandable and keeps one WebGL canvas"
 
 test("Work frames BlueVidia as a delivered client commission", async ({ page }) => {
   await openPortfolio(page, "#work");
+  await expect(page).toHaveTitle("Travaux — Etienne Mentrel");
   const work = page.locator('[data-space="work"]');
   await expect(work).toBeVisible();
   await expect(work.getByRole("heading", { name: "BlueVidia", exact: true })).toBeVisible();
@@ -139,12 +145,63 @@ test("Profile demonstrates a five-step method with evidence", async ({ page }) =
 
 test("Contact recomposes the visit and keeps direct actions", async ({ page }) => {
   await openPortfolio(page, "#contact");
+  await expect(page).toHaveTitle("Contact — Etienne Mentrel");
   const contact = page.locator('[data-space="contact-v2"]');
   await expect(contact.getByRole("link", { name: /Écrire un email/ })).toHaveAttribute("href", "mailto:etienne.mentrel@gmail.com");
   await contact.getByRole("button", { name: /Copier l’adresse email/ }).click();
   await expect(contact.getByText(/Adresse copiée|copie automatique est indisponible/).first()).toBeVisible();
   await expect(contact.getByText(/aucune donnée collectée/)).toBeVisible();
   await expect(contact.getByText(/La prochaine trace peut être la vôtre/).first()).toBeVisible();
+});
+
+test("mobile editorial details stay aligned and never collide", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+
+  await openPortfolio(page);
+  const indexAlignment = await page.evaluate(() => {
+    const sound = document.querySelector<HTMLElement>("[data-sfx-control]")?.getBoundingClientRect();
+    const eyebrow = document.querySelector<HTMLElement>("[data-experience-index] p")?.getBoundingClientRect();
+    return sound && eyebrow ? sound.bottom <= eyebrow.top : false;
+  });
+  expect(indexAlignment).toBe(true);
+
+  await openPortfolio(page, "#profile");
+  const process = page.getByRole("navigation", { name: "Processus interactif" });
+  const firstPairFits = await process.getByRole("button").evaluateAll((buttons) => {
+    const rail = buttons[0]?.parentElement?.getBoundingClientRect();
+    const second = buttons[1]?.getBoundingClientRect();
+    return Boolean(rail && second && second.right <= rail.right + 1);
+  });
+  expect(firstPairFits).toBe(true);
+
+  await openPortfolio(page, "#contact");
+  const contactAlignment = await page.locator('[data-space="contact-v2"]').evaluate((contact) => {
+    const copy = contact.querySelector<HTMLElement>("[class*='journeyStatement'] strong")?.getBoundingClientRect();
+    const sculpture = contact.querySelector<HTMLElement>("[class*='signalSculpture']")?.getBoundingClientRect();
+    return copy && sculpture ? copy.bottom <= sculpture.top : false;
+  });
+  expect(contactAlignment).toBe(true);
+});
+
+test("the journey signal persists from interaction to the final composition", async ({ page }) => {
+  await openPortfolio(page, "#work");
+  const primaryNavigation = page.getByRole("navigation", { name: "Navigation principale" });
+  const work = page.locator('[data-space="work"]');
+
+  await work.getByLabel("Explorer les trois temps du projet").getByRole("button", { name: /Réponse/ }).click();
+  await expect(work.getByText("MOUVEMENT").locator("..").getByText("20")).toBeVisible();
+
+  await primaryNavigation.getByRole("button", { name: /Laboratoire/ }).click();
+  const lab = page.locator('[data-space="lab"]');
+  await lab.getByRole("slider", { name: "Comprimer la matière" }).press("End");
+  await lab.getByRole("slider", { name: "Mettre le mot sous tension" }).press("End");
+  await lab.getByRole("button", { name: "Propager" }).click();
+
+  await page.getByRole("navigation", { name: "Navigation principale" }).getByRole("button", { name: /Profil/ }).click();
+  await expect(page.getByText(/Trace de visite — Forme: 24; Mouvement: 30; Système: 16/)).toBeAttached();
+
+  await page.getByRole("navigation", { name: "Navigation principale" }).getByRole("button", { name: /Contact/ }).click();
+  await expect(page.getByText("TRC-IWLP-F24M30S16").first()).toBeVisible();
 });
 
 test("persistent labeled navigation connects every internal space", async ({ page }) => {
@@ -194,7 +251,7 @@ for (const viewport of [
         overflow: element.scrollWidth > element.clientWidth + 1,
         smallTargets: Array.from(element.querySelectorAll("button, a, input")).filter((target) => {
           const rect = target.getBoundingClientRect();
-          return rect.width > 0 && rect.height > 0 && (rect.height < 43 || rect.width < 32);
+          return rect.width > 0 && rect.height > 0 && (rect.height < 43 || rect.width < 43);
         }).length,
       }));
       expect(geometry, `${hash} at ${viewport.width}px`).toEqual({ overflow: false, smallTargets: 0 });

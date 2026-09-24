@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 import { useLanguage } from "@/i18n/LanguageContext";
+import type { CreativeTrace } from "@/context/ExperienceContext";
 
 import styles from "./profile-contact.module.css";
 
@@ -10,6 +11,7 @@ export type ContactSpaceV2Props = {
   resumeUrl: string;
   visitedDestinations?: readonly string[];
   traceLevel?: number;
+  trace?: Partial<CreativeTrace>;
   onTrace?: (amount: number) => void;
 };
 
@@ -32,6 +34,7 @@ export default function ContactSpaceV2({
   resumeUrl,
   visitedDestinations = [],
   traceLevel = 0,
+  trace = {},
   onTrace,
 }: ContactSpaceV2Props) {
   const { currentLanguage } = useLanguage();
@@ -60,6 +63,7 @@ export default function ContactSpaceV2({
         availability: "Disponible pour des projets sélectionnés",
         resume: "Voir mon CV",
         github: "Profil GitHub",
+        channels: { form: "Forme", motion: "Mouvement", system: "Système" },
       }
     : {
         eyebrow: "Contact · final transmission",
@@ -84,6 +88,7 @@ export default function ContactSpaceV2({
         availability: "Available for selected projects",
         resume: "View resume",
         github: "GitHub profile",
+        channels: { form: "Form", motion: "Motion", system: "System" },
       };
   const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -94,7 +99,18 @@ export default function ContactSpaceV2({
     [visitedDestinations],
   );
   const visitedRoutes = ROUTES.filter((route) => visited.has(route.id));
-  const transmissionCode = `TRC-${ROUTES.map((route) => visited.has(route.id) ? route.id[0].toUpperCase() : "·").join("")}-${Math.round(normalizedTrace * 100).toString().padStart(2, "0")}`;
+  const channelValues = {
+    form: Math.max(0, Math.min(1, trace.form ?? normalizedTrace)),
+    motion: Math.max(0, Math.min(1, trace.motion ?? normalizedTrace)),
+    system: Math.max(0, Math.min(1, trace.system ?? normalizedTrace)),
+  };
+  const transmissionCode = `TRC-${ROUTES.map((route) => visited.has(route.id) ? route.id[0].toUpperCase() : "·").join("")}-F${Math.round(channelValues.form * 100).toString().padStart(2, "0")}M${Math.round(channelValues.motion * 100).toString().padStart(2, "0")}S${Math.round(channelValues.system * 100).toString().padStart(2, "0")}`;
+  const sculptureStyle = {
+    "--signal-form": channelValues.form,
+    "--signal-motion": channelValues.motion,
+    "--signal-system": channelValues.system,
+    "--signal-visited": visitedRoutes.length / ROUTES.length,
+  } as CSSProperties;
 
   useEffect(() => {
     headingRef.current?.focus({ preventScroll: true });
@@ -146,6 +162,16 @@ export default function ContactSpaceV2({
             </figcaption>
 
             <div className={styles.transmissionScene}>
+              <div className={styles.signalSculpture} style={sculptureStyle} aria-hidden="true">
+                <span data-channel="form"><i /></span>
+                <span data-channel="motion"><i /></span>
+                <span data-channel="system"><i /></span>
+                <div>
+                  <small>{copy.signal}</small>
+                  <strong>{transmissionCode}</strong>
+                </div>
+              </div>
+
               <div className={styles.journeyStatement}>
                 <span>{String(visitedRoutes.length).padStart(2, "0")}</span>
                 <p>
@@ -170,7 +196,15 @@ export default function ContactSpaceV2({
               <div className={styles.sessionImprint}>
                 <span>{copy.imprint}</span>
                 <strong>{transmissionCode}</strong>
-                <i aria-hidden="true"><span style={{ transform: `scaleX(${normalizedTrace})` } as CSSProperties} /></i>
+                <div className={styles.imprintChannels}>
+                  {(["form", "motion", "system"] as const).map((channel) => (
+                    <div key={channel}>
+                      <span>{copy.channels[channel]}</span>
+                      <i aria-hidden="true"><b style={{ transform: `scaleX(${channelValues[channel]})` }} /></i>
+                      <output>{Math.round(channelValues[channel] * 100)}</output>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 

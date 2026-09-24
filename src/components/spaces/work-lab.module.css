@@ -61,6 +61,13 @@
   margin-bottom: clamp(2rem, 5vw, 4.5rem);
 }
 
+.headerTools {
+  display: grid;
+  min-width: min(100%, 20rem);
+  gap: 0.75rem;
+  justify-items: end;
+}
+
 .headingBlock {
   max-width: 66rem;
 }
@@ -143,8 +150,61 @@
   background: #f3f0e9;
 }
 
+.localNavigation button[aria-current="page"] span {
+  color: #963417;
+}
+
+.signalLedger {
+  width: min(100%, 20rem);
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--line);
+  background: rgb(4 5 8 / 78%);
+}
+
+.signalLedger > p {
+  margin: 0 0 0.65rem;
+  color: rgb(255 255 255 / 68%);
+  font: 600 0.5rem var(--font-mono), ui-monospace, monospace;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.signalLedger > div {
+  display: grid;
+  grid-template-columns: minmax(4.5rem, auto) minmax(3rem, 1fr) 1.8rem;
+  gap: 0.6rem;
+  align-items: center;
+  min-height: 1.35rem;
+  color: rgb(255 255 255 / 68%);
+  font: 500 0.46rem var(--font-mono), ui-monospace, monospace;
+  text-transform: uppercase;
+}
+
+.signalLedger > div > i {
+  height: 1px;
+  overflow: hidden;
+  background: rgb(255 255 255 / 20%);
+}
+
+.signalLedger > div > i > b {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #ff9466;
+  transform-origin: left;
+  transition: transform 180ms ease-out;
+}
+
+.signalLedger output {
+  color: #ffad89;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
 /* BlueVidia: the cinematic vocabulary deliberately starts and stops here. */
 .caseStudy {
+  position: relative;
+  isolation: isolate;
   overflow: hidden;
   border: 1px solid rgb(128 156 211 / 19%);
   border-radius: clamp(1.1rem, 2vw, 2rem);
@@ -152,6 +212,26 @@
     radial-gradient(60% 85% at 82% 20%, rgb(25 66 157 / 23%), transparent 68%),
     linear-gradient(145deg, #050914 0%, #02040b 72%);
   box-shadow: 0 3rem 10rem rgb(0 0 0 / 42%);
+}
+
+.caseStudy::after {
+  position: absolute;
+  z-index: 0;
+  top: 13%;
+  right: 5%;
+  width: min(52%, 44rem);
+  aspect-ratio: 1.7;
+  border: 1px solid rgb(255 148 102 / 16%);
+  border-radius: 50%;
+  content: "";
+  pointer-events: none;
+  transform: translate3d(var(--trace-shift, 0), 0, 0) rotate(var(--trace-angle, 0deg)) scale(var(--trace-scale, 1));
+  transition: transform 180ms ease-out;
+}
+
+.caseStudy > * {
+  position: relative;
+  z-index: 1;
 }
 
 .caseHeader {
@@ -629,7 +709,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  color: rgb(255 255 255 / 34%);
+  color: rgb(255 255 255 / 58%);
   font: 500 0.5rem var(--font-mono), ui-monospace, monospace;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -651,7 +731,7 @@
   min-height: 5.7rem;
   margin: 0;
   padding: 1.15rem clamp(1.15rem, 2vw, 1.65rem);
-  color: rgb(255 255 255 / 50%);
+  color: rgb(255 255 255 / 68%);
   font-size: 0.78rem;
   line-height: 1.55;
 }
@@ -927,6 +1007,15 @@
     justify-self: start;
   }
 
+  .headerTools {
+    width: min(100%, 30rem);
+    justify-items: start;
+  }
+
+  .signalLedger {
+    width: 100%;
+  }
+
   .caseHeader {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -966,6 +1055,20 @@
   }
 }
 
+@media (max-width: 900px) {
+  .caseBody {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .story {
+    display: block;
+  }
+
+  .chapterNavigation {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 760px) {
   .inner {
     padding-inline: 0.8rem;
@@ -976,6 +1079,10 @@
   }
 
   .localNavigation {
+    width: 100%;
+  }
+
+  .headerTools {
     width: 100%;
   }
 
@@ -1009,6 +1116,14 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 0.25rem;
     padding: 0.55rem;
+    letter-spacing: 0.04em;
+  }
+
+  .chapterNavigation button span:last-child {
+    display: block;
+    width: 100%;
+    line-height: 1.25;
+    white-space: normal;
   }
 
   .chapterNavigation button:hover,
@@ -1120,6 +1235,25 @@
   .frameStrip {
     right: 1.75rem;
     left: 1.75rem;
+  }
+
+  .frameStrip button {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    padding-inline: 0.35rem;
+    text-align: center;
+  }
+
+  .frameStrip button span {
+    display: none;
+  }
+
+  .frameStrip button strong {
+    width: 100%;
+    overflow: visible;
+    font-size: 0.48rem;
+    letter-spacing: 0.04em;
+    text-overflow: clip;
   }
 
   .perforationsLeft { left: 0.35rem; }

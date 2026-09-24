@@ -23,6 +23,7 @@ export type CreativeChannels = {
 export interface CreativeMatterProps {
   destination?: CreativeDestination;
   visited?: readonly CreativeDestination[];
+  pulse?: number;
   pointerEnergy?: number;
   channels?: Partial<CreativeChannels>;
   sessionSeed?: number;
@@ -59,6 +60,8 @@ const fragmentShader = /* glsl */ `
   uniform float uEnergy;
   uniform float uSeed;
   uniform float uVisitedCount;
+  uniform float uPulse;
+  uniform float uMode;
   uniform float uOctaves;
   uniform vec2 uPointer;
   uniform vec3 uChannels;
@@ -104,6 +107,10 @@ const fragmentShader = /* glsl */ `
     return length(pa - ba * h);
   }
 
+  float modeMask(float mode) {
+    return 1.0 - smoothstep(0.0, 0.72, abs(uMode - mode));
+  }
+
   void main() {
     vec2 centered = vUv - 0.5;
     centered.x *= uAspect;
@@ -127,6 +134,33 @@ const fragmentShader = /* glsl */ `
     float strandB = exp(-abs(material.x * 0.42 - material.y - cos(material.y * 2.7 - field * 3.5) * 0.1) * 10.0);
     float gesture = pointerFalloff * (0.12 + uEnergy * 0.88);
 
+    // One material, five states. Navigation does not swap a decorative
+    // background: it physically recomposes the same field.
+    float indexMode = modeMask(0.0);
+    float workMode = modeMask(1.0);
+    float labMode = modeMask(2.0);
+    float profileMode = modeMask(3.0);
+    float contactMode = modeMask(4.0);
+
+    vec2 framePoint = abs(material - vec2(0.05, -0.015));
+    float frameX = exp(-abs(framePoint.x - 0.46) * 42.0) * smoothstep(0.52, 0.12, framePoint.y);
+    float frameY = exp(-abs(framePoint.y - 0.31) * 42.0) * smoothstep(0.58, 0.1, framePoint.x);
+    float frame = clamp(frameX + frameY, 0.0, 1.0);
+
+    float radius = length(material * vec2(0.82, 1.0));
+    float rings = pow(0.5 + 0.5 * cos(radius * 38.0 - time * 8.0), 18.0);
+    rings *= smoothstep(0.7, 0.08, radius);
+
+    float orbitA = exp(-abs(radius - 0.22) * 42.0);
+    float orbitB = exp(-abs(radius - 0.42) * 34.0);
+    float axis = exp(-abs(material.x) * 48.0) + exp(-abs(material.y) * 48.0);
+    float architecture = clamp(orbitA + orbitB * 0.7 + axis * 0.28, 0.0, 1.0);
+
+    float angle = atan(material.y, material.x);
+    float rays = pow(0.5 + 0.5 * cos(angle * 7.0 + time * 3.0), 24.0);
+    rays *= smoothstep(0.76, 0.04, radius) * smoothstep(0.03, 0.18, radius);
+    float signal = exp(-radius * 7.0) + rays * 0.58;
+
     float traceA = exp(-segment(material, vec2(-0.62, -0.28), vec2(0.52, 0.34)) * 22.0) * uVisited.x;
     float traceB = exp(-segment(material, vec2(-0.42, 0.44), vec2(0.64, -0.18)) * 24.0) * uVisited.y;
     float traceC = exp(-segment(material, vec2(-0.72, 0.08), vec2(0.36, -0.46)) * 23.0) * uVisited.z;
@@ -139,6 +173,12 @@ const fragmentShader = /* glsl */ `
     color += uColorC * strandB * (0.035 + uChannels.z * 0.05);
     color += mix(uColorA, uColorC, base) * gesture * (0.1 + uEnergy * 0.13);
     color += mix(uColorC, vec3(0.92), 0.3) * traces * (0.035 + uVisitedCount * 0.02);
+    color += uColorA * frame * workMode * (0.17 + uPulse * 0.34);
+    color += mix(uColorB, uColorC, radius) * rings * labMode * (0.18 + uEnergy * 0.16);
+    color += mix(uColorA, vec3(0.94), 0.48) * architecture * profileMode * (0.095 + uPulse * 0.22);
+    color += mix(uColorC, vec3(1.0, 0.92, 0.72), 0.52) * signal * contactMode * (0.12 + uPulse * 0.3);
+    color += mix(uColorA, uColorB, base) * indexMode * gesture * 0.08;
+    color += mix(uColorA, vec3(1.0), 0.34) * traces * uPulse * 0.36;
 
     float edge = smoothstep(1.05, 0.22, length(centered * vec2(0.72, 1.0)));
     color *= edge;
@@ -203,13 +243,14 @@ function MatterField({
   destination,
   visited,
   pointerEnergy,
+  pulse,
   channels,
   sessionSeed,
   pointerRef,
   reducedMotion,
   initialOctaves,
 }: Required<
-  Pick<CreativeMatterProps, "destination" | "visited" | "pointerEnergy" | "sessionSeed">
+  Pick<CreativeMatterProps, "destination" | "visited" | "pointerEnergy" | "pulse" | "sessionSeed">
 > & {
   channels: CreativeChannels;
   pointerRef: React.MutableRefObject<THREE.Vector2>;
@@ -219,6 +260,8 @@ function MatterField({
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const smoothPointer = useRef(new THREE.Vector2());
   const frames = useRef({ count: 0, elapsed: 0, octaves: initialOctaves });
+  const pulseEnvelope = useRef(0);
+  const lastPulse = useRef(pulse);
   const { size, invalidate } = useThree();
 
   const targetColors = useMemo(() => {
@@ -233,6 +276,10 @@ function MatterField({
     () => new THREE.Vector3(channels.form, channels.motion, channels.system),
     [channels.form, channels.motion, channels.system],
   );
+  const targetMode = useMemo(() => {
+    const modes: Record<string, number> = { index: 0, work: 1, lab: 2, profile: 3, contact: 4 };
+    return modes[destination] ?? 0;
+  }, [destination]);
 
   const visitedFlags = useMemo(() => {
     const set = new Set(visited);
@@ -252,6 +299,8 @@ function MatterField({
       uEnergy: { value: pointerEnergy },
       uSeed: { value: sessionSeed },
       uVisitedCount: { value: visited.length },
+      uPulse: { value: 0 },
+      uMode: { value: targetMode },
       uOctaves: { value: initialOctaves },
       uPointer: { value: new THREE.Vector2() },
       uChannels: {
@@ -274,6 +323,11 @@ function MatterField({
     const material = materialRef.current;
     if (!material) return;
 
+    if (lastPulse.current !== pulse) {
+      lastPulse.current = pulse;
+      pulseEnvelope.current = 1;
+    }
+
     const safeDelta = Math.min(delta, 0.05);
     if (!reducedMotion) material.uniforms.uTime.value += safeDelta;
     material.uniforms.uAspect.value = size.width / Math.max(1, size.height);
@@ -284,6 +338,8 @@ function MatterField({
       material.uniforms.uChannels.value.copy(targetChannels);
       material.uniforms.uVisited.value.copy(visitedFlags);
       material.uniforms.uVisitedCount.value = visited.length;
+      material.uniforms.uPulse.value = 0;
+      material.uniforms.uMode.value = targetMode;
       material.uniforms.uColorA.value.copy(targetColors[0]);
       material.uniforms.uColorB.value.copy(targetColors[1]);
       material.uniforms.uColorC.value.copy(targetColors[2]);
@@ -306,6 +362,17 @@ function MatterField({
       material.uniforms.uVisitedCount.value,
       visited.length,
       1 - Math.pow(0.02, safeDelta),
+    );
+    pulseEnvelope.current = THREE.MathUtils.lerp(
+      pulseEnvelope.current,
+      0,
+      1 - Math.pow(0.035, safeDelta),
+    );
+    material.uniforms.uPulse.value = pulseEnvelope.current;
+    material.uniforms.uMode.value = THREE.MathUtils.lerp(
+      material.uniforms.uMode.value,
+      targetMode,
+      1 - Math.pow(0.018, safeDelta),
     );
 
     const colorEase = 1 - Math.pow(0.035, safeDelta);
@@ -381,6 +448,7 @@ function StaticMatter({
 export default function CreativeMatter({
   destination = "index",
   visited = [],
+  pulse = 0,
   pointerEnergy = 0,
   channels = {},
   sessionSeed = 1,
@@ -443,7 +511,12 @@ export default function CreativeMatter({
   const onContextRestored = useCallback(() => setContextLost(false), []);
 
   return (
-    <div className={`${styles.root} ${className}`} aria-hidden={fallbackLabel ? undefined : true}>
+    <div
+      className={`${styles.root} ${className}`}
+      data-creative-matter
+      data-destination={destination}
+      aria-hidden={fallbackLabel ? undefined : true}
+    >
       {webGLState !== "supported" ? (
         <StaticMatter
           destination={destination}
@@ -468,6 +541,7 @@ export default function CreativeMatter({
             <MatterField
               destination={destination}
               visited={visited}
+              pulse={pulse}
               pointerEnergy={pointerEnergy}
               channels={resolvedChannels}
               sessionSeed={sessionSeed}

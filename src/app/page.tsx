@@ -14,13 +14,14 @@ const CreativeMatter = dynamic(() => import("@/components/experience/CreativeMat
 });
 
 function PortfolioExperience() {
-  const { destination, visited, trace, pointerEnergy, sessionSeed } = useExperience();
+  const { destination, previewDestination, visited, trace, pulse, pointerEnergy, sessionSeed } = useExperience();
 
   return (
     <>
       <CreativeMatter
-        destination={destination}
+        destination={previewDestination ?? destination}
         visited={visited}
+        pulse={pulse}
         pointerEnergy={pointerEnergy}
         channels={trace}
         sessionSeed={sessionSeed}
