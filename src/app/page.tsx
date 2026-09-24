@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { MotionConfig } from "framer-motion";
 import LoadingScreen from "@/components/LoadingScreen";
 import CustomCursor from "@/components/CustomCursor";
 import FPSCounter from "@/components/FPSCounter";
@@ -38,7 +39,7 @@ export default function Home() {
   }, []);
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary><MotionConfig reducedMotion="user">
       {loading ? (
         <LoadingScreen onLoadingComplete={() => setLoading(false)} />
       ) : (
@@ -58,6 +59,6 @@ export default function Home() {
           </div>
         </ScrollProgressProvider>
       )}
-    </ErrorBoundary>
+    </MotionConfig></ErrorBoundary>
   );
 }

@@ -32,9 +32,9 @@ const LanguageSelector = () => {
   }, []);
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef} onKeyDown={(event) => { if (event.key === "Escape") { event.stopPropagation(); setIsOpen(false); dropdownRef.current?.querySelector("button")?.focus(); } }}>
       <button
-        className="flex min-h-9 items-center gap-2 border-b border-white/20 px-1 text-[9px] font-medium uppercase tracking-[0.18em] text-white/60 transition-colors duration-200 hover:border-white/60 hover:text-white"
+        className="language-trigger flex min-h-11 min-w-11 items-center justify-center gap-2 border-b border-white/20 px-1 text-[11px] font-medium uppercase tracking-[0.18em] text-white/75 transition-colors duration-200 hover:border-white/60 hover:text-white"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-haspopup="true"
@@ -64,13 +64,14 @@ const LanguageSelector = () => {
             animate={{ opacity: 1, y: 10 }}
             exit={{ opacity: 0, y: 6 }}
             transition={{ duration: 0.18 }}
-            className="absolute right-0 z-[2000] w-36 border border-white/15 bg-black/90 p-1 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
+            className="language-menu absolute right-0 z-[2000] w-36 border border-white/15 bg-black/90 p-1 shadow-[0_20px_50px_rgba(0,0,0,0.5)]"
           >
             <div className="flex flex-col gap-1">
               {availableLanguages.map((lang) => (
                 <button
                   key={lang}
-                  className={`w-full px-3 py-2.5 text-left text-[9px] font-medium uppercase tracking-[0.18em] transition-colors duration-200 ${
+                  aria-current={currentLanguage === lang ? "true" : undefined}
+                  className={`language-option min-h-11 w-full px-3 py-2.5 text-left text-[11px] font-medium uppercase tracking-[0.18em] transition-colors duration-200 ${
                     currentLanguage === lang
                       ? "bg-white text-black"
                       : "text-gray-400 hover:text-white hover:bg-white/5"

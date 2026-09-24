@@ -28,7 +28,7 @@ test("the hub exposes three non-linear destinations", async ({ page }) => {
   await openPortfolio(page);
   await page.getByRole("button", { name: "Explorer" }).waitFor();
 
-  const destinations = page.locator("nav button");
+  const destinations = page.locator("[data-lens-stage] button");
   await expect(destinations).toHaveCount(3);
   await expect(destinations.nth(0)).toContainText("BlueVidia");
   await expect(destinations.nth(1)).toContainText("Profil");
@@ -41,7 +41,7 @@ test("BlueVidia is the only showcased project", async ({ page }) => {
   await space.waitFor();
 
   await expect(space.getByRole("heading", { name: "BlueVidia", exact: true }).first()).toBeVisible();
-  await expect(space.locator('a[href="https://bluevidia.com"]')).toHaveCount(2);
+  await expect(space.locator('a[href="https://bluevidia.com"]')).toHaveCount(1);
   await expect(
     page.locator('a[href*="EclatShop"], a[href*="Viewerbot"], a[href*="TimeManager"]'),
   ).toHaveCount(0);
@@ -52,9 +52,30 @@ test("project angles update the editorial narrative", async ({ page }) => {
   const space = page.locator('[data-space="bluevidia"]');
   await space.waitFor();
 
-  await space.getByRole("checkbox", { name: /02 · RÉPONSE/ }).click();
-  await expect(space.getByRole("heading", { level: 2 })).toHaveText("BlueVidia");
+  await space.getByRole("button", { name: /02 · Réponse/i }).click();
+  await expect(space.getByRole("heading", { level: 2 })).toHaveText("L'image devient l'interface.");
   await expect(space.getByText(/matière visuelle en temps réel/)).toBeVisible();
+  const pointOfView = space.getByRole("slider", { name: "Faire varier le point de vue" });
+  await expect(pointOfView).toBeVisible();
+  await pointOfView.press("End");
+  await expect(pointOfView).toHaveValue("100");
+});
+
+test("leaving the film chapter closes its full-frame treatment", async ({ page }) => {
+  await openPortfolio(page, "#bluevidia");
+  const space = page.locator('[data-space="bluevidia"]');
+  await space.getByRole("button", { name: "Plein cadre ↗" }).click();
+  await expect(space).toHaveClass(/is-projecting/);
+  await space.getByRole("button", { name: /02 · Réponse/i }).click();
+  await expect(space).not.toHaveClass(/is-projecting/);
+});
+
+test("changing language updates both the interface and document language", async ({ page }) => {
+  await openPortfolio(page, "#contact");
+  await page.getByRole("button", { name: "FR" }).click();
+  await page.getByRole("button", { name: "English" }).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByRole("heading", { name: /deserves more than a template/ })).toBeVisible();
 });
 
 test("the profile keeps its six selected capabilities visible", async ({ page }) => {
@@ -62,15 +83,32 @@ test("the profile keeps its six selected capabilities visible", async ({ page })
   const profile = page.locator('[data-space="profile"]');
   await profile.waitFor();
 
-  await expect(profile.locator("li")).toHaveText([
-    "01Développement créatif",
-    "02Next.js & React",
-    "03Three.js & GLSL",
-    "04Systèmes de mouvement",
-    "05Cloud & DevOps",
-    "06Mise en production",
-  ]);
+  const capabilities = profile.locator("[data-capability-list] button");
+  await expect(capabilities).toHaveCount(6);
+  await capabilities.filter({ hasText: "Cloud & DevOps" }).click();
+  await expect(capabilities.filter({ hasText: "Cloud & DevOps" })).toHaveAttribute("aria-pressed", "true");
+  await expect(profile.locator(".capability-note")).toContainText("infrastructure");
+  await expect(profile.locator(".capability-note h2")).toHaveText("Cloud & DevOps");
 });
+
+for (const width of [320, 768, 1024, 1440]) {
+  test(`spaces fit the ${width}px viewport and keep usable targets`, async ({ page }) => {
+    await page.setViewportSize({ width, height: width === 320 ? 568 : 900 });
+    for (const section of ["profile", "bluevidia", "contact"]) {
+      await openPortfolio(page, `#${section}`);
+      const space = page.locator(`[data-space="${section}"]`);
+      await space.waitFor();
+      const geometry = await space.evaluate((element) => ({
+        overflow: element.scrollWidth > element.clientWidth,
+        smallTargets: Array.from(element.querySelectorAll("button, a")).filter((target) => {
+          const rect = target.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0 && rect.height < 43;
+        }).length,
+      }));
+      expect(geometry).toEqual({ overflow: false, smallTargets: 0 });
+    }
+  });
+}
 
 test("Escape returns from a space to the hub", async ({ page }) => {
   await openPortfolio(page, "#contact");

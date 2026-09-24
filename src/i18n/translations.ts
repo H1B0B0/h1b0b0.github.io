@@ -111,7 +111,7 @@ export const translations: Record<string, Translation> = {
     featured: {
       eyebrow: "Featured project · 01",
       status: "Live experience",
-      title: "BlueVidia",
+      title: "The image becomes the interface.",
       subtitle: "An audiovisual studio deserved a website that moves like an image.",
       description:
         "I designed and developed an immersive showcase for BlueVidia: a cinematic, sound-aware experience that turns the studio's craft into a digital journey.",
@@ -131,7 +131,7 @@ export const translations: Record<string, Translation> = {
     },
     profile: {
       eyebrow: "Profile · Selected craft",
-      title: "One strong proof beats six forgettable thumbnails.",
+      title: "I connect the idea, the code and the moment it goes live.",
       description:
         "I am Etienne Mentrel, a developer trained across software, infrastructure and interactive web. I like projects where the technical system and the visual idea have to work as one.",
       proofTitle: "What BlueVidia demonstrates",
@@ -208,7 +208,7 @@ export const translations: Record<string, Translation> = {
     featured: {
       eyebrow: "Projet phare · 01",
       status: "Expérience en ligne",
-      title: "BlueVidia",
+      title: "L'image devient l'interface.",
       subtitle: "Un studio audiovisuel méritait un site qui bouge comme une image.",
       description:
         "J'ai conçu et développé pour BlueVidia une vitrine immersive : une expérience cinématographique et sonore qui transforme le savoir-faire du studio en parcours digital.",
@@ -228,7 +228,7 @@ export const translations: Record<string, Translation> = {
     },
     profile: {
       eyebrow: "Profil · Savoir-faire sélectionné",
-      title: "Une preuve forte vaut mieux que six vignettes oubliables.",
+      title: "Je relie l'idée, le code et le moment où tout devient réel.",
       description:
         "Je suis Etienne Mentrel, développeur formé au logiciel, à l'infrastructure et au web interactif. J'aime les projets où le système technique et l'idée visuelle doivent fonctionner comme un tout.",
       proofTitle: "Ce que BlueVidia démontre",
