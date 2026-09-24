@@ -42,3 +42,5 @@ yarn-error.log*
 next-env.d.ts
 
 .omo
+docs/experience-v2.md
+scripts/visual-audit-v2.mjs
