@@ -315,8 +315,12 @@
 }
 
 .destinationIndex {
+  top: 0.8rem;
+  right: clamp(0.8rem, 1.5vw, 1.45rem);
+  bottom: auto;
   align-self: start;
   color: #ff8b62;
+  font-variant-numeric: tabular-nums;
 }
 
 .destinationText {

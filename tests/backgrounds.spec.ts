@@ -38,6 +38,22 @@ test("the living index is immediately understandable and keeps one WebGL canvas"
   expect(viewport.height).toBe(viewport.viewportHeight);
 });
 
+test("visited status and destination number never overlap", async ({ page }) => {
+  await openPortfolio(page);
+  await page.locator("[data-experience-index] nav button").first().click();
+  await page.getByRole("button", { name: /Retour à l.index/ }).click();
+
+  const firstDestination = page.locator("[data-experience-index] nav button").first();
+  await expect(firstDestination.getByText("Exploré", { exact: true })).toBeVisible();
+  const separated = await firstDestination.evaluate((card) => {
+    const index = card.querySelector<HTMLElement>("[class*='destinationIndex']")?.getBoundingClientRect();
+    const visited = card.querySelector<HTMLElement>("[class*='visited']")?.getBoundingClientRect();
+    if (!index || !visited) return false;
+    return index.bottom <= visited.top || visited.bottom <= index.top || index.right <= visited.left || visited.right <= index.left;
+  });
+  expect(separated).toBe(true);
+});
+
 test("Work frames BlueVidia as a delivered client commission", async ({ page }) => {
   await openPortfolio(page, "#work");
   await expect(page).toHaveTitle("Travaux — Etienne Mentrel");
