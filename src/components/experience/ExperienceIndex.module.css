@@ -403,10 +403,15 @@
 
 @media (max-width: 700px) {
   .index {
-    min-height: 100svh;
-    grid-template-rows: auto auto auto auto;
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: repeat(4, max-content);
+    align-content: start;
     gap: clamp(1.5rem, 4vh, 2.4rem);
     overflow-y: auto;
+    overscroll-behavior-y: contain;
+    touch-action: pan-y;
+    -webkit-overflow-scrolling: touch;
   }
 
   .identity {

@@ -22,10 +22,13 @@
 
 .shell button:focus-visible,
 .shell a:focus-visible,
-.shell input:focus-visible,
-.shell h1:focus-visible {
+.shell input:focus-visible {
   outline: 2px solid #ff9466;
   outline-offset: 4px;
+}
+
+.shell h1:focus {
+  outline: 0;
 }
 
 .ambient {

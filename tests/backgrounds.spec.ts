@@ -199,6 +199,61 @@ test("mobile editorial details stay aligned and never collide", async ({ page })
   expect(contactAlignment).toBe(true);
 });
 
+test("tablet chrome stays local instead of framing the whole viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 768, height: 900 });
+  await openPortfolio(page, "#lab");
+
+  const chrome = await page.evaluate(() => {
+    const header = document.querySelector<HTMLElement>("#main-experience > header");
+    const back = header?.querySelector<HTMLElement>("button");
+    const backIcon = back?.querySelector<HTMLElement>("span:first-child");
+    const heading = document.querySelector<HTMLElement>('[data-space="lab"] h1');
+    if (!header || !back || !backIcon || !heading) return null;
+    return {
+      headerBackground: getComputedStyle(header).backgroundColor,
+      headerBorderWidth: getComputedStyle(header).borderTopWidth,
+      backBackground: getComputedStyle(back).backgroundColor,
+      backBorderWidth: getComputedStyle(back).borderTopWidth,
+      backIconBackground: getComputedStyle(backIcon).backgroundColor,
+      backIconBorderRadius: getComputedStyle(backIcon).borderRadius,
+      headingOutline: getComputedStyle(heading).outlineStyle,
+    };
+  });
+
+  expect(chrome).toEqual({
+    headerBackground: "rgba(0, 0, 0, 0)",
+    headerBorderWidth: "0px",
+    backBackground: "rgba(0, 0, 0, 0)",
+    backBorderWidth: "0px",
+    backIconBackground: "rgba(7, 8, 11, 0.95)",
+    backIconBorderRadius: "50%",
+    headingOutline: "none",
+  });
+});
+
+test("mobile index remains vertically scrollable", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await openPortfolio(page, "");
+
+  const index = page.locator("[data-experience-index]");
+  await expect(index).toBeVisible();
+  const before = await index.evaluate((element) => ({
+    clientHeight: element.clientHeight,
+    scrollHeight: element.scrollHeight,
+    scrollTop: element.scrollTop,
+    touchAction: getComputedStyle(element).touchAction,
+  }));
+
+  expect(before.scrollHeight).toBeGreaterThan(before.clientHeight);
+  expect(before.touchAction).toBe("pan-y");
+
+  const box = await index.boundingBox();
+  expect(box).not.toBeNull();
+  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await page.mouse.wheel(0, 640);
+  await expect.poll(() => index.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+});
+
 test("the journey signal persists from interaction to the final composition", async ({ page }) => {
   await openPortfolio(page, "#work");
   const primaryNavigation = page.getByRole("navigation", { name: "Navigation principale" });

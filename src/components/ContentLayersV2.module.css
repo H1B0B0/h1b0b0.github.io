@@ -87,6 +87,7 @@
   place-items: center;
   border: 1px solid #ffffff2b;
   border-radius: 50%;
+  background: #07080bf2;
 }
 
 .arrow {
@@ -329,13 +330,12 @@
 }
 
 .root[data-destination="contact"] .header {
-  padding: 4px 6px;
-  border: 1px solid #11131824;
-  background: #ece8df;
+  color: #111318;
 }
 
 .root[data-destination="contact"] .backIcon {
   border-color: #11131835;
+  background: #ece8df;
 }
 
 .root[data-destination="contact"] .header :global(.language-trigger) {
@@ -379,9 +379,14 @@
     right: 16px;
     left: 16px;
     grid-template-columns: 1fr auto;
-    padding: 4px 6px;
-    border: 1px solid #ffffff18;
+  }
+
+  .header :global(.language-trigger) {
     background: #07080bf2;
+  }
+
+  .root[data-destination="contact"] .header :global(.language-trigger) {
+    background: #ece8df;
   }
 
   .currentSpace {
