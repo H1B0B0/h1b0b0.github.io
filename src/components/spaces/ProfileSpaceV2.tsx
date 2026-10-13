@@ -4,19 +4,20 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 import { useLanguage } from "@/i18n/LanguageContext";
-import type { CreativeTrace } from "@/context/ExperienceContext";
+import { INITIAL_COMPOSITION, type CreativeTrace, type FoldComposition } from "@/context/ExperienceContext";
+import FoldSignature from "@/components/experience/FoldSignature";
 
 import styles from "./profile-contact.module.css";
 
-type ProcessStepId = "frame" | "prototype" | "shape" | "engineer" | "ship";
-
-type ProcessStep = {
-  id: ProcessStepId;
+type PrincipleId = "intention" | "gesture" | "precision";
+type Principle = {
+  id: PrincipleId;
   label: string;
-  verb: string;
-  summary: string;
-  proof: readonly string[];
-  behavior: string;
+  title: string;
+  description: string;
+  note: string;
+  action: string;
+  destination: "work" | "lab";
 };
 
 export type ProfileSpaceV2Props = {
@@ -24,355 +25,97 @@ export type ProfileSpaceV2Props = {
   visitedDestinations?: readonly string[];
   traceLevel?: number;
   trace?: Partial<CreativeTrace>;
+  composition?: FoldComposition;
   onTrace?: (amount: number) => void;
 };
 
-const PROCESS_COPY: Record<"fr" | "en", readonly ProcessStep[]> = {
+const PRINCIPLES: Record<"fr" | "en", readonly Principle[]> = {
   fr: [
-    {
-      id: "frame",
-      label: "Cadrer",
-      verb: "Trouver le vrai sujet",
-      summary:
-        "Je commence par l’émotion, le public et la contrainte. La technologie arrive quand le projet sait déjà ce qu’il veut provoquer.",
-      proof: [
-        "Une intention formulée en une phrase",
-        "Un parcours priorisé avant les écrans",
-        "Un critère de réussite explicite",
-      ],
-      behavior:
-        "Le cadre isole l’essentiel : chaque élément sans rôle narratif disparaît de la composition.",
-    },
-    {
-      id: "prototype",
-      label: "Prototyper",
-      verb: "Tester le geste central",
-      summary:
-        "Je rends l’idée manipulable tôt pour vérifier le rythme, la compréhension et le risque technique avant de polir l’interface.",
-      proof: [
-        "Un prototype navigable avec du contenu réel",
-        "Le risque WebGL ou interaction testé en premier",
-        "Des décisions observables plutôt qu’un long document",
-      ],
-      behavior:
-        "Les points deviennent un chemin : le prototype vérifie la relation entre les moments, pas leur décoration.",
-    },
-    {
-      id: "shape",
-      label: "Donner forme",
-      verb: "Construire un langage",
-      summary:
-        "Typographie, matière, mouvement et hiérarchie sont réglés comme un seul système, puis confrontés aux vrais contenus.",
-      proof: [
-        "Des règles visuelles réutilisables",
-        "Un mouvement relié à une intention",
-        "Une composition qui reste lisible sans effet",
-      ],
-      behavior:
-        "La matière se décentre et crée une tension contrôlée ; la forme devient une décision, jamais un habillage.",
-    },
-    {
-      id: "engineer",
-      label: "Ingénier",
-      verb: "Rendre l’idée robuste",
-      summary:
-        "J’organise le code, les états et les fallbacks pour que l’ambition visuelle survive au clavier, au mobile et aux appareils modestes.",
-      proof: [
-        "Composants isolés et états explicites",
-        "Clavier, reduced-motion et fallback prévus",
-        "Rendu et coût technique mesurés ensemble",
-      ],
-      behavior:
-        "La structure apparaît sous la surface : les couches restent indépendantes tout en partageant le même signal.",
-    },
-    {
-      id: "ship",
-      label: "Livrer",
-      verb: "Faire exister pour de vrai",
-      summary:
-        "La mise en ligne fait partie du design. Je vérifie les formats, les erreurs et le déploiement jusqu’à une expérience réellement visitable.",
-      proof: [
-        "Parcours revu du 320 px au grand écran",
-        "États d’échec et actions principales vérifiés",
-        "Production, domaine et livraison accompagnés",
-      ],
-      behavior:
-        "Les fragments convergent vers un point de sortie : le projet n’est terminé que lorsqu’il fonctionne hors du prototype.",
-    },
+    { id: "intention", label: "Intention", title: "Faire ressentir quelque chose.", description: "Pour BlueVidia, j’ai placé l’identité avant le catalogue. Le nom, la matière et l’accès aux films composent l’accueil : une entrée dans l’univers du studio, pas une liste de contenus.", note: "BlueVidia · interface d’accueil livrée", action: "Découvrir ce choix dans Travaux", destination: "work" },
+    { id: "gesture", label: "Geste", title: "Donner envie de parcourir.", description: "Ici, vous pouvez changer le pli plutôt que simplement le regarder. Il garde votre forme d’une page à l’autre. Une interaction doit laisser quelque chose, pas seulement faire un effet.", note: "Le pli de cette visite · une seule pièce conservée", action: "Continuer cette pièce au laboratoire", destination: "lab" },
+    { id: "precision", label: "Précision", title: "Faire tenir l’ensemble.", description: "Sur BlueVidia, je ne réduis pas l’accueil desktop pour le faire entrer sur un téléphone. La composition change ; le nom, la navigation et l’accès aux films restent les repères.", note: "BlueVidia · accueil au format mobile", action: "Voir l’adaptation dans Travaux", destination: "work" },
   ],
   en: [
-    {
-      id: "frame",
-      label: "Frame",
-      verb: "Find the real subject",
-      summary:
-        "I begin with the emotion, audience and constraint. Technology enters once the project knows what it needs to provoke.",
-      proof: [
-        "One sentence that states the intention",
-        "A journey prioritised before screens",
-        "An explicit definition of success",
-      ],
-      behavior:
-        "The frame isolates what matters: anything without a narrative role leaves the composition.",
-    },
-    {
-      id: "prototype",
-      label: "Prototype",
-      verb: "Test the defining gesture",
-      summary:
-        "I make the idea tangible early, testing rhythm, understanding and technical risk before polishing the interface.",
-      proof: [
-        "A navigable prototype using real content",
-        "The riskiest WebGL or interaction idea tested first",
-        "Observable decisions instead of a long document",
-      ],
-      behavior:
-        "Points become a route: the prototype tests the relationship between moments, not their decoration.",
-    },
-    {
-      id: "shape",
-      label: "Shape",
-      verb: "Build a language",
-      summary:
-        "Type, material, motion and hierarchy are tuned as one system, then tested against the actual content.",
-      proof: [
-        "Reusable visual rules",
-        "Motion tied to a clear intention",
-        "A composition that remains legible without effects",
-      ],
-      behavior:
-        "The material shifts off-centre and creates controlled tension; form becomes a decision rather than a finish.",
-    },
-    {
-      id: "engineer",
-      label: "Engineer",
-      verb: "Make the idea resilient",
-      summary:
-        "I structure code, states and fallbacks so visual ambition survives keyboards, mobile devices and modest hardware.",
-      proof: [
-        "Isolated components and explicit states",
-        "Keyboard, reduced motion and fallback designed in",
-        "Rendering cost and creative intent measured together",
-      ],
-      behavior:
-        "The structure surfaces beneath the image: independent layers keep sharing the same signal.",
-    },
-    {
-      id: "ship",
-      label: "Ship",
-      verb: "Make it real",
-      summary:
-        "Going live is part of the design. I check formats, failures and deployment until the experience is genuinely visitable.",
-      proof: [
-        "The journey reviewed from 320 px to wide screens",
-        "Failure states and primary actions verified",
-        "Production, domain and delivery supported",
-      ],
-      behavior:
-        "Fragments converge on an exit point: the project is only finished when it works beyond the prototype.",
-    },
+    { id: "intention", label: "Intention", title: "Make someone feel something.", description: "For BlueVidia, I put identity before the catalogue. The name, material and access to films shape the homepage: a way into the studio’s world, not a list of content.", note: "BlueVidia · delivered homepage interface", action: "Explore this choice in Work", destination: "work" },
+    { id: "gesture", label: "Gesture", title: "Make exploring feel natural.", description: "Here, you can change the fold rather than just look at it. It keeps your shape as you move between pages. An interaction should leave something with you, not just make an effect.", note: "This visit’s fold · one piece kept throughout", action: "Continue this piece in the laboratory", destination: "lab" },
+    { id: "precision", label: "Precision", title: "Make the whole thing hold.", description: "On BlueVidia, I do not shrink the desktop homepage to fit a phone. The composition changes; the name, navigation and access to films remain the landmarks.", note: "BlueVidia · mobile homepage", action: "Explore the adaptation in Work", destination: "work" },
   ],
 };
 
-export default function ProfileSpaceV2({
-  resumeUrl,
-  visitedDestinations = [],
-  traceLevel = 0,
-  trace = {},
-  onTrace,
-}: ProfileSpaceV2Props) {
+export default function ProfileSpaceV2({ resumeUrl, onTrace, composition = INITIAL_COMPOSITION }: ProfileSpaceV2Props) {
   const { currentLanguage } = useLanguage();
   const language = currentLanguage === "fr" ? "fr" : "en";
-  const copy = language === "fr"
-    ? {
-        eyebrow: "Profil · méthode en mouvement",
-        title: "Je transforme une intention en expérience livrée.",
-        introduction:
-          "Je suis Etienne Mentrel, développeur créatif et ingénieur. Mon travail relie direction, interaction et production au lieu de les traiter comme trois étapes séparées.",
-        author: "Auteur du système",
-        process: "Processus interactif",
-        evidence: "Preuves et comportement",
-        liveBehavior: "Ce que le geste montre",
-        journey: "Trace de visite",
-        visited: "espaces explorés",
-        resume: "Voir mon CV",
-        github: "Profil GitHub",
-        channels: { form: "Forme", motion: "Mouvement", system: "Système" },
-      }
-    : {
-        eyebrow: "Profile · method in motion",
-        title: "I turn an intention into a delivered experience.",
-        introduction:
-          "I am Etienne Mentrel, a creative developer and engineer. My work connects direction, interaction and production instead of treating them as separate phases.",
-        author: "System author",
-        process: "Interactive process",
-        evidence: "Proof and behaviour",
-        liveBehavior: "What the gesture reveals",
-        journey: "Journey trace",
-        visited: "spaces explored",
-        resume: "View resume",
-        github: "GitHub profile",
-        channels: { form: "Form", motion: "Motion", system: "System" },
-      };
-  const steps = PROCESS_COPY[language];
-  const [activeStepId, setActiveStepId] = useState<ProcessStepId>("frame");
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const activeStep = steps.find((step) => step.id === activeStepId) ?? steps[0];
-  const normalizedTrace = Math.max(0, Math.min(1, traceLevel));
-  const visitedCount = new Set(visitedDestinations).size;
-
-  useEffect(() => {
-    headingRef.current?.focus({ preventScroll: true });
-  }, []);
-
-  const selectStep = (step: ProcessStep, control: HTMLButtonElement) => {
-    const rail = control.parentElement;
-    if (rail) {
-      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      rail.scrollTo({
-        left: control.offsetLeft - (rail.clientWidth - control.offsetWidth) / 2,
-        behavior: reducedMotion ? "auto" : "smooth",
-      });
-    }
-
-    if (step.id !== activeStepId) {
-      setActiveStepId(step.id);
-      onTrace?.(0.08);
-    }
+  const copy = language === "fr" ? {
+    eyebrow: "Profil", title: "Etienne", titleAccent: "Mentrel.",
+    belief: "La créativité, au centre du web.",
+    conviction: "Un bon site doit être beau, bien construit et simple à parcourir. Mais surtout, il doit raconter quelque chose qui lui appartient.",
+    method: "Notes de travail.", process: "Explorer mes choix de design", illustration: "Exemple réel du choix de design sélectionné",
+    colophon: "Direction visuelle / interaction / production",
+    authorRole: "Développeur créatif · Ingénieur", resume: "Voir mon CV", github: "Profil GitHub",
+    desktopAlt: "Interface de l’accueil BlueVidia conçue par Etienne Mentrel, avec le nom du studio et la matière bleue", mobileAlt: "Interface de l’accueil BlueVidia adaptée au format mobile", foldLabel: "Le pli conservé depuis l’accueil ou le laboratoire",
+  } : {
+    eyebrow: "Profile", title: "Etienne", titleAccent: "Mentrel.",
+    belief: "Creativity, at the heart of the web.",
+    conviction: "A good website should be beautiful, well built and easy to explore. Above all, it should tell a story of its own.",
+    method: "Working notes.", process: "Explore my design choices", illustration: "An actual example of the selected design choice",
+    colophon: "Visual direction / interaction / production",
+    authorRole: "Creative developer · Engineer", resume: "View resume", github: "GitHub profile",
+    desktopAlt: "BlueVidia homepage interface designed by Etienne Mentrel, with the studio name and blue material", mobileAlt: "BlueVidia homepage interface adapted for mobile", foldLabel: "The fold kept from the homepage or the laboratory",
   };
+  const [activePrincipleId, setActivePrincipleId] = useState<PrincipleId>("intention");
+  const principles = PRINCIPLES[language];
+  const activePrinciple = principles.find((principle) => principle.id === activePrincipleId) ?? principles[0];
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => { headingRef.current?.focus({ preventScroll: true }); }, []);
 
   return (
-    <section
-      className={styles.profileRoot}
-      data-profile-step={activeStep.id}
-      data-space="profile-v2"
-      aria-labelledby="profile-v2-title"
-    >
+    <section className={styles.profileRoot} data-profile-step={activePrinciple.id} data-space="profile-v2" aria-labelledby="profile-v2-title">
       <div className={styles.profileShell}>
+        <div className={styles.folioMasthead}><p className={styles.eyebrow}><span aria-hidden="true">03</span>{copy.eyebrow}</p><span>{copy.colophon}</span></div>
         <header className={styles.profileHeader}>
-          <p className={styles.eyebrow}>{copy.eyebrow}</p>
-          <div className={styles.profileHeadingGrid}>
-            <div>
-              <h1
-                id="profile-v2-title"
-                ref={headingRef}
-                tabIndex={-1}
-                className={styles.profileTitle}
-              >
-                {copy.title}
-              </h1>
-              <p className={styles.profileIntroduction}>{copy.introduction}</p>
-            </div>
-
-            <aside className={styles.authorCard} aria-label={copy.author}>
-              <div className={styles.authorPortrait}>
-                <Image
-                  src="/avatar.webp"
-                  alt="Etienne Mentrel"
-                  fill
-                  sizes="(max-width: 700px) 72px, 144px"
-                  className={styles.authorImage}
-                />
-              </div>
-              <div>
-                <span>{copy.author}</span>
-                <strong>Etienne Mentrel</strong>
-                <small>Creative developer · DevOps</small>
-              </div>
-            </aside>
+          <div className={styles.profileCopy}>
+            <h1 id="profile-v2-title" ref={headingRef} tabIndex={-1} className={styles.profileTitle}>{copy.title}{" "}<em>{copy.titleAccent}</em></h1>
           </div>
+          <figure className={styles.authorCard}>
+            <div className={styles.authorPortrait}>
+              <Image src="/avatar.webp" alt="Etienne Mentrel" fill sizes="(max-width: 700px) 160px, (max-width: 900px) 240px, 280px" className={styles.authorImage} />
+            </div>
+            <figcaption className={styles.profileRole}>{copy.authorRole}</figcaption>
+          </figure>
+          <div className={styles.convictionBlock}><p className={styles.belief}>{copy.belief}</p><p className={styles.conviction}>{copy.conviction}</p></div>
         </header>
 
-        <div className={styles.profileInstrument}>
-          <nav className={styles.processRail} aria-label={copy.process}>
-            {steps.map((step, index) => (
-              <button
-                key={step.id}
-                type="button"
-                aria-pressed={step.id === activeStep.id}
-                onClick={(event) => selectStep(step, event.currentTarget)}
-                className={styles.processButton}
-              >
-                <span className={styles.processNumber}>{String(index + 1).padStart(2, "0")}</span>
-                <span>
-                  <strong>{step.label}</strong>
-                  <small>{step.verb}</small>
-                </span>
-              </button>
-            ))}
-          </nav>
-
-          <div className={styles.processCanvas} aria-hidden="true">
-            <div className={styles.canvasIndex}>EM / PROCESS — {activeStep.id.toUpperCase()}</div>
-            <div className={styles.canvasAxisHorizontal} />
-            <div className={styles.canvasAxisVertical} />
-
-            <div className={styles.frameLayer}>
-              <i /><i /><i /><i />
-              <span>01</span>
-            </div>
-            <div className={styles.prototypeLayer}>
-              <i /><i /><i /><i /><i />
-              <span /><span /><span /><span />
-            </div>
-            <div className={styles.shapeLayer}>
-              <i />
-              <span>FORM</span>
-            </div>
-            <div className={styles.engineerLayer}>
-              <span>INPUT</span><i /><span>STATE</span><i /><span>OUTPUT</span>
-            </div>
-            <div className={styles.shipLayer}>
-              <i /><span>LIVE</span>
-            </div>
-
-            <div className={styles.traceReadout}>
-              <span>{copy.journey}</span>
-              <strong>{String(visitedCount).padStart(2, "0")}</strong>
-              <small>{copy.visited}</small>
-              <div className={styles.traceChannels}>
-                {(["form", "motion", "system"] as const).map((channel) => {
-                  const value = Math.max(0, Math.min(1, trace[channel] ?? normalizedTrace));
-                  return (
-                    <div key={channel}>
-                      <span>{copy.channels[channel]}</span>
-                      <i aria-hidden="true"><b style={{ transform: `scaleX(${value})` }} /></i>
-                      <output>{Math.round(value * 100)}</output>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+        <section className={styles.methodSection} aria-label={copy.method}>
+          <div className={styles.methodHeading}>
+            <h2>{copy.method}</h2>
+            <nav className={styles.processRail} aria-label={copy.process}>
+              {principles.map((principle, index) => (
+                <button key={principle.id} type="button" aria-pressed={principle.id === activePrinciple.id} aria-controls="profile-principle-panel" className={styles.processButton} onClick={() => {
+                  if (principle.id !== activePrincipleId) { setActivePrincipleId(principle.id); onTrace?.(0.08); }
+                }}><span className={styles.noteNumber} aria-hidden="true">0{index + 1}</span>{principle.label}<span className={styles.noteArrow} aria-hidden="true">↗</span></button>
+              ))}
+            </nav>
           </div>
-
-          <p className={styles.srOnly} aria-live="polite">
-            {copy.journey} — {copy.channels.form}: {Math.round(Math.max(0, Math.min(1, trace.form ?? normalizedTrace)) * 100)}; {copy.channels.motion}: {Math.round(Math.max(0, Math.min(1, trace.motion ?? normalizedTrace)) * 100)}; {copy.channels.system}: {Math.round(Math.max(0, Math.min(1, trace.system ?? normalizedTrace)) * 100)}.
-          </p>
-
-          <article className={styles.evidencePanel} aria-live="polite" aria-atomic="true">
-            <p className={styles.panelLabel}>{copy.evidence}</p>
-            <div className={styles.evidenceHeading}>
-              <span>{String(steps.indexOf(activeStep) + 1).padStart(2, "0")} / 05</span>
-              <h2>{activeStep.label}</h2>
-            </div>
-            <p className={styles.evidenceSummary}>{activeStep.summary}</p>
-            <ul className={styles.proofList}>
-              {activeStep.proof.map((proof) => <li key={proof}>{proof}</li>)}
-            </ul>
-            <div className={styles.behaviorNote}>
-              <span>{copy.liveBehavior}</span>
-              <p>{activeStep.behavior}</p>
-            </div>
-          </article>
-        </div>
+          <div id="profile-principle-panel" className={styles.profileInstrument}>
+            <article className={styles.evidencePanel} aria-live="polite" aria-atomic="true">
+              <h3>{activePrinciple.title}</h3>
+              <p>{activePrinciple.description}</p>
+            </article>
+            <figure className={styles.decisionStage} data-principle={activePrinciple.id} aria-label={copy.illustration}>
+              <div className={styles.decisionProof} data-profile-proof={activePrinciple.id}>
+                {activePrinciple.id === "gesture" ? <div className={styles.proofFold}><FoldSignature form={composition.form} tension={composition.tension} phase={composition.phase} tone="ink" label={copy.foldLabel} /></div> : <div className={activePrinciple.id === "precision" ? styles.proofMobile : styles.proofDesktop}>
+                  <Image src={`/images/projects/bluevidia-${activePrinciple.id === "precision" ? "mobile" : "desktop"}.jpg`} alt={activePrinciple.id === "precision" ? copy.mobileAlt : copy.desktopAlt} fill sizes={activePrinciple.id === "precision" ? "180px" : "(max-width: 700px) 92vw, 40vw"} className={styles.proofImage} />
+                </div>}
+              </div>
+              <figcaption>{activePrinciple.note}</figcaption>
+              <a className={styles.specimenAction} href={`#${activePrinciple.destination}${activePrinciple.id === "precision" ? "/delivery" : ""}`} onClick={() => onTrace?.(0.08)}>{activePrinciple.action}<span aria-hidden="true">→</span></a>
+            </figure>
+          </div>
+        </section>
 
         <footer className={styles.profileFooter}>
-          <a href={resumeUrl} target="_blank" rel="noopener noreferrer">
-            {copy.resume}<span aria-hidden="true">↗</span>
-          </a>
-          <a href="https://github.com/H1B0B0" target="_blank" rel="noopener noreferrer">
-            {copy.github}<span aria-hidden="true">↗</span>
-          </a>
+          <a href={resumeUrl} target="_blank" rel="noopener noreferrer">{copy.resume}<span aria-hidden="true">↗</span></a>
+          <a href="https://github.com/H1B0B0" target="_blank" rel="noopener noreferrer">{copy.github}<span aria-hidden="true">↗</span></a>
         </footer>
       </div>
     </section>

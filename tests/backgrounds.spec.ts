@@ -10,11 +10,11 @@ async function openPortfolio(page: Page, hash = "", reducedMotion = true) {
   await page.locator("[aria-busy='false']").waitFor();
 }
 
-test("the living index is immediately understandable and keeps one WebGL canvas", async ({ page }) => {
+test("the living index is immediately understandable without a hidden WebGL loop", async ({ page }) => {
   await openPortfolio(page);
-  await expect(page.getByRole("heading", { name: /Je construis des idées/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Une idée\. Mille façons/ })).toBeVisible();
   await expect(page.getByRole("main")).toHaveCount(1);
-  await expect(page.locator("canvas")).toHaveCount(1);
+  await expect(page.locator("canvas")).toHaveCount(0);
 
   await page.keyboard.press("Tab");
   await expect(page.getByRole("link", { name: "Aller au contenu principal" })).toBeFocused();
@@ -24,9 +24,15 @@ test("the living index is immediately understandable and keeps one WebGL canvas"
   await expect(destinations).toContainText(["Travaux", "Laboratoire", "Profil", "Contact"]);
 
   await page.getByRole("button", { name: /Laboratoire/ }).hover();
-  await expect(page.locator("[data-creative-matter]")).toHaveAttribute("data-destination", "lab");
+  await expect(page.locator("[data-experience-index]")).toHaveAttribute("data-preview", "lab");
   await page.locator("[data-experience-index] h1").hover();
-  await expect(page.locator("[data-creative-matter]")).toHaveAttribute("data-destination", "index");
+  await expect(page.locator("[data-experience-index]")).not.toHaveAttribute("data-preview", "lab");
+  const labLeaf = page.locator('[data-leaf="lab"]');
+  await labLeaf.focus();
+  await labLeaf.hover();
+  await page.locator("[data-experience-index] h1").hover();
+  await expect(labLeaf).toBeFocused();
+  await expect(page.locator("[data-experience-index]")).toHaveAttribute("data-preview", "lab");
 
   const viewport = await page.evaluate(() => ({
     width: document.documentElement.scrollWidth,
@@ -38,18 +44,18 @@ test("the living index is immediately understandable and keeps one WebGL canvas"
   expect(viewport.height).toBe(viewport.viewportHeight);
 });
 
-test("visited status and destination number never overlap", async ({ page }) => {
+test("visited status remains accessible without duplicating visual metadata", async ({ page }) => {
   await openPortfolio(page);
   await page.locator("[data-experience-index] nav button").first().click();
   await page.getByRole("button", { name: /Retour à l.index/ }).click();
 
   const firstDestination = page.locator("[data-experience-index] nav button").first();
-  await expect(firstDestination.getByText("Exploré", { exact: true })).toBeVisible();
+  await expect(firstDestination).toHaveAccessibleName("Travaux · Exploré");
   const separated = await firstDestination.evaluate((card) => {
-    const index = card.querySelector<HTMLElement>("[class*='destinationIndex']")?.getBoundingClientRect();
-    const visited = card.querySelector<HTMLElement>("[class*='visited']")?.getBoundingClientRect();
-    if (!index || !visited) return false;
-    return index.bottom <= visited.top || visited.bottom <= index.top || index.right <= visited.left || visited.right <= index.left;
+    const index = card.querySelector<HTMLElement>("[class*='leafTop']")?.getBoundingClientRect();
+    const title = card.querySelector<HTMLElement>("[class*='destinationLabel']")?.getBoundingClientRect();
+    if (!index || !title) return false;
+    return index.bottom <= title.top || title.right <= index.left;
   });
   expect(separated).toBe(true);
 });
@@ -59,8 +65,8 @@ test("Work frames BlueVidia as a delivered client commission", async ({ page }) 
   await expect(page).toHaveTitle("Travaux — Etienne Mentrel");
   const work = page.locator('[data-space="work"]');
   await expect(work).toBeVisible();
-  await expect(work.getByRole("heading", { name: "BlueVidia", exact: true })).toBeVisible();
-  await expect(work.getByText(/Commande client · Projet phare/)).toBeVisible();
+  await expect(work.getByRole("heading", { name: "BlueVidia.", exact: true })).toBeVisible();
+  await expect(work.getByText(/Travaux · commande client/i)).toBeVisible();
   await expect(work.locator('a[href="https://bluevidia.com"]')).toHaveCount(1);
   await expect(page.locator('a[href*="EclatShop"], a[href*="Viewerbot"], a[href*="TimeManager"]')).toHaveCount(0);
 });
@@ -74,31 +80,43 @@ test("the BlueVidia narrative remains interactive without owning the portfolio",
   await expect(work.locator('img[src*="cloudfront"]')).toHaveCount(0);
 
   const chapters = work.getByLabel("Explorer les trois temps du projet");
-  await chapters.getByRole("button", { name: /Réponse/ }).click();
-  await expect(work.getByRole("heading", { level: 3 })).toHaveText("L'image devient l'interface.");
-  const pointOfView = work.getByRole("slider", { name: "Faire varier le point de vue" });
-  await expect(pointOfView).toBeVisible();
-  await pointOfView.press("End");
-  await expect(pointOfView).toHaveValue("100");
+  await chapters.getByRole("button", { name: "Composition" }).click();
+  await expect(work.getByRole("heading", { level: 2 })).toHaveText("Un parcours, plusieurs rythmes.");
+  await expect(work.getByRole("img")).toHaveAttribute("src", /bluevidia-studio.jpg/);
   expect(await viewport.evaluate((element) => element.getBoundingClientRect().height)).toBeCloseTo(initialHeight, 0);
 
-  await chapters.getByRole("button", { name: /Résultat/ }).click();
-  await expect(work.getByRole("heading", { level: 3 })).toHaveText("Une expérience réellement en ligne.");
+  await chapters.getByRole("button", { name: "Livraison" }).click();
+  await expect(work.getByRole("heading", { level: 2 })).toHaveText("La même intention, à chaque format.");
+  await expect(work.getByRole("img", { name: /au format mobile/ })).toHaveAttribute("src", /bluevidia-mobile.jpg/);
+  await expect(work.getByText("Desktop / mobile", { exact: true })).toBeVisible();
   expect(await viewport.evaluate((element) => element.getBoundingClientRect().height)).toBeCloseTo(initialHeight, 0);
+  await work.locator("summary").click();
+  await expect(work.getByText("Design & développement", { exact: false })).toBeVisible();
 });
 
-test("the Lab exposes three honest manipulable studies", async ({ page }) => {
+test("three laboratory tools compose one tangible piece", async ({ page }) => {
   await openPortfolio(page, "#lab");
   const lab = page.locator('[data-space="lab"]');
-  await expect(lab.getByRole("heading", { name: /créativité se prouve/ })).toBeVisible();
-  await expect(lab.getByRole("heading", { level: 2 })).toContainText(["Matière", "Typographie", "Interaction / système"]);
+  await expect(lab.getByRole("heading", { name: "À vous de plier." })).toBeVisible();
+  const studies = lab.getByRole("navigation", { name: "Choisir un outil de composition" });
+  await expect(studies.getByRole("button")).toHaveCount(3);
+  await expect(lab.locator("article")).toHaveCount(1);
+  const composition = lab.locator("[data-composition]");
+  await expect(composition).toHaveCount(1);
+  await expect(composition.getByRole("img", { name: /Sculpture de ruban plié/ })).toBeVisible();
+  const initialShape = await composition.locator("polygon").evaluateAll((polygons) => polygons.map((polygon) => polygon.getAttribute("points")).join("|"));
 
-  const density = lab.getByRole("slider", { name: "Comprimer la matière" });
+  const density = lab.getByRole("slider", { name: "Plier la matière" });
   await density.press("End");
   await expect(density).toHaveValue("100");
-  const type = lab.getByRole("slider", { name: "Mettre le mot sous tension" });
+  await expect(composition).toHaveAttribute("data-form", "100");
+  expect(await composition.locator("polygon").evaluateAll((polygons) => polygons.map((polygon) => polygon.getAttribute("points")).join("|"))).not.toBe(initialShape);
+  await studies.getByRole("button", { name: /Typographie/ }).click();
+  const type = lab.getByRole("slider", { name: "Régler la tension" });
   await type.press("End");
   await expect(type).toHaveValue("100");
+  await expect(composition).toHaveAttribute("data-tension", "100");
+  await studies.getByRole("button", { name: /Système/ }).click();
 
   const propagate = lab.getByRole("button", { name: "Propager" });
   const route = [
@@ -108,31 +126,59 @@ test("the Lab exposes three honest manipulable studies", async ({ page }) => {
     { intensity: "0.8", state: "Retour" },
     { intensity: "1", state: "Boucle complète" },
   ];
-  for (const step of route) {
+  for (const [index, step] of route.entries()) {
     await expect(propagate).toHaveAttribute("data-sfx-intensity", step.intensity);
     await propagate.click();
     await expect(lab.getByRole("status").filter({ hasText: step.state })).toBeVisible();
+    await expect(composition).toHaveAttribute("data-phase", String(index + 1));
   }
   await expect(propagate).toHaveAttribute("data-sfx-intensity", "0");
   await propagate.click();
   await expect(lab.getByRole("status").filter({ hasText: "Origine" })).toBeVisible();
+  await expect(composition).toHaveAttribute("data-phase", "0");
   await expect(propagate).toHaveAttribute("data-sfx-intensity", "0.2");
 
-  const alignment = await lab.locator("article").last().evaluate((article) => {
-    const nodes = Array.from(article.querySelectorAll<HTMLElement>("[data-active] b"));
-    const path = article.querySelector<HTMLElement>("[class*='systemPath']");
-    if (nodes.length !== 6 || !path) return null;
-    const first = nodes[0].getBoundingClientRect();
-    const last = nodes[5].getBoundingClientRect();
-    const line = path.getBoundingClientRect();
-    return {
-      firstDelta: Math.abs(first.left + first.width / 2 - line.left),
-      lastDelta: Math.abs(last.left + last.width / 2 - line.right),
-    };
-  });
-  expect(alignment).not.toBeNull();
-  expect(alignment!.firstDelta).toBeLessThan(1);
-  expect(alignment!.lastDelta).toBeLessThan(1);
+  const segments = lab.locator("[class*='systemProgress'] [data-active]");
+  await expect(segments).toHaveCount(6);
+  expect(await segments.evaluateAll((nodes) => nodes.filter((node) => node.getAttribute("data-active") === "true").length)).toBe(1);
+});
+
+test("a visitor can name, export and reset the composition", async ({ page }) => {
+  await openPortfolio(page, "#lab");
+  const lab = page.locator('[data-space="lab"]');
+  await lab.getByRole("slider", { name: "Plier la matière" }).press("End");
+  await lab.getByRole("button", { name: /Typographie/ }).click();
+  await lab.getByRole("slider", { name: "Régler la tension" }).press("End");
+  const name = lab.getByRole("textbox", { name: "Nom de la pièce" });
+  await expect(name).toHaveAttribute("maxlength", "24");
+  await name.fill("A < B & C");
+  await expect(lab.locator("[data-composition]")).toContainText("A < B & C");
+  await lab.getByRole("button", { name: /Système/ }).click();
+  await lab.getByRole("button", { name: "Propager" }).click();
+
+  const downloadPromise = page.waitForEvent("download");
+  await lab.getByRole("link", { name: "Exporter en SVG" }).click();
+  const download = await downloadPromise;
+  expect(download.suggestedFilename()).toBe("le-pli-100-100-2.svg");
+  const stream = await download.createReadStream();
+  expect(stream).not.toBeNull();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream!) chunks.push(Buffer.from(chunk));
+  const svg = Buffer.concat(chunks).toString("utf8");
+  expect(svg).toContain('xmlns="http://www.w3.org/2000/svg"');
+  expect(svg).toContain("<polygon");
+  expect(svg).toContain("A &lt; B &amp; C");
+  expect(svg).not.toContain("<script");
+  await expect(lab.getByRole("status").filter({ hasText: "Téléchargement demandé." })).toBeVisible();
+
+  await lab.getByRole("button", { name: "Recommencer" }).click();
+  await expect(lab.locator("[data-composition]")).toHaveAttribute("data-form", "42");
+  await expect(lab.locator("[data-composition]")).toHaveAttribute("data-tension", "36");
+  await expect(lab.locator("[data-composition]")).toHaveAttribute("data-phase", "0");
+  await expect(lab.locator("[data-composition]")).toContainText("LE PLI");
+  await expect(lab.getByRole("status").filter({ hasText: "Composition remise à zéro." })).toBeVisible();
+  await lab.getByRole("button", { name: /Typographie/ }).click();
+  await expect(name).toHaveValue("");
 });
 
 test("sound effects are controllable and persist the visitor preference", async ({ page }) => {
@@ -142,32 +188,86 @@ test("sound effects are controllable and persist the visitor preference", async 
   await sound.click();
   await expect(page.getByRole("button", { name: "Activer les effets sonores" })).toHaveAttribute("aria-pressed", "false");
   await expect.poll(() => page.evaluate(() => window.localStorage.getItem("portfolio:sfx-enabled"))).toBe("false");
+  const nextVisit = await page.context().newPage();
+  await nextVisit.goto(`${PORTFOLIO_URL}/#contact`);
+  await nextVisit.locator("[aria-busy='false']").waitFor();
+  await expect(nextVisit.getByRole("button", { name: "Activer les effets sonores" })).toHaveAttribute("aria-pressed", "false");
+  await nextVisit.close();
 });
 
-test("Profile demonstrates a five-step method with evidence", async ({ page }) => {
+test("the portrait stays centred in one consistent frame across breakpoints", async ({ page }) => {
+  await openPortfolio(page, "#profile");
+  for (const [width, portraitWidth] of [[375, 160], [768, 240], [1440, 280]]) {
+    await page.setViewportSize({ width, height: 900 });
+    const portrait = page.getByRole("img", { name: "Etienne Mentrel", exact: true });
+    await expect(portrait).toBeVisible();
+    const framing = await portrait.evaluate((image) => {
+      const frame = image.parentElement!;
+      return {
+        position: getComputedStyle(image).objectPosition,
+        fit: getComputedStyle(image).objectFit,
+        width: frame.offsetWidth,
+        ratio: frame.offsetWidth / frame.offsetHeight,
+      };
+    });
+    expect(framing.position).toBe("50% 50%");
+    expect(framing.fit).toBe("cover");
+    expect(framing.width).toBeCloseTo(portraitWidth, 0);
+    expect(framing.ratio).toBeCloseTo(4 / 5, 2);
+  }
+});
+
+test("Profile makes three personal design convictions explorable", async ({ page }) => {
   await openPortfolio(page, "#profile");
   const profile = page.locator('[data-space="profile-v2"]');
   await expect(profile).toBeVisible();
-  const process = profile.getByRole("navigation", { name: "Processus interactif" });
-  await expect(process.getByRole("button")).toHaveCount(5);
-  expect(await process.evaluate((element) => getComputedStyle(element).flexDirection)).toBe("row");
-  for (const step of ["Cadrer", "Prototyper", "Donner forme", "Ingénier", "Livrer"]) {
+  const process = profile.getByRole("navigation", { name: "Explorer mes choix de design" });
+  await expect(process.getByRole("button")).toHaveCount(3);
+  for (const [step, title, id] of [["Intention", "Faire ressentir quelque chose.", "intention"], ["Geste", "Donner envie de parcourir.", "gesture"], ["Précision", "Faire tenir l’ensemble.", "precision"]]) {
     await process.getByRole("button", { name: new RegExp(step) }).click();
-    await expect(profile.getByRole("heading", { level: 2, name: step })).toBeVisible();
+    await expect(profile.getByRole("heading", { level: 3, name: title })).toBeVisible();
+    await expect(profile).toHaveAttribute("data-profile-step", id);
+    await expect(process.getByRole("button", { name: new RegExp(step) })).toHaveAttribute("aria-pressed", "true");
   }
-  await process.getByRole("button", { name: /Ingénier/ }).click();
-  await expect(profile.getByText(/fallbacks/).first()).toBeVisible();
+  await expect(profile.getByRole("figure", { name: "Exemple réel du choix de design sélectionné" })).toBeVisible();
+  await expect(profile.locator('[data-profile-proof="precision"] img')).toHaveAttribute("src", /bluevidia-mobile.jpg/);
 });
 
-test("Contact recomposes the visit and keeps direct actions", async ({ page }) => {
+test("Contact keeps direct actions without a session dashboard", async ({ page }) => {
   await openPortfolio(page, "#contact");
   await expect(page).toHaveTitle("Contact — Etienne Mentrel");
   const contact = page.locator('[data-space="contact-v2"]');
   await expect(contact.getByRole("link", { name: /Écrire un email/ })).toHaveAttribute("href", "mailto:etienne.mentrel@gmail.com");
   await contact.getByRole("button", { name: /Copier l’adresse email/ }).click();
   await expect(contact.getByText(/Adresse copiée|copie automatique est indisponible/).first()).toBeVisible();
-  await expect(contact.getByText(/aucune donnée collectée/)).toBeVisible();
-  await expect(contact.getByText(/La prochaine trace peut être la vôtre/).first()).toBeVisible();
+  await expect(contact.getByRole("heading", { name: /La suite s’écrit\s+ensemble\./ })).toBeVisible();
+  await expect(contact.getByText(/TRC-|COMPOSITION DE LA VISITE/)).toHaveCount(0);
+});
+
+test("the profile adaptation link opens the actual delivery chapter", async ({ page }) => {
+  await openPortfolio(page, "#profile");
+  await page.getByRole("button", { name: "Précision", exact: true }).click();
+  await page.getByRole("link", { name: "Voir l’adaptation dans Travaux", exact: true }).click();
+  await expect(page).toHaveURL(/#work\/delivery$/);
+  await expect(page.getByRole("heading", { name: "La même intention, à chaque format.", exact: true })).toBeVisible();
+  await expect(page.getByRole("navigation", { name: "Explorer les trois temps du projet" }).getByRole("button", { name: "Livraison", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await page.goBack();
+  await expect(page.locator('[data-space="profile-v2"]')).toBeVisible();
+  await page.goForward();
+  await expect(page.getByRole("heading", { name: "La même intention, à chaque format.", exact: true })).toBeVisible();
+});
+
+test("the contact paper corner never covers its heading", async ({ page }) => {
+  await openPortfolio(page, "#contact");
+  for (const width of [768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const clearance = await page.locator('[data-space="contact-v2"]').evaluate((contact) => {
+      const label = contact.querySelector("[class*='letterHeading'] span:last-child")!.getBoundingClientRect();
+      const corner = contact.querySelector("[class*='letterFold']")!.getBoundingClientRect();
+      return corner.left - label.right;
+    });
+    expect(clearance).toBeGreaterThan(16);
+  }
 });
 
 test("mobile editorial details stay aligned and never collide", async ({ page }) => {
@@ -182,7 +282,7 @@ test("mobile editorial details stay aligned and never collide", async ({ page })
   expect(indexAlignment).toBe(true);
 
   await openPortfolio(page, "#profile");
-  const process = page.getByRole("navigation", { name: "Processus interactif" });
+  const process = page.getByRole("navigation", { name: "Explorer mes choix de design" });
   const firstPairFits = await process.getByRole("button").evaluateAll((buttons) => {
     const rail = buttons[0]?.parentElement?.getBoundingClientRect();
     const second = buttons[1]?.getBoundingClientRect();
@@ -192,9 +292,9 @@ test("mobile editorial details stay aligned and never collide", async ({ page })
 
   await openPortfolio(page, "#contact");
   const contactAlignment = await page.locator('[data-space="contact-v2"]').evaluate((contact) => {
-    const copy = contact.querySelector<HTMLElement>("[class*='journeyStatement'] strong")?.getBoundingClientRect();
-    const sculpture = contact.querySelector<HTMLElement>("[class*='signalSculpture']")?.getBoundingClientRect();
-    return copy && sculpture ? copy.bottom <= sculpture.top : false;
+    const heading = contact.querySelector("h1")?.getBoundingClientRect();
+    const email = contact.querySelector('a[href^="mailto:"]')?.getBoundingClientRect();
+    return heading && email ? heading.bottom <= email.top : false;
   });
   expect(contactAlignment).toBe(true);
 });
@@ -221,18 +321,18 @@ test("tablet chrome stays local instead of framing the whole viewport", async ({
   });
 
   expect(chrome).toEqual({
-    headerBackground: "rgba(0, 0, 0, 0)",
+    headerBackground: "rgb(8, 9, 12)",
     headerBorderWidth: "0px",
     backBackground: "rgba(0, 0, 0, 0)",
     backBorderWidth: "0px",
-    backIconBackground: "rgba(7, 8, 11, 0.95)",
+    backIconBackground: "rgba(0, 0, 0, 0)",
     backIconBorderRadius: "50%",
     headingOutline: "none",
   });
 });
 
-test("mobile index remains vertically scrollable", async ({ page }) => {
-  await page.setViewportSize({ width: 375, height: 812 });
+test("short mobile index remains vertically scrollable", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
   await openPortfolio(page, "");
 
   const index = page.locator("[data-experience-index]");
@@ -254,25 +354,36 @@ test("mobile index remains vertically scrollable", async ({ page }) => {
   await expect.poll(() => index.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
 });
 
-test("the journey signal persists from interaction to the final composition", async ({ page }) => {
+test("the visitor composition survives tools and navigation", async ({ page }) => {
   await openPortfolio(page, "#work");
   const primaryNavigation = page.getByRole("navigation", { name: "Navigation principale" });
   const work = page.locator('[data-space="work"]');
 
-  await work.getByLabel("Explorer les trois temps du projet").getByRole("button", { name: /Réponse/ }).click();
-  await expect(work.getByText("MOUVEMENT").locator("..").getByText("20")).toBeVisible();
+  await work.getByLabel("Explorer les trois temps du projet").getByRole("button", { name: "Composition" }).click();
 
   await primaryNavigation.getByRole("button", { name: /Laboratoire/ }).click();
   const lab = page.locator('[data-space="lab"]');
-  await lab.getByRole("slider", { name: "Comprimer la matière" }).press("End");
-  await lab.getByRole("slider", { name: "Mettre le mot sous tension" }).press("End");
+  await lab.getByRole("slider", { name: "Plier la matière" }).press("End");
+  await lab.getByRole("button", { name: /Typographie/ }).click();
+  await lab.getByRole("slider", { name: "Régler la tension" }).press("End");
+  await lab.getByRole("textbox", { name: "Nom de la pièce" }).fill("Une autre voie");
+  await lab.getByRole("button", { name: /Système/ }).click();
   await lab.getByRole("button", { name: "Propager" }).click();
+  await lab.getByRole("button", { name: /Matière/ }).click();
+  await expect(lab.getByRole("slider", { name: "Plier la matière" })).toHaveValue("100");
+  await lab.getByRole("button", { name: /Typographie/ }).click();
+  await expect(lab.getByRole("slider", { name: "Régler la tension" })).toHaveValue("100");
+  await expect(lab.getByRole("textbox", { name: "Nom de la pièce" })).toHaveValue("Une autre voie");
+  await lab.getByRole("button", { name: /Système/ }).click();
+  await expect(lab.getByRole("status").filter({ hasText: "Forme · 2/6" })).toBeVisible();
 
-  await page.getByRole("navigation", { name: "Navigation principale" }).getByRole("button", { name: /Profil/ }).click();
-  await expect(page.getByText(/Trace de visite — Forme: 24; Mouvement: 30; Système: 16/)).toBeAttached();
-
-  await page.getByRole("navigation", { name: "Navigation principale" }).getByRole("button", { name: /Contact/ }).click();
-  await expect(page.getByText("TRC-IWLP-F24M30S16").first()).toBeVisible();
+  await primaryNavigation.getByRole("button", { name: /Profil/ }).click();
+  await expect(page.locator('[data-space="profile-v2"]')).toBeVisible();
+  await primaryNavigation.getByRole("button", { name: /Laboratoire/ }).click();
+  await expect(lab.locator("[data-composition]")).toHaveAttribute("data-form", "100");
+  await expect(lab.locator("[data-composition]")).toHaveAttribute("data-tension", "100");
+  await expect(lab.locator("[data-composition]")).toHaveAttribute("data-phase", "1");
+  await expect(lab.locator("[data-composition]")).toContainText("Une autre voie");
 });
 
 test("persistent labeled navigation connects every internal space", async ({ page }) => {
@@ -290,12 +401,175 @@ test("persistent labeled navigation connects every internal space", async ({ pag
   await expect(page).toHaveURL(/#contact$/);
 });
 
+test("browser history restores routes without discarding the visitor piece", async ({ page }) => {
+  await openPortfolio(page, "#work");
+  const navigation = page.getByRole("navigation", { name: "Navigation principale" });
+  await navigation.getByRole("button", { name: /Laboratoire/ }).click();
+  const lab = page.locator('[data-space="lab"]');
+  await lab.getByRole("slider", { name: "Plier la matière" }).press("End");
+  await navigation.getByRole("button", { name: /Contact/ }).click();
+  await expect(page.locator('[data-space="contact-v2"]')).toBeVisible();
+  await page.goBack();
+  await expect(page).toHaveURL(/#lab$/);
+  await expect(lab).toBeVisible();
+  await expect(lab.locator("[data-composition]")).toHaveAttribute("data-form", "100");
+  await page.goForward();
+  await expect(page).toHaveURL(/#contact$/);
+  await expect(page.locator('[data-space="contact-v2"]')).toBeVisible();
+  await expect(page.locator('[class*="transition"]')).toHaveCount(0);
+});
+
 test("language switching updates content and document language", async ({ page }) => {
   await openPortfolio(page, "#contact");
   await page.getByRole("button", { name: "FR" }).click();
   await page.getByRole("button", { name: "English" }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page.getByRole("heading", { name: /traces become a starting point/i })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Let’s write\s+what comes next\./ })).toBeVisible();
+});
+
+test("a long composition name fits the smallest screen and its export", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  await openPortfolio(page, "#lab");
+  const lab = page.locator('[data-space="lab"]');
+  await lab.getByRole("button", { name: /Typographie/ }).click();
+  await lab.getByRole("slider", { name: "Régler la tension" }).press("End");
+  await lab.getByRole("textbox", { name: "Nom de la pièce" }).fill("W".repeat(24));
+  const frame = lab.locator("[data-composition]");
+  expect(await frame.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0);
+  const exportLink = lab.getByRole("link", { name: "Exporter en SVG" });
+  await expect(exportLink).toHaveAttribute("href", /^blob:/);
+  const downloadPromise = page.waitForEvent("download");
+  await exportLink.click();
+  const download = await downloadPromise;
+  const stream = await download.createReadStream();
+  expect(stream).not.toBeNull();
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream!) chunks.push(Buffer.from(chunk));
+  const svg = Buffer.concat(chunks).toString("utf8");
+  expect(svg).toContain("W".repeat(24));
+  const fontSize = Number(svg.match(/font-size="([\d.]+)" font-weight=/)?.[1]);
+  expect(fontSize * 24).toBeLessThanOrEqual(640);
+});
+
+test("reset feedback follows the current language", async ({ page }) => {
+  await openPortfolio(page, "#lab");
+  await page.getByRole("button", { name: "Recommencer" }).click();
+  await page.getByRole("button", { name: "FR", exact: true }).click();
+  await page.getByRole("button", { name: "English", exact: true }).click();
+  await expect(page.getByRole("status").filter({ hasText: "Composition reset." })).toBeVisible();
+  await expect(page.getByText("Composition remise à zéro.")).toHaveCount(0);
+});
+
+test("sculpting in the laboratory becomes the contact signature", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openPortfolio(page, "#lab");
+  const sculpt = page.getByRole("slider", { name: "Plier la matière" });
+  await sculpt.press("End");
+  await expect(sculpt).toHaveValue("100");
+  const sculpture = page.locator("[data-composition] [data-fold-signature]");
+  const points = await sculpture.locator("polygon").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("points")));
+  const navigation = page.getByRole("navigation", { name: "Navigation principale" });
+  await navigation.getByRole("button", { name: "Contact", exact: true }).click();
+  await expect(page.getByText("Signée par votre pli", { exact: true })).toBeVisible();
+  const signature = page.locator('[data-space="contact-v2"] [data-fold-signature]');
+  expect(await signature.locator("polygon").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("points")))).toEqual(points);
+});
+
+test("the BlueVidia landmarks are an optional stable inspection", async ({ page }) => {
+  await openPortfolio(page, "#work");
+  await page.getByRole("navigation", { name: "Explorer les trois temps du projet" }).getByRole("button", { name: "Composition", exact: true }).click();
+  const viewport = page.locator("[data-case-viewport]");
+  const height = await viewport.evaluate((element) => element.getBoundingClientRect().height);
+  await page.getByRole("button", { name: "Voir les repères", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Masquer les repères", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.locator("#bluevidia-capture-guide")).toHaveAttribute("data-visible", "true");
+  expect(await viewport.evaluate((element) => element.getBoundingClientRect().height)).toBeCloseTo(height, 1);
+  await page.getByRole("button", { name: "Masquer les repères", exact: true }).click();
+  await expect(page.locator("#bluevidia-capture-guide")).toHaveAttribute("data-visible", "false");
+});
+
+test("each delivered interface has inspectable real composition landmarks", async ({ page }) => {
+  await openPortfolio(page, "#work");
+  const chapters = page.getByRole("navigation", { name: "Explorer les trois temps du projet" });
+  const frame = page.locator("[data-case-frame]");
+  for (const [chapter, choices] of [
+    ["Intention", [["Nom", "identity"], ["Menu", "navigation"], ["Accès", "access"]]],
+    ["Composition", [["Texte", "text"], ["Image", "image"], ["Crédit", "credit"]]],
+    ["Livraison", [["Desktop", "desktop"], ["Mobile", "mobile"]]],
+  ] as const) {
+    await chapters.getByRole("button", { name: chapter, exact: true }).click();
+    await expect(frame).toHaveAttribute("data-case-inspection", "interface");
+    await page.getByRole("button", { name: "Voir les repères", exact: true }).click();
+    for (const [name, state] of choices) {
+      await page.getByRole("group", { name: "Lire les choix de composition" }).getByRole("button", { name, exact: true }).click();
+      await expect(frame).toHaveAttribute("data-case-inspection", state);
+      await expect(page.locator("#bluevidia-inspector-description")).not.toBeEmpty();
+    }
+    await page.getByRole("button", { name: "Masquer les repères", exact: true }).click();
+    await expect(frame).toHaveAttribute("data-case-inspection", "interface");
+  }
+});
+
+test("the folio preview keeps the laboratory piece across routes", async ({ page }) => {
+  await openPortfolio(page, "#lab");
+  await page.getByRole("slider", { name: "Plier la matière" }).press("End");
+  await page.getByRole("button", { name: /Typographie/ }).click();
+  await page.getByRole("slider", { name: "Régler la tension" }).press("End");
+  await page.getByRole("button", { name: /Système/ }).click();
+  await page.getByRole("button", { name: "Propager", exact: true }).click();
+  const index = page.locator("[data-experience-index]");
+  const points = await page.locator("[data-composition] polygon").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("points")));
+  const nav = page.getByRole("navigation", { name: "Navigation principale" });
+  await nav.getByRole("button", { name: "Profil", exact: true }).click();
+  await page.getByRole("button", { name: "Geste", exact: true }).click();
+  expect(await page.locator('[data-profile-proof="gesture"] polygon').evaluateAll((nodes) => nodes.map((node) => node.getAttribute("points")))).toEqual(points);
+  await nav.getByRole("button", { name: "Index", exact: true }).click();
+  await expect(page.getByRole("heading", { name: /Une idée\. Mille façons/ })).toBeFocused();
+  expect(await index.locator('[data-leaf="lab"] polygon').evaluateAll((nodes) => nodes.map((node) => node.getAttribute("points")))).toEqual(points);
+  await expect(page.locator("[data-route-surface]")).toHaveCount(1);
+});
+
+test("BlueVidia chapters and inspection keep the page height stable", async ({ page }) => {
+  for (const width of [320, 375, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await openPortfolio(page, "#work");
+    const work = page.locator('[data-space="work"]');
+    const chapterNavigation = page.getByRole("navigation", { name: "Explorer les trois temps du projet" });
+    const heights: number[] = [];
+    for (const name of ["Intention", "Composition", "Livraison"]) {
+      await chapterNavigation.getByRole("button", { name, exact: true }).click();
+      heights.push(await work.evaluate((element) => element.scrollHeight));
+      if (name === "Composition") {
+        await page.getByRole("button", { name: "Voir les repères", exact: true }).click();
+        heights.push(await work.evaluate((element) => element.scrollHeight));
+        await page.getByRole("button", { name: "Masquer les repères", exact: true }).click();
+      }
+    }
+    expect(Math.max(...heights) - Math.min(...heights), `Chapter jump at ${width}px`).toBeLessThanOrEqual(1);
+  }
+});
+
+test("laboratory tools keep a stable frame on small screens", async ({ page }) => {
+  for (const width of [320, 375]) {
+    await page.setViewportSize({ width, height: 812 });
+    await openPortfolio(page, "#lab");
+    const lab = page.locator('[data-space="lab"]');
+    const heights: number[] = [];
+    for (const name of [/Matière/, /Typographie/, /Système/]) {
+      await lab.getByRole("button", { name }).click();
+      heights.push(await lab.locator("[data-composition]").evaluate((element) => element.parentElement!.getBoundingClientRect().height));
+    }
+    expect(Math.max(...heights) - Math.min(...heights)).toBeLessThan(1);
+  }
+});
+
+test("skip navigation focuses the content without changing the current route", async ({ page }) => {
+  await openPortfolio(page, "#work");
+  await page.getByRole("link", { name: "Aller au contenu principal" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("main")).toBeFocused();
+  await expect(page).toHaveURL(/#work$/);
+  await expect(page.locator('[data-space="work"]')).toBeVisible();
 });
 
 for (const viewport of [
@@ -308,6 +582,7 @@ for (const viewport of [
   test(`all spaces fit ${viewport.width}px without rail collisions or tiny targets`, async ({ page }) => {
     await page.setViewportSize(viewport);
     const spaces = [
+      ["", "[data-experience-index]"],
       ["work", '[data-space="work"]'],
       ["lab", '[data-space="lab"]'],
       ["profile", '[data-space="profile-v2"]'],
@@ -327,13 +602,21 @@ for (const viewport of [
       }));
       expect(geometry, `${hash} at ${viewport.width}px`).toEqual({ overflow: false, smallTargets: 0 });
 
+      const smallHeaderTargets = await page.locator("#main-experience > header").evaluate((header) => Array.from(header.querySelectorAll("button")).filter((button) => {
+        const rect = button.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 && (rect.width < 43 || rect.height < 43);
+      }).length);
+      expect(smallHeaderTargets).toBe(0);
+
+      if (hash === "") continue;
+
       const rail = page.getByRole("navigation", { name: "Navigation principale" });
       await expect(rail).toBeVisible();
       const collision = await page.evaluate(({ contentSelector }) => {
-        const content = document.querySelector(contentSelector)?.querySelector("h1")?.getBoundingClientRect();
+        const content = document.querySelector(contentSelector)?.getBoundingClientRect();
         const nav = Array.from(document.querySelectorAll("nav")).find((node) => node.getAttribute("aria-label") === "Navigation principale")?.getBoundingClientRect();
-        if (!content || !nav || innerWidth <= 900) return false;
-        return content.left < nav.right;
+        if (!content || !nav) return true;
+        return content.bottom > nav.top;
       }, { contentSelector: selector });
       expect(collision, `${hash} rail collision at ${viewport.width}px`).toBe(false);
     }
@@ -344,11 +627,12 @@ test("Escape returns to the living index", async ({ page }) => {
   await openPortfolio(page, "#contact");
   await page.keyboard.press("Escape");
   await expect(page).not.toHaveURL(/#contact$/);
-  await expect(page.getByRole("heading", { name: /Je construis des idées/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Une idée\. Mille façons/ })).toBeVisible();
 });
 
-test("full-motion transitions and the shader report no runtime errors", async ({ page }) => {
+test("full-motion navigation reports no runtime errors or blocking overlay", async ({ page }) => {
   const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
     if (message.type() === "error") errors.push(message.text());
   });
@@ -357,5 +641,7 @@ test("full-motion transitions and the shader report no runtime errors", async ({
   await page.getByRole("button", { name: /Travaux/ }).click();
   await expect(page).toHaveURL(/#work$/);
   await expect(page.locator('[data-space="work"]')).toBeVisible();
-  expect(errors.filter((error) => /shader|webgl|hydration/i.test(error))).toEqual([]);
+  await expect(page.locator('[class*="transition"]')).toHaveCount(0);
+  await expect(page.locator("[data-route-surface]")).toHaveCount(1);
+  expect(errors).toEqual([]);
 });

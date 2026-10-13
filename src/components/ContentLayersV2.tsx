@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import ExperienceIndex, {
@@ -37,14 +37,6 @@ const MATTER_TARGETS: Record<ExperienceDestination, number> = {
   contact: 0.86,
 };
 
-const TRANSITION_COLORS: Record<ExperienceDestination, [string, string]> = {
-  index: ["#0b0d14", "#725cff"],
-  work: ["#081022", "#315ce8"],
-  lab: ["#071512", "#15bfa5"],
-  profile: ["#160a18", "#8d56d8"],
-  contact: ["#f1eee6", "#ef8358"],
-};
-
 function Arrow({ back = false }: { back?: boolean }) {
   return (
     <svg aria-hidden="true" className={styles.arrow} fill="none" viewBox="0 0 24 24">
@@ -71,15 +63,16 @@ export default function ContentLayersV2() {
     setPreviewDestination,
     visited,
     trace,
+    composition,
+    updateComposition,
     travelTo: setDestination,
     addTrace,
     setPointerEnergy,
   } = useExperience();
   const reducedMotion = useReducedMotion();
-  const [transitionTarget, setTransitionTarget] = useState<ExperienceDestination | null>(null);
-  const commitTimerRef = useRef<number | null>(null);
-  const finishTimerRef = useRef<number | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const hasEnteredSpace = useRef(false);
+  const [caseChapter, setCaseChapter] = useState<0 | 1 | 2>(0);
   const language = currentLanguage === "fr" ? "fr" : "en";
   const resumeUrl = language === "fr" ? FRENCH_RESUME_URL : ENGLISH_RESUME_URL;
   const traceLevel = (trace.form + trace.motion + trace.system) / 3;
@@ -87,11 +80,11 @@ export default function ContentLayersV2() {
   const copy = language === "fr"
     ? {
         role: "Développeur créatif · Ingénieur",
-        eyebrow: "La créativité est une infrastructure",
+        eyebrow: "La créativité au centre du web",
         title: "Je construis des idées",
         accent: "que l'on peut parcourir.",
         description:
-          "De l'intention à la production, je réunis direction visuelle, interaction et ingénierie pour créer des sites beaux, clairs et impossibles à confondre avec un template.",
+          "Des sites beaux, clairs et singuliers. De l’idée à la mise en ligne.",
         instruction: "Choisir un espace · déplacer pour influencer la matière",
         visited: "Exploré",
         matter: "Matière vivante",
@@ -107,11 +100,11 @@ export default function ContentLayersV2() {
       }
     : {
         role: "Creative developer · Engineer",
-        eyebrow: "Creativity is infrastructure",
+        eyebrow: "Creativity at the heart of the web",
         title: "I build ideas",
         accent: "you can move through.",
         description:
-          "From intention to production, I connect visual direction, interaction and engineering to create websites that are beautiful, clear and impossible to mistake for a template.",
+          "Beautiful, clear, distinctive websites. From the first idea to going live.",
         instruction: "Choose a space · move to influence the matter",
         visited: "Visited",
         matter: "Living matter",
@@ -136,14 +129,8 @@ export default function ContentLayersV2() {
     [destinationCopy],
   );
 
-  const clearTimers = useCallback(() => {
-    if (commitTimerRef.current !== null) window.clearTimeout(commitTimerRef.current);
-    if (finishTimerRef.current !== null) window.clearTimeout(finishTimerRef.current);
-    commitTimerRef.current = null;
-    finishTimerRef.current = null;
-  }, []);
-
   const commitDestination = useCallback((next: ExperienceDestination, writeHistory = true) => {
+    if (writeHistory && next === "work") setCaseChapter(0);
     setDestination(next);
     if (!writeHistory) return;
     const url = next === "index"
@@ -153,26 +140,16 @@ export default function ContentLayersV2() {
   }, [setDestination]);
 
   const travelTo = useCallback((next: ExperienceDestination, writeHistory = true) => {
-    if (next === destination || transitionTarget !== null) return;
-    clearTimers();
-
-    if (reducedMotion) {
-      commitDestination(next, writeHistory);
-      return;
-    }
-
-    setTransitionTarget(next);
-    commitTimerRef.current = window.setTimeout(() => commitDestination(next, writeHistory), 190);
-    finishTimerRef.current = window.setTimeout(() => setTransitionTarget(null), 690);
-  }, [clearTimers, commitDestination, destination, reducedMotion, transitionTarget]);
+    if (next !== destination) commitDestination(next, writeHistory);
+  }, [commitDestination, destination]);
 
   useEffect(() => {
     const syncFromLocation = () => {
       const rawHash = window.location.hash.replace("#", "").toLowerCase();
-      const normalized = rawHash === "bluevidia" ? "work" : rawHash || "index";
+      const [routeHash, chapterHash] = rawHash.split("/");
+      const normalized = routeHash === "bluevidia" ? "work" : routeHash || "index";
       const next = isDestination(normalized) ? normalized : "index";
-      clearTimers();
-      setTransitionTarget(null);
+      if (next === "work") setCaseChapter(chapterHash === "delivery" ? 2 : chapterHash === "composition" ? 1 : 0);
       commitDestination(next, false);
     };
 
@@ -183,9 +160,7 @@ export default function ContentLayersV2() {
       window.removeEventListener("popstate", syncFromLocation);
       window.removeEventListener("hashchange", syncFromLocation);
     };
-  }, [clearTimers, commitDestination]);
-
-  useEffect(() => clearTimers, [clearTimers]);
+  }, [commitDestination]);
 
   useEffect(() => {
     setPointerEnergy(0.08);
@@ -200,12 +175,17 @@ export default function ContentLayersV2() {
         left: 0,
         behavior: "auto",
       });
-      if (destination === "work" || destination === "lab") {
-        headingRef.current?.focus({ preventScroll: true });
+      if (destination !== "index") hasEnteredSpace.current = true;
+      const heading = destination === "index"
+        ? hasEnteredSpace.current ? document.getElementById("experience-index-title") : null
+        : document.querySelector<HTMLElement>(`[data-space="${spaceName}"] h1`);
+      if (heading) {
+        heading.tabIndex = -1;
+        heading.focus({ preventScroll: true });
       }
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [destination, setPointerEnergy]);
+  }, [caseChapter, destination, setPointerEnergy]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -224,7 +204,6 @@ export default function ContentLayersV2() {
 
   const handleLocalWorkNavigation = (view: WorkLabView) => travelTo(view);
   const currentLabel = destination === "index" ? "Index" : destinationCopy(destination).label;
-  const transitionColors = transitionTarget ? TRANSITION_COLORS[transitionTarget] : TRANSITION_COLORS.index;
   const sectionTitle = destination === "index"
     ? language === "fr" ? "Développeur créatif & ingénieur" : "Creative developer & engineer"
     : currentLabel;
@@ -242,9 +221,13 @@ export default function ContentLayersV2() {
 
   return (
     <>
-    <a className={styles.skipLink} href="#main-experience">{copy.skip}</a>
+    <a className={styles.skipLink} href="#main-experience" onClick={(event) => {
+      event.preventDefault();
+      document.getElementById("main-experience")?.focus();
+    }}>{copy.skip}</a>
     <main
       id="main-experience"
+      tabIndex={-1}
       className={styles.root}
       data-destination={destination}
       style={{
@@ -255,9 +238,21 @@ export default function ContentLayersV2() {
         "--trace-angle": `${(trace.motion - 0.5) * 12}deg`,
         "--trace-scale": 0.96 + trace.form * 0.06,
         "--trace-shift": `${(trace.system - 0.5) * 24}px`,
+        "--folio-hinge": `${Math.max(0, ROUTES.indexOf(destination as typeof ROUTES[number])) * 25}%`,
       } as React.CSSProperties}
     >
-      <button
+
+
+      <header className={styles.header}>
+        {destination === "index" ? (
+          <span className={styles.headerName}>Etienne Mentrel</span>
+        ) : (
+          <button type="button" className={styles.back} aria-label={copy.back} onClick={() => travelTo("index")}>
+            <span className={styles.backIcon}><Arrow back /></span>
+            <span>{copy.back}</span>
+          </button>
+        )}
+        <button
         type="button"
         className={styles.soundToggle}
         data-sfx-control
@@ -276,30 +271,13 @@ export default function ContentLayersV2() {
         <span>SFX</span>
         <em>{sfxEnabled ? "ON" : "OFF"}</em>
       </button>
-
-      {destination !== "index" ? (
-        <header className={styles.header}>
-          <button
-            type="button"
-            className={styles.back}
-            aria-label={copy.back}
-            onClick={() => travelTo("index")}
-          >
-            <span className={styles.backIcon}><Arrow back /></span>
-            <span>{copy.back}</span>
-          </button>
-          <p className={styles.currentSpace} aria-label={`${copy.current}: ${currentLabel}`}>
-            <span>{String(ROUTES.indexOf(destination) + 1).padStart(2, "0")}</span>
-            {currentLabel}
-          </p>
-          <LanguageSelector />
-        </header>
-      ) : null}
+        <LanguageSelector />
+      </header>
 
       {destination !== "index" ? (
         <nav className={styles.rail} aria-label={copy.nav}>
           <button type="button" onClick={() => travelTo("index")} aria-current={undefined}>
-            <span>00</span><strong>Index</strong>
+            <span aria-hidden="true">00</span><strong>Index</strong>
           </button>
           {ROUTES.map((route, index) => (
             <button
@@ -308,24 +286,26 @@ export default function ContentLayersV2() {
               onClick={() => travelTo(route)}
               aria-current={destination === route ? "page" : undefined}
             >
-              <span>{String(index + 1).padStart(2, "0")}</span>
+              <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
               <strong>{destinationCopy(route).label}</strong>
             </button>
           ))}
         </nav>
       ) : null}
 
-      <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={destination}
+        className={styles.space}
+        data-route-surface={destination}
+        initial={reducedMotion ? false : { opacity: .4, rotateY: -7, x: 16 }}
+        animate={{ opacity: 1, rotateY: 0, x: 0 }}
+        transition={{ duration: reducedMotion ? 0 : .32, ease: [0.22, 1, 0.36, 1] }}
+      >
         {destination === "index" ? (
-          <motion.div
-            key="index"
-            className={styles.space}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.18, ease: "easeOut" }}
-          >
             <ExperienceIndex
+              language={language}
+              composition={composition}
+              onCompositionChange={updateComposition}
               role={copy.role}
               eyebrow={copy.eyebrow}
               title={copy.title}
@@ -344,92 +324,44 @@ export default function ContentLayersV2() {
               onNavigate={(next) => {
                 if (isDestination(next)) travelTo(next);
               }}
-              onPointerEnergyChange={setPointerEnergy}
               onPreviewDestination={(next) => {
                 setPreviewDestination(next && isDestination(next) ? next : null);
               }}
             />
-          </motion.div>
         ) : destination === "work" || destination === "lab" ? (
-          <motion.div
-            key={destination}
-            className={`${styles.space} ${styles.spaceWithRail}`}
-            initial={{ opacity: 0, y: reducedMotion ? 0 : 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: reducedMotion ? 0 : 0.2, ease: "easeOut" }}
-          >
             <WorkLabSpace
+              key={destination === "work" ? caseChapter : "lab"}
+              initialCaseChapter={caseChapter}
               view={destination}
               language={language}
               channels={trace}
+              composition={composition}
+              onCompositionChange={updateComposition}
               headingRef={headingRef}
               onNavigate={handleLocalWorkNavigation}
               onTrace={handleWorkTrace}
               className={styles.sectionWithRail}
             />
-          </motion.div>
         ) : destination === "profile" ? (
-          <motion.div key="profile" className={styles.space} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <ProfileSpaceV2
+              composition={composition}
               resumeUrl={resumeUrl}
               visitedDestinations={visited}
               traceLevel={traceLevel}
               trace={trace}
               onTrace={(amount) => addTrace("system", amount)}
             />
-          </motion.div>
         ) : (
-          <motion.div key="contact" className={styles.space} initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <ContactSpaceV2
+              composition={composition}
               resumeUrl={resumeUrl}
               visitedDestinations={visited}
               traceLevel={traceLevel}
               trace={trace}
               onTrace={(amount) => addTrace("motion", amount)}
             />
-          </motion.div>
         )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {transitionTarget ? (
-          <motion.div
-            className={styles.transition}
-            data-target={transitionTarget}
-            aria-hidden="true"
-            style={{
-              "--transition-a": transitionColors[0],
-              "--transition-b": transitionColors[1],
-            } as React.CSSProperties}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0, 1, 1, 0] }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.69, times: [0, 0.18, 0.68, 1], ease: "easeOut" }}
-          >
-            {[0, 1, 2, 3].map((band) => (
-              <motion.span
-                key={band}
-                initial={{ scaleX: 0, originX: band % 2 === 0 ? 0 : 1 }}
-                animate={{ scaleX: [0, 1, 1, 0], originX: band % 2 === 0 ? 0 : 1 }}
-                transition={{ duration: 0.69, delay: band * 0.018, times: [0, 0.3, 0.68, 1], ease: "easeInOut" }}
-              />
-            ))}
-            <motion.p
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: [0, 1, 0], y: [8, 0, -8] }}
-              transition={{ duration: 0.58, times: [0, 0.42, 1], ease: "easeOut" }}
-            >
-              <span>
-                {String(EXPERIENCE_DESTINATIONS.indexOf(transitionTarget)).padStart(2, "0")}
-                {" · "}
-                {language === "fr" ? "Matière en recomposition" : "Matter recomposing"}
-              </span>
-              <strong>{transitionTarget === "index" ? "Index" : destinationCopy(transitionTarget).label}</strong>
-            </motion.p>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+      </motion.div>
 
       <span className={styles.srStatus} aria-live="polite">
         {copy.current}: {currentLabel}

@@ -137,56 +137,90 @@ export function SfxProvider({ children }: { children: ReactNode }) {
   const contextRef = useRef<AudioContext | null>(null);
   const unlockedRef = useRef(false);
   const lastSliderSoundRef = useRef(0);
+  const playbackVersionRef = useRef(0);
 
   const ensureContext = useCallback(() => {
     if (contextRef.current) return contextRef.current;
-    const AudioContextClass = window.AudioContext ?? (window as AudioWindow).webkitAudioContext;
-    if (!AudioContextClass) return null;
-    contextRef.current = new AudioContextClass({ latencyHint: "interactive" });
-    return contextRef.current;
+    try {
+      const AudioContextClass = window.AudioContext ?? (window as AudioWindow).webkitAudioContext;
+      if (!AudioContextClass) return null;
+      contextRef.current = new AudioContextClass({ latencyHint: "interactive" });
+      return contextRef.current;
+    } catch {
+      // Sound is optional: denied or unavailable audio must never interrupt a visit.
+      return null;
+    }
   }, []);
 
   const play = useCallback((cue: SfxCue, intensity = 0.5) => {
     if (!enabledRef.current) return;
     const context = ensureContext();
     if (!context) return;
+    const version = playbackVersionRef.current;
 
     const run = () => {
-      unlockedRef.current = true;
-      synthesize(context, cue, intensity);
+      if (!enabledRef.current || playbackVersionRef.current !== version || context.state !== "running") return;
+      try {
+        synthesize(context, cue, intensity);
+        unlockedRef.current = true;
+      } catch {
+        // A device can become unavailable after the context was created.
+      }
     };
 
-    if (context.state === "suspended") {
-      void context.resume().then(run).catch(() => undefined);
-    } else if (context.state === "running") {
-      run();
+    try {
+      if (context.state === "suspended") {
+        void context.resume().then(run).catch(() => undefined);
+      } else if (context.state === "running") {
+        run();
+      }
+    } catch {
+      // Some embedded browsers throw synchronously instead of rejecting resume().
     }
   }, [ensureContext]);
 
   const toggle = useCallback(() => {
     const next = !enabledRef.current;
-    const context = ensureContext();
-
-    if (!next && context?.state === "running") synthesize(context, "toggle-off");
+    const version = ++playbackVersionRef.current;
     enabledRef.current = next;
     setEnabled(next);
-    window.localStorage.setItem(SFX_PREFERENCE_KEY, String(next));
+    try {
+      window.localStorage.setItem(SFX_PREFERENCE_KEY, String(next));
+    } catch {
+      // Keep the preference for this visit when persistence is denied.
+    }
 
-    if (next && context) {
-      const announce = () => {
-        unlockedRef.current = true;
+    const context = next ? ensureContext() : contextRef.current;
+    if (!context) return;
+
+    const announce = () => {
+      if (!enabledRef.current || playbackVersionRef.current !== version || context.state !== "running") return;
+      try {
         synthesize(context, "toggle-on");
-      };
-      if (context.state === "suspended") void context.resume().then(announce).catch(() => undefined);
-      else if (context.state === "running") announce();
+        unlockedRef.current = true;
+      } catch {
+        // The visual sound control remains usable even if synthesis is unavailable.
+      }
+    };
+
+    try {
+      if (!next && context.state === "running") synthesize(context, "toggle-off");
+      else if (next && context.state === "suspended") void context.resume().then(announce).catch(() => undefined);
+      else if (next && context.state === "running") announce();
+    } catch {
+      // Unavailable audio must not prevent the mute state from changing.
     }
   }, [ensureContext]);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(SFX_PREFERENCE_KEY);
-    if (stored !== "false") return;
-    enabledRef.current = false;
-    setEnabled(false);
+    try {
+      const stored = window.localStorage.getItem(SFX_PREFERENCE_KEY);
+      if (stored !== "false") return;
+      enabledRef.current = false;
+      setEnabled(false);
+    } catch {
+      // A blocked storage API is not a failed page load.
+    }
   }, []);
 
   useEffect(() => {

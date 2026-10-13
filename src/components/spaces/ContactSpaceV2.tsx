@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
-
+import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/i18n/LanguageContext";
-import type { CreativeTrace } from "@/context/ExperienceContext";
-
+import { INITIAL_COMPOSITION, type CreativeTrace, type FoldComposition } from "@/context/ExperienceContext";
+import FoldSignature from "@/components/experience/FoldSignature";
 import styles from "./profile-contact.module.css";
 
 export type ContactSpaceV2Props = {
@@ -12,263 +11,87 @@ export type ContactSpaceV2Props = {
   visitedDestinations?: readonly string[];
   traceLevel?: number;
   trace?: Partial<CreativeTrace>;
+  composition?: FoldComposition;
   onTrace?: (amount: number) => void;
 };
-
-type RouteDefinition = {
-  id: "index" | "work" | "lab" | "profile";
-  fr: string;
-  en: string;
-};
-
-const ROUTES: readonly RouteDefinition[] = [
-  { id: "index", fr: "Index", en: "Index" },
-  { id: "work", fr: "Travaux", en: "Work" },
-  { id: "lab", fr: "Laboratoire", en: "Lab" },
-  { id: "profile", fr: "Profil", en: "Profile" },
-];
-
 const EMAIL = "etienne.mentrel@gmail.com";
 
-export default function ContactSpaceV2({
-  resumeUrl,
-  visitedDestinations = [],
-  traceLevel = 0,
-  trace = {},
-  onTrace,
-}: ContactSpaceV2Props) {
+export default function ContactSpaceV2({ resumeUrl, onTrace, composition = INITIAL_COMPOSITION }: ContactSpaceV2Props) {
   const { currentLanguage } = useLanguage();
-  const language = currentLanguage === "fr" ? "fr" : "en";
-  const copy = language === "fr"
-    ? {
-        eyebrow: "Contact · transmission finale",
-        title: "Vos traces deviennent un point de départ.",
-        introduction:
-          "Le parcours est recomposé ici, uniquement pour cette visite. Si une idée mérite sa propre présence en ligne, commençons par ce qu’elle doit faire ressentir.",
-        composition: "Composition de la visite",
-        explored: "exploré",
-        waiting: "à découvrir",
-        completeJourney: "Vous avez vu le travail, manipulé les idées et regardé derrière le système.",
-        partialJourney: "Chaque espace traversé précise un peu plus ce qui mérite d’être construit.",
-        nextJourney: "La prochaine trace peut être la vôtre.",
-        imprint: "Empreinte de session",
-        local: "Session locale · aucune donnée collectée",
-        signal: "Signal final",
-        write: "Écrire un email",
-        copy: "Copier l’adresse",
-        copied: "Adresse copiée — à vous d’écrire.",
-        copyLabel: "Copier l’adresse email d’Etienne Mentrel",
-        fallback: "La copie automatique est indisponible. Copiez l’adresse ci-dessous.",
-        fallbackLabel: "Adresse email à copier manuellement",
-        availability: "Disponible pour des projets sélectionnés",
-        resume: "Voir mon CV",
-        github: "Profil GitHub",
-        channels: { form: "Forme", motion: "Mouvement", system: "Système" },
-      }
-    : {
-        eyebrow: "Contact · final transmission",
-        title: "Your traces become a starting point.",
-        introduction:
-          "The journey is recomposed here for this visit only. If an idea deserves a presence of its own, let’s begin with what it should make people feel.",
-        composition: "Journey composition",
-        explored: "explored",
-        waiting: "not visited",
-        completeJourney: "You saw the work, manipulated the ideas and looked behind the system.",
-        partialJourney: "Every space you cross makes what deserves to be built a little clearer.",
-        nextJourney: "The next trace could be yours.",
-        imprint: "Session imprint",
-        local: "Local session · no personal data collected",
-        signal: "Final signal",
-        write: "Write an email",
-        copy: "Copy address",
-        copied: "Address copied — your move.",
-        copyLabel: "Copy Etienne Mentrel’s email address",
-        fallback: "Automatic copy is unavailable. Copy the address below.",
-        fallbackLabel: "Email address to copy manually",
-        availability: "Available for selected projects",
-        resume: "View resume",
-        github: "GitHub profile",
-        channels: { form: "Form", motion: "Motion", system: "System" },
-      };
-  const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
+  const copy = currentLanguage === "fr" ? {
+    eyebrow: "Contact", title: "La suite s’écrit", titleAccent: "ensemble.",
+    introduction: "Une idée, un projet ou une conversation. Je suis à un message.",
+    recipient: "À Etienne Mentrel", letter: composition.authored ? "Signée par votre pli" : "Une lettre ouverte",
+    signature: composition.authored ? "La pièce de votre visite." : "Une forme, avant les mots.", colophon: "Fin du folio / début de la conversation",
+    write: "Écrire un email", copy: "Copier l’adresse", copying: "Copie en cours…",
+    copied: "Adresse copiée — à vous d’écrire.", copyLabel: "Copier l’adresse email d’Etienne Mentrel",
+    fallback: "La copie automatique est indisponible. Copiez l’adresse ci-dessous.",
+    fallbackLabel: "Adresse email à copier manuellement",
+    availability: "Disponible pour des projets sélectionnés",
+    resume: "Voir mon CV", github: "Profil GitHub",
+  } : {
+    eyebrow: "Contact", title: "Let’s write", titleAccent: "what comes next.",
+    introduction: "An idea, a project or a conversation. I’m a message away.",
+    recipient: "To Etienne Mentrel", letter: composition.authored ? "Signed by your fold" : "An open letter",
+    signature: composition.authored ? "The piece from your visit." : "A form, before the words.", colophon: "End of the folio / start of a conversation",
+    write: "Write an email", copy: "Copy address", copying: "Copying…",
+    copied: "Address copied — your move.", copyLabel: "Copy Etienne Mentrel’s email address",
+    fallback: "Automatic copy is unavailable. Copy the address below.",
+    fallbackLabel: "Email address to copy manually",
+    availability: "Available for selected projects",
+    resume: "View resume", github: "GitHub profile",
+  };
+  const [copyState, setCopyState] = useState<"idle" | "copying" | "copied" | "failed">("idle");
   const headingRef = useRef<HTMLHeadingElement>(null);
   const fallbackRef = useRef<HTMLInputElement>(null);
-  const normalizedTrace = Math.max(0, Math.min(1, traceLevel));
-  const visited = useMemo(
-    () => new Set(visitedDestinations.map((destination) => destination.toLowerCase())),
-    [visitedDestinations],
-  );
-  const visitedRoutes = ROUTES.filter((route) => visited.has(route.id));
-  const channelValues = {
-    form: Math.max(0, Math.min(1, trace.form ?? normalizedTrace)),
-    motion: Math.max(0, Math.min(1, trace.motion ?? normalizedTrace)),
-    system: Math.max(0, Math.min(1, trace.system ?? normalizedTrace)),
-  };
-  const transmissionCode = `TRC-${ROUTES.map((route) => visited.has(route.id) ? route.id[0].toUpperCase() : "·").join("")}-F${Math.round(channelValues.form * 100).toString().padStart(2, "0")}M${Math.round(channelValues.motion * 100).toString().padStart(2, "0")}S${Math.round(channelValues.system * 100).toString().padStart(2, "0")}`;
-  const sculptureStyle = {
-    "--signal-form": channelValues.form,
-    "--signal-motion": channelValues.motion,
-    "--signal-system": channelValues.system,
-    "--signal-visited": visitedRoutes.length / ROUTES.length,
-  } as CSSProperties;
-
-  useEffect(() => {
-    headingRef.current?.focus({ preventScroll: true });
-  }, []);
-
+  useEffect(() => { headingRef.current?.focus({ preventScroll: true }); }, []);
   const handleCopy = async () => {
+    setCopyState("copying");
+    let timeout = 0;
     try {
       if (!navigator.clipboard) throw new Error("Clipboard API unavailable");
-      await navigator.clipboard.writeText(EMAIL);
-      setCopyState("copied");
-      onTrace?.(0.12);
+      await Promise.race([
+        navigator.clipboard.writeText(EMAIL),
+        new Promise<never>((_, reject) => {
+          timeout = window.setTimeout(() => reject(new Error("Clipboard did not respond")), 1200);
+        }),
+      ]);
+      setCopyState("copied"); onTrace?.(0.12);
     } catch {
       setCopyState("failed");
-      window.requestAnimationFrame(() => {
-        fallbackRef.current?.focus();
-        fallbackRef.current?.select();
-      });
+      window.requestAnimationFrame(() => { fallbackRef.current?.focus(); fallbackRef.current?.select(); });
+    } finally {
+      window.clearTimeout(timeout);
     }
   };
-
   return (
-    <section
-      className={styles.contactRoot}
-      data-contact-state={copyState}
-      data-space="contact-v2"
-      aria-labelledby="contact-v2-title"
-    >
+    <section className={styles.contactRoot} data-contact-state={copyState} data-space="contact-v2" aria-labelledby="contact-v2-title">
       <div className={styles.contactShell}>
+        <div className={styles.folioMasthead}><p className={styles.contactEyebrow}><span aria-hidden="true">04</span>{copy.eyebrow}</p><span>{copy.colophon}</span></div>
         <header className={styles.contactHeader}>
-          <p className={styles.contactEyebrow}>{copy.eyebrow}</p>
-          <div className={styles.contactHeadingGrid}>
-            <h1
-              id="contact-v2-title"
-              ref={headingRef}
-              tabIndex={-1}
-              className={styles.contactTitle}
-            >
-              {copy.title}
-            </h1>
-            <p className={styles.contactIntroduction}>{copy.introduction}</p>
-          </div>
+          <h1 id="contact-v2-title" ref={headingRef} tabIndex={-1} className={styles.contactTitle}>{copy.title}{" "}<em>{copy.titleAccent}</em></h1>
+          <p className={styles.contactIntroduction}>{copy.introduction}</p>
         </header>
-
-        <div className={styles.contactMain}>
-          <figure className={styles.transmission} aria-labelledby="contact-composition-title">
-            <figcaption className={styles.transmissionHeader}>
-              <span id="contact-composition-title">{copy.composition}</span>
-              <strong>{String(visitedRoutes.length).padStart(2, "0")} / {String(ROUTES.length).padStart(2, "0")}</strong>
-            </figcaption>
-
-            <div className={styles.transmissionScene}>
-              <div className={styles.signalSculpture} style={sculptureStyle} aria-hidden="true">
-                <span data-channel="form"><i /></span>
-                <span data-channel="motion"><i /></span>
-                <span data-channel="system"><i /></span>
-                <div>
-                  <small>{copy.signal}</small>
-                  <strong>{transmissionCode}</strong>
-                </div>
-              </div>
-
-              <div className={styles.journeyStatement}>
-                <span>{String(visitedRoutes.length).padStart(2, "0")}</span>
-                <p>
-                  {visitedRoutes.length === ROUTES.length ? copy.completeJourney : copy.partialJourney}
-                </p>
-                <strong>{copy.nextJourney}</strong>
-              </div>
-
-              <div className={styles.routeRibbon} aria-label={copy.composition}>
-                {ROUTES.map((route, index) => {
-                  const active = visited.has(route.id);
-                  return (
-                    <div key={route.id} data-visited={active ? "true" : "false"}>
-                      <span>0{index + 1}</span>
-                      <strong>{route[language]}</strong>
-                      <small>{active ? copy.explored : copy.waiting}</small>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className={styles.sessionImprint}>
-                <span>{copy.imprint}</span>
-                <strong>{transmissionCode}</strong>
-                <div className={styles.imprintChannels}>
-                  {(["form", "motion", "system"] as const).map((channel) => (
-                    <div key={channel}>
-                      <span>{copy.channels[channel]}</span>
-                      <i aria-hidden="true"><b style={{ transform: `scaleX(${channelValues[channel]})` }} /></i>
-                      <output>{Math.round(channelValues[channel] * 100)}</output>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <p className={styles.transmissionPrivacy}>{copy.local}</p>
-          </figure>
-
-          <div className={styles.contactConsole}>
-            <div className={styles.consoleHeading}>
-              <span>TO</span>
-              <strong>{EMAIL}</strong>
-              <span>2026</span>
-            </div>
-
-            <a
-              className={styles.emailLink}
-              href={`mailto:${EMAIL}`}
-              aria-label={`${copy.write} — ${EMAIL}`}
-              onClick={() => onTrace?.(0.12)}
-            >
-              <span>{copy.nextJourney}</span>
-              <strong>etienne.mentrel<wbr />@gmail.com</strong>
-              <i aria-hidden="true">↗</i>
-            </a>
-
-            <button
-              type="button"
-              className={styles.copyButton}
-              onClick={handleCopy}
-              aria-label={copy.copyLabel}
-            >
-              <span aria-hidden="true">{copyState === "copied" ? "✓" : "＋"}</span>
-              {copyState === "copied" ? copy.copied : copy.copy}
-            </button>
-
-            <p className={styles.copyStatus} aria-live="polite" aria-atomic="true">
-              {copyState === "copied" ? copy.copied : ""}
-            </p>
-
-            {copyState === "failed" && (
-              <div className={styles.copyFallback} role="status" aria-live="polite">
-                <label htmlFor="contact-email-fallback">{copy.fallback}</label>
-                <input
-                  ref={fallbackRef}
-                  id="contact-email-fallback"
-                  aria-label={copy.fallbackLabel}
-                  value={EMAIL}
-                  readOnly
-                  onFocus={(event) => event.currentTarget.select()}
-                />
-              </div>
-            )}
-          </div>
+        <div className={styles.contactConsole} data-letter-authored={composition.authored}>
+          <div className={styles.letterHeading}><span>{copy.recipient}</span><span>{copy.letter}</span></div>
+          <div className={styles.letterSignature}><div className={styles.letterFold} aria-hidden="true"><FoldSignature form={composition.form} tension={composition.tension} phase={composition.phase} tone="ink" /></div><p>{composition.authored && composition.name ? composition.name : copy.signature}</p></div>
+          <a className={styles.emailLink} href={`mailto:${EMAIL}`} aria-label={`${copy.write} — ${EMAIL}`} onClick={() => onTrace?.(0.12)}>
+            <strong>etienne.mentrel<wbr />@gmail.com</strong>
+            <span className={styles.writeLabel}>{copy.write}<span aria-hidden="true">↗</span></span>
+          </a>
+          <button type="button" className={styles.copyButton} onClick={handleCopy} aria-label={copy.copyLabel} disabled={copyState === "copying"}>
+            <svg className={styles.copyIcon} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" focusable="false">{copyState === "copied" ? <path d="m4 10 4 4 8-8" /> : <><rect x="7" y="7" width="10" height="10" rx="1" /><path d="M12 7V3H3v9h4" /></>}</svg>
+            {copyState === "copied" ? copy.copied : copyState === "copying" ? copy.copying : copy.copy}
+          </button>
+          <p className={styles.copyStatus} aria-live="polite" aria-atomic="true">{copyState === "copied" ? copy.copied : ""}</p>
+          {copyState === "failed" && <div className={styles.copyFallback} role="status">
+            <label htmlFor="contact-email-fallback">{copy.fallback}</label>
+            <input ref={fallbackRef} id="contact-email-fallback" aria-label={copy.fallbackLabel} value={EMAIL} readOnly onFocus={(event) => event.currentTarget.select()} />
+          </div>}
         </div>
-
         <footer className={styles.contactFooter}>
           <p>{copy.availability}</p>
-          <div>
-            <a href={resumeUrl} target="_blank" rel="noopener noreferrer">
-              {copy.resume}<span aria-hidden="true">↗</span>
-            </a>
-            <a href="https://github.com/H1B0B0" target="_blank" rel="noopener noreferrer">
-              {copy.github}<span aria-hidden="true">↗</span>
-            </a>
-          </div>
+          <div><a href={resumeUrl} target="_blank" rel="noopener noreferrer">{copy.resume}<span aria-hidden="true">↗</span></a><a href="https://github.com/H1B0B0" target="_blank" rel="noopener noreferrer">{copy.github}<span aria-hidden="true">↗</span></a></div>
         </footer>
       </div>
     </section>

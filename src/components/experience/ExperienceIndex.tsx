@@ -1,12 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-
+import Image from "next/image";
+import { useRef, useState } from "react";
+import { INITIAL_COMPOSITION, type FoldComposition, type ExperienceDestination } from "@/context/ExperienceContext";
 import type { CreativeDestination } from "./CreativeMatter";
+import FoldSignature from "./FoldSignature";
 import styles from "./ExperienceIndex.module.css";
 
 export type IndexDestination = {
-  id: Exclude<CreativeDestination, "index">;
+  id: Exclude<ExperienceDestination, "index">;
   label: string;
   description?: string;
   meta?: string;
@@ -33,199 +35,69 @@ export interface ExperienceIndexProps {
   onPreviewDestination?: (destination: IndexDestination["id"] | null) => void;
   onPointerEnergyChange?: (energy: number) => void;
   className?: string;
+  language?: "fr" | "en";
+  composition?: FoldComposition;
+  onCompositionChange?: (next: Partial<FoldComposition>) => void;
 }
 
-function clamp01(value: number) {
-  return Math.max(0, Math.min(1, value));
-}
-
+/** The index is the object you navigate: four leaves, four direct entrances. */
 export default function ExperienceIndex({
-  name = "Etienne Mentrel",
-  role,
-  eyebrow = "Creative developer · Systems & experiences",
-  title,
-  titleAccent,
-  description,
-  destinations,
-  visited = [],
-  activeDestination = "index",
-  instruction = "Move to tune the matter · Choose a destination",
-  edition = "Portfolio · 2026",
-  visitedLabel = "Visited",
-  matterLabel = "Living matter",
-  tracesLabel = "traces",
-  channels = {},
-  channelLabels = {},
-  onNavigate,
-  onPreviewDestination,
-  onPointerEnergyChange,
-  className = "",
+  role, eyebrow, destinations, visited = [], visitedLabel = "Visited", onNavigate,
+  onPreviewDestination, className = "", language = "fr", composition = INITIAL_COMPOSITION,
 }: ExperienceIndexProps) {
-  const rootRef = useRef<HTMLElement>(null);
-  const lastPointRef = useRef({ x: 0, y: 0, time: 0 });
-  const callbackFrameRef = useRef(0);
-  const pendingEnergyRef = useRef(0);
-  const [previewedDestination, setPreviewedDestination] = useState<IndexDestination | null>(null);
-  const visitedSet = new Set(visited);
-
-  const emitEnergy = useCallback(
-    (energy: number) => {
-      const next = clamp01(energy);
-      pendingEnergyRef.current = next;
-      rootRef.current?.style.setProperty("--index-energy", String(next));
-      if (!onPointerEnergyChange || callbackFrameRef.current) return;
-      callbackFrameRef.current = window.requestAnimationFrame(() => {
-        callbackFrameRef.current = 0;
-        onPointerEnergyChange(pendingEnergyRef.current);
-      });
-    },
-    [onPointerEnergyChange],
-  );
-
-  useEffect(() => {
-    return () => {
-      if (callbackFrameRef.current) window.cancelAnimationFrame(callbackFrameRef.current);
-    };
-  }, []);
-
-  const handlePointerMove = (event: React.PointerEvent<HTMLElement>) => {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const x = clamp01((event.clientX - bounds.left) / Math.max(1, bounds.width));
-    const y = clamp01((event.clientY - bounds.top) / Math.max(1, bounds.height));
-    event.currentTarget.style.setProperty("--index-x", String(x));
-    event.currentTarget.style.setProperty("--index-y", String(y));
-
-    const now = performance.now();
-    const previous = lastPointRef.current;
-    const elapsed = Math.max(16, now - previous.time);
-    const distance = Math.hypot(x - previous.x, y - previous.y);
-    const velocity = previous.time === 0 ? 0.18 : (distance / elapsed) * 1000;
-    lastPointRef.current = { x, y, time: now };
-    emitEnergy(Math.max(0.12, Math.min(1, velocity * 0.72)));
+  const [preview, setPreview] = useState<IndexDestination["id"] | null>(null);
+  const focusedLeaf = useRef<IndexDestination["id"] | null>(null);
+  const french = language === "fr";
+  const notes = french ? {
+    work: "Une idée livrée. BlueVidia.", lab: "Une idée entre vos mains.",
+    profile: "Les idées derrière les gestes.", contact: "La prochaine idée, ensemble.",
+  } : {
+    work: "An idea, delivered. BlueVidia.", lab: "An idea in your hands.",
+    profile: "The ideas behind the choices.", contact: "The next idea, together.",
   };
-
-  const handlePointerLeave = () => {
-    lastPointRef.current.time = 0;
-    emitEnergy(0.08);
-    setPreviewedDestination(null);
-    onPreviewDestination?.(null);
+  const select = (id: IndexDestination["id"] | null) => {
+    setPreview(id);
+    onPreviewDestination?.(id);
   };
-
-  const channelItems = [
-    { key: "form" as const, label: channelLabels.form ?? "Form", level: clamp01(channels.form ?? 0.7) },
-    { key: "motion" as const, label: channelLabels.motion ?? "Motion", level: clamp01(channels.motion ?? 0.62) },
-    { key: "system" as const, label: channelLabels.system ?? "System", level: clamp01(channels.system ?? 0.76) },
-  ];
 
   return (
-    <section
-      ref={rootRef}
-      className={`${styles.index} ${className}`}
-      data-experience-index
-      data-preview={previewedDestination?.id}
-      aria-labelledby="experience-index-title"
-      onPointerMove={handlePointerMove}
-      onPointerDown={() => emitEnergy(1)}
-      onPointerLeave={handlePointerLeave}
-    >
-      <header className={styles.identity}>
-        <span className={styles.identityName}>{name}</span>
-        <span className={styles.role}>{role}</span>
-      </header>
-
-      <div className={styles.hero}>
-        <div className={styles.statement}>
+    <section className={`${styles.index} ${className}`} data-space="index" data-experience-index data-preview={preview ?? undefined} aria-labelledby="experience-index-title">
+      <div className={styles.introduction}>
+        <div>
           <p className={styles.eyebrow}>{eyebrow}</p>
-          <h1 className={styles.title} id="experience-index-title">
-            {title}
-            {titleAccent && <span className={styles.titleAccent}>{titleAccent}</span>}
+          <h1 id="experience-index-title" className={styles.title}>
+            {french ? "Une idée." : "An idea."}<br />
+            <em>{french ? "Mille façons de lui donner forme." : "So many ways to give it form."}</em>
           </h1>
-          {description && <p className={styles.description}>{description}</p>}
         </div>
-
-        <div className={styles.instrument} aria-hidden="true">
-          <div className={styles.instrumentMeta}>
-            <span>
-              {previewedDestination
-                ? `${String(destinations.indexOf(previewedDestination) + 1).padStart(2, "0")} / ${previewedDestination.label}`
-                : matterLabel}
-            </span>
-            <span>{String(visitedSet.size).padStart(2, "0")} {tracesLabel}</span>
-          </div>
-          <span className={styles.instrumentWord}>
-            {previewedDestination?.label ?? "Trace"}
-          </span>
-          <div className={styles.channels}>
-            {channelItems.map((channel) => (
-              <span
-                className={styles.channel}
-                key={channel.key}
-                style={{ "--channel-level": channel.level } as React.CSSProperties}
-              >
-                <i />
-                <span>{channel.label}</span>
-              </span>
-            ))}
-          </div>
-        </div>
+        <p className={styles.intent}>{french ? "J’imagine et je développe des sites qui ont quelque chose à raconter." : "I design and build websites with something to say."}</p>
       </div>
 
-      <nav className={styles.destinations} aria-label={instruction}>
-        {destinations.map((destination, index) => {
-          const wasVisited = visitedSet.has(destination.id);
-          const isActive = activeDestination === destination.id;
-          return (
-            <button
-              className={styles.destination}
-              type="button"
-              key={destination.id}
-              aria-current={isActive ? "page" : undefined}
-              aria-label={`${destination.label}${wasVisited ? ` · ${visitedLabel}` : ""}`}
-              onPointerEnter={() => {
-                emitEnergy(0.48);
-                setPreviewedDestination(destination);
-                onPreviewDestination?.(destination.id);
-              }}
-              onPointerLeave={() => {
-                setPreviewedDestination(null);
-                onPreviewDestination?.(null);
-              }}
-              onFocus={() => {
-                emitEnergy(0.48);
-                setPreviewedDestination(destination);
-                onPreviewDestination?.(destination.id);
-              }}
-              onBlur={() => {
-                emitEnergy(0.08);
-                setPreviewedDestination(null);
-                onPreviewDestination?.(null);
-              }}
-              onClick={() => {
-                emitEnergy(1);
-                onNavigate(destination.id);
-              }}
-            >
-              <span className={styles.destinationIndex}>{String(index + 1).padStart(2, "0")}</span>
-              <span className={styles.destinationText}>
-                <span className={styles.destinationLabel}>{destination.label}</span>
-                {destination.description && (
-                  <span className={styles.destinationDescription}>{destination.description}</span>
-                )}
-              </span>
-              {wasVisited ? (
-                <span className={styles.visited}>{visitedLabel}</span>
-              ) : destination.meta ? (
-                <span className={styles.destinationMeta}>{destination.meta}</span>
-              ) : null}
-            </button>
-          );
-        })}
+      <nav className={styles.folio} aria-label={french ? "Explorer le portfolio" : "Explore the portfolio"}>
+        {destinations.map((destination, index) => (
+          <button
+            type="button" key={destination.id} className={styles.leaf} data-leaf={destination.id}
+            data-selected={preview === destination.id || undefined}
+            aria-label={`${destination.label}${visited.includes(destination.id) ? ` · ${visitedLabel}` : ""}`}
+            onPointerEnter={(event) => { if (event.pointerType === "mouse") select(destination.id); }}
+            onPointerLeave={() => select(focusedLeaf.current)}
+            onFocus={() => { focusedLeaf.current = destination.id; select(destination.id); }}
+            onBlur={() => { focusedLeaf.current = null; select(null); }}
+            onClick={() => onNavigate(destination.id)}
+          >
+            <span className={styles.leafTop}><span>{String(index + 1).padStart(2, "0")}</span><span className={styles.leafHint}>{french ? "Ouvrir" : "Open"}<span aria-hidden="true"> ↗</span></span></span>
+            <span className={styles.artwork} aria-hidden="true">
+              {destination.id === "work" ? <span className={styles.sitePrint}><Image src="/images/projects/bluevidia-desktop.jpg" alt="" fill sizes="(max-width: 700px) 240px, 36vw" priority className={styles.siteImage} /></span>
+              : destination.id === "lab" ? <FoldSignature as="span" className={styles.fold} form={composition.form} tension={composition.tension} phase={composition.phase} />
+              : destination.id === "profile" ? <span className={styles.portraitPrint}><Image src="/avatar.webp" alt="" fill sizes="(max-width: 700px) 160px, 24vw" className={styles.portrait} /></span>
+              : <span className={styles.invitation}>{french ? <>Et si<br />on lui<br />donnait<br /><em>forme ?</em></> : <>What<br />could<br />we<br /><em>make?</em></>}<span className={styles.letterFold} /></span>}
+            </span>
+            <span className={styles.leafBottom}><span className={styles.destinationLabel}>{destination.label}</span><span className={styles.leafNote}>{notes[destination.id]}</span></span>
+          </button>
+        ))}
       </nav>
 
-      <footer className={styles.footer}>
-        <span className={styles.hint}>{instruction}</span>
-        <span>{edition}</span>
-      </footer>
+      <footer className={styles.footer}><span>{role}</span><span>{french ? "À déplier dans l’ordre de vos envies." : "Unfold in any order you like."}</span></footer>
     </section>
   );
 }

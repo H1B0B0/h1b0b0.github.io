@@ -1,567 +1,282 @@
 "use client";
 
-import type { CSSProperties, Ref } from "react";
-import { useId, useState } from "react";
-
-import ProjectLayers from "@/components/ProjectLayers";
-
+import Image from "next/image";
+import { useEffect, useId, useMemo, useState, type CSSProperties, type Ref } from "react";
+import FoldSignature from "../experience/FoldSignature";
+import { buildCompositionSvg } from "../experience/compositionSvg";
+import { INITIAL_COMPOSITION, type FoldComposition } from "@/context/ExperienceContext";
 import styles from "./work-lab.module.css";
 
 export type WorkLabView = "work" | "lab";
 export type WorkLabLanguage = "fr" | "en";
 export type CreativeChannel = "form" | "motion" | "system";
-
 export type WorkLabTrace = {
   source: WorkLabView;
   channel: CreativeChannel;
-  action:
-    | "navigate"
-    | "case-chapter"
-    | "case-media"
-    | "material-tune"
-    | "type-tune"
-    | "system-route";
+  action: "navigate" | "case-chapter" | "case-media" | "material-tune" | "type-tune" | "system-route";
   value?: number;
 };
-
 export type WorkLabSpaceProps = {
-  view: WorkLabView;
-  language?: WorkLabLanguage;
+  view: WorkLabView; language?: WorkLabLanguage;
   channels?: Partial<Record<CreativeChannel, number>>;
-  className?: string;
-  headingRef?: Ref<HTMLHeadingElement>;
+  className?: string; headingRef?: Ref<HTMLHeadingElement>;
   onNavigate?: (destination: WorkLabView) => void;
   onTrace?: (trace: WorkLabTrace) => void;
+  composition?: FoldComposition;
+  initialCaseChapter?: 0 | 1 | 2;
+  onCompositionChange?: (next: Partial<FoldComposition>) => void;
 };
-
-type StyleWithVariables = CSSProperties & Record<`--${string}`, string | number>;
-
+type Variables = CSSProperties & Record<`--${string}`, string | number>;
+const CHANNELS: readonly CreativeChannel[] = ["form", "motion", "system"];
 const COPY = {
   fr: {
-    navigation: "Travaux et recherches",
-    workNav: "Travaux",
-    labNav: "Laboratoire",
-    work: {
-      eyebrow: "Travail sélectionné · Commande client",
-      title: "Une idée juste, construite jusqu'au réel.",
-      intro:
-        "BlueVidia est une commande livrée pour un studio audiovisuel. Le projet montre une manière de travailler ; son univers n'est pas celui de tout le portfolio.",
-      clientLabel: "Commande client · Projet phare",
-      caseIntro:
-        "Une vitrine immersive conçue et développée autour des films, des photographies et du regard du studio.",
-      role: "Rôle",
-      roleValue: "Design & développement",
-      stack: "Socle",
-      stackValue: "Next.js · Three.js · GLSL",
-      status: "Statut",
-      statusValue: "En ligne",
-      chaptersLabel: "Explorer les trois temps du projet",
-      chapters: [
-        {
-          short: "Enjeu",
-          title: "Faire ressentir un studio avant de l'expliquer.",
-          text: "Traduire une identité audiovisuelle premium sans produire un énième site d'agence statique.",
-        },
-        {
-          short: "Réponse",
-          title: "L'image devient l'interface.",
-          text: "Faire du rythme, de la matière visuelle et du geste une partie du récit — jamais un décor gratuit.",
-        },
-        {
-          short: "Résultat",
-          title: "Une expérience réellement en ligne.",
-          text: "Un site responsive construit autour des contenus du studio, livré et accessible aujourd'hui.",
-        },
+    eyebrow: "01 / Travaux · commande client", title: "BlueVidia.",
+    intro: "Du caractère à l’interface. Une identité audiovisuelle, un site qui lui ressemble.",
+    role: "Design & développement", stack: "Next.js · Three.js · GLSL", visit: "Voir le site", live: "En ligne",
+    chaptersLabel: "Explorer les trois temps du projet",
+    chapters: [
+      { short: "Intention", title: "Faire ressentir, avant d’expliquer.", text: "J’ai placé l’identité avant le catalogue : un nom à grande échelle, une matière bleue, puis une invitation à explorer les films.", choice: "L’identité avant le catalogue", focus: "Typographie / matière", image: "bluevidia-desktop.jpg", alt: "Capture de l’accueil BlueVidia : composition typographique et matière bleue" },
+      { short: "Composition", title: "Un parcours, plusieurs rythmes.", text: "J’ai fait du contraste un outil de lecture. Après l’accueil immersif, la page studio devient claire et éditoriale ; la navigation reste le repère.", choice: "Le contraste pour donner du rythme", focus: "Contraste / lecture", image: "bluevidia-studio.jpg", alt: "Capture de la page studio BlueVidia : composition éditoriale claire et photographie client" },
+      { short: "Livraison", title: "La même intention, à chaque format.", text: "Sur petit écran, je garde l’essentiel : le nom, une navigation regroupée et l’accès aux films. La composition change, pas ses repères.", choice: "Adapter la composition, garder le sens", focus: "Repères / geste", image: "bluevidia-mobile.jpg", alt: "Capture de l’accueil BlueVidia au format mobile" },
+    ],
+    attribution: "Interface : Etienne Mentrel. Images, films et identité du studio : BlueVidia et leurs auteurs crédités.",
+    capture: "Interface livrée", mobileCapture: "Format mobile · détail agrandi", details: "Détails du projet", choiceLabel: "Le choix de design",
+    inspect: "Voir les repères", hideInspection: "Masquer les repères", inspectionLabel: "Lire les choix de composition", inspectionContext: "Annotation du portfolio", comparisonCapture: "Desktop / mobile",
+    landmarks: [
+      [
+        { id: "identity", short: "Nom", note: "Le nom donne l’échelle. La matière reste derrière, au service de sa lisibilité.", bounds: [100, 470, 850, 180] },
+        { id: "navigation", short: "Menu", note: "La navigation se détache en haut : un repère stable dans une entrée immersive.", bounds: [540, 18, 865, 74] },
+        { id: "access", short: "Accès", note: "L’accès aux films est une action distincte. Le visiteur sait où commencer.", bounds: [56, 790, 197, 56] },
       ],
-      frameHint: "Choisir un chapitre",
-      challengeWords: ["Ressentir", "avant", "d’expliquer"],
-      challengeSignals: ["Image · matière", "Rythme · navigation", "Geste · récit"],
-      deliveryKicker: "Système livré · 200 OK",
-      deliveryTitle: "Une présence mise en production.",
-      deliverySignals: ["Responsive", "Déployé", "Maintenable"],
-      delivered: "Conception et développement : Etienne Mentrel · Contenus client : BlueVidia",
-      visit: "Visiter le site livré",
-    },
-    lab: {
-      eyebrow: "Laboratoire · Recherches personnelles",
-      title: "La créativité se prouve en la manipulant.",
-      intro:
-        "Trois études auto-initiées — aucun faux client, aucune métrique inventée. Chaque geste rend visible une capacité différente.",
-      researchLabel: "Recherche personnelle",
-      gesture: "Geste principal",
-      studies: {
-        material: {
-          title: "Matière",
-          description: "Explorer comment une surface numérique peut sembler respirer, résister et changer de densité.",
-          control: "Comprimer la matière",
-          low: "Diffuse",
-          high: "Dense",
-        },
-        type: {
-          title: "Typographie",
-          description: "Transformer la voix d'un mot sans sacrifier sa lecture ni sa place dans la composition.",
-          control: "Mettre le mot sous tension",
-          low: "Calme",
-          high: "Radicale",
-          word: "CRÉER",
-        },
-        system: {
-          title: "Interaction / système",
-          description: "Montrer qu'un geste simple peut produire un état lisible et une conséquence dans tout un système.",
-          control: "Faire circuler le signal",
-          action: "Propager",
-          states: ["Origine", "Forme", "Mouvement", "Règle", "Retour", "Boucle complète"],
-        },
-      },
-    },
+      [
+        { id: "text", short: "Texte", note: "Le texte tient une colonne. Les retours à la ligne dessinent un rythme de lecture.", bounds: [110, 378, 410, 258] },
+        { id: "image", short: "Image", note: "La photographie prend une colonne entière. L’interface lui donne sa place, sans la revendiquer.", bounds: [810, 248, 518, 610] },
+        { id: "credit", short: "Crédit", note: "Le crédit reste dans l’image. L’interface cadre la photographie ; son auteur reste identifié.", bounds: [810, 810, 518, 48] },
+      ],
+      [
+        { id: "desktop", short: "Desktop", note: "À grande largeur, la navigation se déploie et le nom occupe l’horizontale.", bounds: [0, 0, 1440, 900] },
+        { id: "mobile", short: "Mobile", note: "Sur mobile, le menu se regroupe. Le nom et l’accès aux films restent visibles.", bounds: [0, 0, 1440, 900] },
+      ],
+    ],
+    labEyebrow: "02 / Laboratoire · atelier ouvert", labTitle: "À vous de plier.",
+    labIntro: "Une feuille, trois gestes. Faites-en une pièce à emporter.", experiments: "Choisir un outil de composition",
+    studies: [
+      { title: "Matière", description: "Une même surface. Du ruban ouvert au pli serré.", control: "Plier la matière", low: "Ouverte", high: "Serrée" },
+      { title: "Typographie", description: "La tension de la forme devient celle du mot.", control: "Régler la tension", low: "Calme", high: "Radicale" },
+      { title: "Système", description: "Six positions. Chaque passage recompose la pièce et monte d’un ton.", control: "Faire circuler le signal", low: "", high: "" },
+    ],
+    word: "LE PLI", propagate: "Propager", states: ["Origine", "Forme", "Mouvement", "Règle", "Retour", "Boucle complète"],
+    piece: "Composition personnelle", name: "Nom de la pièce", export: "Exporter en SVG", reset: "Recommencer", exported: "Téléchargement demandé.", exportFailed: "L’export est indisponible dans ce navigateur.", resetDone: "Composition remise à zéro.", artworkLabel: "Sculpture de ruban plié, composée avec vos réglages", sheet: "Feuille libre",
   },
   en: {
-    navigation: "Work and research",
-    workNav: "Work",
-    labNav: "Laboratory",
-    work: {
-      eyebrow: "Selected work · Client commission",
-      title: "A strong idea, built all the way to reality.",
-      intro:
-        "BlueVidia is a delivered commission for an audiovisual studio. The project demonstrates a way of working; its world does not define the entire portfolio.",
-      clientLabel: "Client commission · Featured case",
-      caseIntro:
-        "An immersive showcase designed and developed around the studio's films, photography and point of view.",
-      role: "Role",
-      roleValue: "Design & development",
-      stack: "Core",
-      stackValue: "Next.js · Three.js · GLSL",
-      status: "Status",
-      statusValue: "Live",
-      chaptersLabel: "Explore the project's three stages",
-      chapters: [
-        {
-          short: "Challenge",
-          title: "Make the studio felt before it is explained.",
-          text: "Translate a premium audiovisual identity without building another static agency website.",
-        },
-        {
-          short: "Response",
-          title: "The image becomes the interface.",
-          text: "Make rhythm, visual matter and gesture part of the narrative — never gratuitous decoration.",
-        },
-        {
-          short: "Outcome",
-          title: "An experience that is genuinely live.",
-          text: "A responsive website built around the studio's content, delivered and available today.",
-        },
+    eyebrow: "01 / Work · client commission", title: "BlueVidia.",
+    intro: "From character to interface. An audiovisual identity, a website in its image.",
+    role: "Design & development", stack: "Next.js · Three.js · GLSL", visit: "Visit the website", live: "Live",
+    chaptersLabel: "Explore the project's three stages",
+    chapters: [
+      { short: "Intent", title: "Feel it, before explaining it.", text: "I put identity before the catalogue: a large-scale name, blue material, then an invitation to explore the films.", choice: "Identity before the catalogue", focus: "Typography / material", image: "bluevidia-desktop.jpg", alt: "BlueVidia homepage screenshot: typographic composition and blue material" },
+      { short: "Composition", title: "One journey, different rhythms.", text: "I used contrast as a reading tool. After the immersive opening, the studio page becomes light and editorial; navigation remains the anchor.", choice: "Contrast to create a rhythm", focus: "Contrast / reading", image: "bluevidia-studio.jpg", alt: "BlueVidia studio screenshot: light editorial composition and client photography" },
+      { short: "Delivery", title: "The same intention, at every size.", text: "On smaller screens, I keep the essentials: the name, grouped navigation and access to the films. The composition changes, not its landmarks.", choice: "Adapt the composition, keep its meaning", focus: "Landmarks / gesture", image: "bluevidia-mobile.jpg", alt: "BlueVidia homepage screenshot at mobile size" },
+    ],
+    attribution: "Interface: Etienne Mentrel. Images, films and studio identity: BlueVidia and their credited authors.",
+    capture: "Delivered interface", mobileCapture: "Mobile layout · enlarged detail", details: "Project details", choiceLabel: "The design choice",
+    inspect: "Show the landmarks", hideInspection: "Hide the landmarks", inspectionLabel: "Read the composition choices", inspectionContext: "Portfolio annotation", comparisonCapture: "Desktop / mobile",
+    landmarks: [
+      [
+        { id: "identity", short: "Name", note: "The name sets the scale. The material stays behind it, supporting its readability.", bounds: [100, 470, 850, 180] },
+        { id: "navigation", short: "Menu", note: "Navigation stands apart at the top: a stable landmark inside an immersive opening.", bounds: [540, 18, 865, 74] },
+        { id: "access", short: "Access", note: "Film access is a distinct action. The visitor knows where to begin.", bounds: [56, 790, 197, 56] },
       ],
-      frameHint: "Choose a chapter",
-      challengeWords: ["Feel it", "before", "explaining it"],
-      challengeSignals: ["Image · material", "Rhythm · navigation", "Gesture · narrative"],
-      deliveryKicker: "Delivered system · 200 OK",
-      deliveryTitle: "A presence put into production.",
-      deliverySignals: ["Responsive", "Deployed", "Maintainable"],
-      delivered: "Design and development: Etienne Mentrel · Client content: BlueVidia",
-      visit: "Visit the delivered website",
-    },
-    lab: {
-      eyebrow: "Laboratory · Personal research",
-      title: "Creativity is proven through manipulation.",
-      intro:
-        "Three self-initiated studies — no fake client and no invented metric. Each gesture makes a different capability visible.",
-      researchLabel: "Personal research",
-      gesture: "Primary gesture",
-      studies: {
-        material: {
-          title: "Material",
-          description: "Explore how a digital surface can appear to breathe, resist and change density.",
-          control: "Compress the material",
-          low: "Diffuse",
-          high: "Dense",
-        },
-        type: {
-          title: "Typography",
-          description: "Transform a word's voice without sacrificing its readability or place in the composition.",
-          control: "Put the word under tension",
-          low: "Calm",
-          high: "Radical",
-          word: "CREATE",
-        },
-        system: {
-          title: "Interaction / system",
-          description: "Show how one simple gesture can create a legible state and a consequence across a system.",
-          control: "Move the signal through the system",
-          action: "Propagate",
-          states: ["Origin", "Form", "Motion", "Rule", "Return", "Loop complete"],
-        },
-      },
-    },
+      [
+        { id: "text", short: "Text", note: "The text holds one column. Its line breaks set a reading rhythm.", bounds: [110, 378, 410, 258] },
+        { id: "image", short: "Image", note: "Photography takes a whole column. The interface gives it room without claiming authorship.", bounds: [810, 248, 518, 610] },
+        { id: "credit", short: "Credit", note: "The credit stays inside the image. The interface frames the photograph; its author remains identified.", bounds: [810, 810, 518, 48] },
+      ],
+      [
+        { id: "desktop", short: "Desktop", note: "At a larger width, navigation unfolds and the name spans the horizontal space.", bounds: [0, 0, 1440, 900] },
+        { id: "mobile", short: "Mobile", note: "On mobile, the menu is grouped. The name and film access stay visible.", bounds: [0, 0, 1440, 900] },
+      ],
+    ],
+    labEyebrow: "02 / Laboratory · open studio", labTitle: "Your turn to fold.",
+    labIntro: "One sheet, three gestures. Make a piece to take with you.", experiments: "Choose a composition tool",
+    studies: [
+      { title: "Material", description: "One surface. From an open ribbon to a tight fold.", control: "Fold the material", low: "Open", high: "Tight" },
+      { title: "Typography", description: "The shape’s tension becomes the word’s tension.", control: "Adjust the tension", low: "Calm", high: "Radical" },
+      { title: "System", description: "Six positions. Each move recomposes the piece and raises its pitch.", control: "Move the signal through the system", low: "", high: "" },
+    ],
+    word: "THE FOLD", propagate: "Propagate", states: ["Origin", "Form", "Motion", "Rule", "Return", "Loop complete"],
+    piece: "Personal composition", name: "Name your piece", export: "Export SVG", reset: "Start again", exported: "Download requested.", exportFailed: "SVG export is unavailable in this browser.", resetDone: "Composition reset.", artworkLabel: "Folded ribbon sculpture composed with your settings", sheet: "An open sheet",
   },
-} as const;
+};
 
-const CHAPTER_CHANNELS: readonly CreativeChannel[] = ["form", "motion", "system"];
-
-export default function WorkLabSpace({
-  view,
-  language = "fr",
-  channels = {},
-  className,
-  headingRef,
-  onNavigate,
-  onTrace,
-}: WorkLabSpaceProps) {
+export default function WorkLabSpace({ view, language = "fr", className, headingRef, onTrace, composition, onCompositionChange, initialCaseChapter = 0 }: WorkLabSpaceProps) {
   const copy = COPY[language];
-  const rootClassName = [styles.shell, styles[view], className].filter(Boolean).join(" ");
-  const channelCopy = language === "fr"
-    ? { title: "Signal de visite", form: "Forme", motion: "Mouvement", system: "Système" }
-    : { title: "Journey signal", form: "Form", motion: "Motion", system: "System" };
-
-  const navigate = (destination: WorkLabView) => {
-    onTrace?.({ source: view, channel: "system", action: "navigate" });
-    onNavigate?.(destination);
-  };
-
   return (
-    <section className={rootClassName} data-space={view} aria-labelledby={`${view}-space-title`}>
-      <div className={styles.ambient} aria-hidden="true" />
+    <section className={[styles.shell, styles[view], className].filter(Boolean).join(" ")} data-space={view} aria-labelledby={`${view}-space-title`}>
       <div className={styles.inner}>
         <header className={styles.header}>
-          <div className={styles.headingBlock}>
-            <p className={styles.eyebrow}>{view === "work" ? copy.work.eyebrow : copy.lab.eyebrow}</p>
-            <h1 id={`${view}-space-title`} ref={headingRef} tabIndex={-1}>
-              {view === "work" ? copy.work.title : copy.lab.title}
-            </h1>
-            <p className={styles.intro}>{view === "work" ? copy.work.intro : copy.lab.intro}</p>
-          </div>
-
-          <div className={styles.headerTools}>
-            {onNavigate ? (
-              <nav className={styles.localNavigation} aria-label={copy.navigation}>
-                <button
-                  type="button"
-                  aria-current={view === "work" ? "page" : undefined}
-                  onClick={() => navigate("work")}
-                >
-                  <span>01</span>{copy.workNav}
-                </button>
-                <button
-                  type="button"
-                  aria-current={view === "lab" ? "page" : undefined}
-                  onClick={() => navigate("lab")}
-                >
-                  <span>02</span>{copy.labNav}
-                </button>
-              </nav>
-            ) : null}
-
-            <aside className={styles.signalLedger} aria-labelledby={`${view}-signal-title`}>
-              <p id={`${view}-signal-title`}>{channelCopy.title}</p>
-              {CHAPTER_CHANNELS.map((channel) => {
-                const value = Math.max(0, Math.min(1, channels[channel] ?? 0));
-                return (
-                  <div key={channel}>
-                    <span>{channelCopy[channel]}</span>
-                    <i aria-hidden="true"><b style={{ transform: `scaleX(${value})` }} /></i>
-                    <output>{Math.round(value * 100).toString().padStart(2, "0")}</output>
-                  </div>
-                );
-              })}
-            </aside>
-          </div>
+          <p className={styles.eyebrow}>{view === "work" ? copy.eyebrow : copy.labEyebrow}</p>
+          <h1 id={`${view}-space-title`} ref={headingRef} tabIndex={-1}>{view === "work" ? copy.title : copy.labTitle}</h1>
+          <p className={styles.intro}>{view === "work" ? copy.intro : copy.labIntro}</p>
         </header>
-
-        {view === "work" ? (
-          <BlueVidiaCase language={language} onTrace={onTrace} />
-        ) : (
-          <CreativeLab language={language} onTrace={onTrace} />
-        )}
+        {view === "work" ? <BlueVidiaCase language={language} onTrace={onTrace} initialChapter={initialCaseChapter} /> : <CreativeLab language={language} onTrace={onTrace} composition={composition} onCompositionChange={onCompositionChange} />}
       </div>
     </section>
   );
 }
 
-function BlueVidiaCase({
-  language,
-  onTrace,
-}: {
-  language: WorkLabLanguage;
-  onTrace?: WorkLabSpaceProps["onTrace"];
-}) {
-  const copy = COPY[language].work;
-  const [activeChapter, setActiveChapter] = useState(0);
+function BlueVidiaCase({ language, onTrace, initialChapter = 0 }: { language: WorkLabLanguage; onTrace?: WorkLabSpaceProps["onTrace"]; initialChapter?: 0 | 1 | 2 }) {
+  const copy = COPY[language];
+  const [activeChapter, setActiveChapter] = useState<number>(initialChapter);
+  const [showGuides, setShowGuides] = useState(false);
+  const [activeLandmark, setActiveLandmark] = useState(0);
+  const guideId = useId();
   const chapter = copy.chapters[activeChapter];
-
-  const selectChapter = (index: number) => {
-    setActiveChapter(index);
-    onTrace?.({
-      source: "work",
-      channel: CHAPTER_CHANNELS[index],
-      action: "case-chapter",
-      value: index / Math.max(1, copy.chapters.length - 1),
-    });
-  };
-
+  const landmarks = copy.landmarks[activeChapter];
+  const landmark = landmarks[activeLandmark];
+  const [guideX, guideY, guideWidth, guideHeight] = landmark.bounds;
   return (
-    <article className={styles.caseStudy} aria-labelledby="bluevidia-case-title">
-      <header className={styles.caseHeader}>
-        <div>
-          <p className={styles.caseKind}>{copy.clientLabel}</p>
-          <h2 id="bluevidia-case-title">BlueVidia</h2>
-          <p className={styles.caseIntro}>{copy.caseIntro}</p>
-        </div>
-        <dl className={styles.facts}>
-          <div><dt>{copy.role}</dt><dd>{copy.roleValue}</dd></div>
-          <div><dt>{copy.stack}</dt><dd>{copy.stackValue}</dd></div>
-          <div><dt>{copy.status}</dt><dd><i aria-hidden="true" />{copy.statusValue}</dd></div>
-        </dl>
-      </header>
-
+    <article className={styles.caseStudy} aria-label="BlueVidia" data-chapter={activeChapter}>
+      <nav className={styles.chapterNavigation} aria-label={copy.chaptersLabel}>
+        {copy.chapters.map((item, index) => (
+          <button type="button" key={item.short} aria-pressed={index === activeChapter} aria-controls="bluevidia-design-choice" onClick={() => {
+            setActiveChapter(index);
+            setShowGuides(false);
+            setActiveLandmark(0);
+            onTrace?.({ source: "work", channel: CHANNELS[index], action: "case-chapter", value: index / 2 });
+          }}><span aria-hidden="true">0{index + 1}</span><strong>{item.short}</strong><span className={styles.chapterIndicator} aria-hidden="true">{index === activeChapter ? "−" : "+"}</span></button>
+        ))}
+      </nav>
       <div className={styles.caseBody}>
-        <div className={styles.story} aria-live="polite">
-          <p className={styles.storyIndex}>0{activeChapter + 1} / 03 · {chapter.short}</p>
-          <h3>{chapter.title}</h3>
-          <p>{chapter.text}</p>
-
-          <div className={styles.chapterNavigation} aria-label={copy.chaptersLabel}>
-            {copy.chapters.map((item, index) => (
-              <button
-                key={item.short}
-                type="button"
-                aria-pressed={activeChapter === index}
-                onClick={() => selectChapter(index)}
-              >
-                <span>0{index + 1}</span>
-                <span>{item.short}</span>
-              </button>
-            ))}
+        <div id="bluevidia-design-choice" className={styles.story}>
+          <div className={styles.storyCopy} aria-live="polite" aria-atomic="true">
+            <p className={styles.choiceLabel}>{showGuides ? copy.inspectionContext : chapter.focus} <span>0{activeChapter + 1} / 03</span></p>
+            <h2>{chapter.title}</h2><p id="bluevidia-inspector-description">{showGuides ? landmark.note : chapter.text}</p>
           </div>
+          <a className={styles.visitLink} href="https://bluevidia.com" target="_blank" rel="noopener noreferrer" onClick={() => onTrace?.({ source: "work", channel: "system", action: "case-media", value: 1 })}>{copy.visit}<span aria-hidden="true">↗</span></a>
         </div>
-
-        <div className={styles.cinemaFrame} data-chapter={activeChapter} data-case-frame>
-          <span className={styles.perforationsLeft} aria-hidden="true" />
-          <span className={styles.perforationsRight} aria-hidden="true" />
-          <div className={styles.mediaViewport} data-case-viewport>
-            {activeChapter === 0 ? (
-              <div className={styles.challengeFrame} aria-hidden="true">
-                <div className={styles.challengeTopline}>
-                  <span>BV / 01—03</span>
-                  <span>DESIGN INTENT</span>
-                </div>
-                <div className={styles.challengeStatement}>
-                  {copy.challengeWords.map((word, index) => (
-                    <span key={word} data-accent={index === 1 ? "true" : "false"}>{word}</span>
-                  ))}
-                </div>
-                <div className={styles.challengeSignals}>
-                  {copy.challengeSignals.map((signal, index) => (
-                    <span key={signal}><i>0{index + 1}</i>{signal}</span>
-                  ))}
-                </div>
-              </div>
-            ) : activeChapter === 1 ? (
-              <div className={styles.directionStudy}>
-                <ProjectLayers french={language === "fr"} />
-              </div>
-            ) : (
-              <div className={styles.deliveryFrame} aria-hidden="true">
-                <div className={styles.deliveryGrid} />
-                <div className={styles.deliveryChrome}>
-                  <span>BLUEVIDIA.COM</span>
-                  <span>LIVE / 2026</span>
-                </div>
-                <div className={styles.deliveryCopy}>
-                  <span><i />{copy.deliveryKicker}</span>
-                  <strong>{copy.deliveryTitle}</strong>
-                </div>
-                <div className={styles.deliverySignals}>
-                  {copy.deliverySignals.map((signal, index) => (
-                    <span key={signal}><i>0{index + 1}</i>{signal}</span>
-                  ))}
-                </div>
-              </div>
-            )}
+        <figure className={styles.projectFigure} data-case-frame data-case-inspection={showGuides ? landmark.id : "interface"}>
+          <div id="bluevidia-capture-view" className={styles.mediaViewport} data-case-viewport data-mobile={activeChapter === 2 && showGuides && landmark.id === "mobile"}>
+            {activeChapter === 2 && !showGuides ? <div className={styles.breakpointComparison}>
+              <div className={styles.desktopOverview}><Image src="/images/projects/bluevidia-desktop.jpg" alt={copy.chapters[0].alt} fill sizes="(max-width: 760px) 60vw, 36vw" className={styles.projectImage} /><span aria-hidden="true">1440</span></div>
+              <div className={styles.mobileOverview}><Image src="/images/projects/bluevidia-mobile.jpg" alt={chapter.alt} fill sizes="(max-width: 760px) 28vw, 16vw" className={styles.projectImage} /><span aria-hidden="true">390</span></div>
+            </div> : <Image src={`/images/projects/${activeChapter === 2 && landmark.id === "desktop" ? "bluevidia-desktop.jpg" : chapter.image}`} alt={activeChapter === 2 && landmark.id === "desktop" ? copy.chapters[0].alt : chapter.alt} fill sizes="(max-width: 760px) 92vw, 55vw" className={styles.projectImage} priority={activeChapter === 0} />}
+            <div id="bluevidia-capture-guide" className={styles.captureGuide} data-visible={activeChapter < 2 && showGuides} aria-hidden="true">
+              <svg viewBox="0 0 1440 900" focusable="false">
+                <defs><mask id={`${guideId}-focus`}><rect width="1440" height="900" fill="white" /><rect x={guideX} y={guideY} width={guideWidth} height={guideHeight} fill="black" /></mask></defs>
+                <rect width="1440" height="900" fill="#08090c" fillOpacity=".72" mask={`url(#${guideId}-focus)`} />
+                <rect x={guideX} y={guideY} width={guideWidth} height={guideHeight} fill="none" stroke="currentColor" strokeWidth="1" vectorEffect="non-scaling-stroke" />
+              </svg>
+            </div>
           </div>
-
-          <div className={styles.frameStrip} aria-label={copy.frameHint}>
-            {copy.chapters.map((item, index) => (
-              <button
-                key={item.short}
-                type="button"
-                aria-label={`${copy.frameHint} 0${index + 1} — ${item.short}`}
-                aria-pressed={activeChapter === index}
-                onClick={() => selectChapter(index)}
-              >
-                <span>0{index + 1}</span>
-                <strong>{item.short}</strong>
-                <i aria-hidden="true" />
-              </button>
-            ))}
-          </div>
-        </div>
+          <figcaption data-inspecting={showGuides}>
+            {showGuides ? <div className={styles.inspectorChoices} role="group" aria-label={copy.inspectionLabel}>
+              {landmarks.map((item, index) => <button type="button" key={item.id} aria-pressed={activeLandmark === index} aria-controls="bluevidia-capture-view bluevidia-inspector-description" onClick={() => {
+                setActiveLandmark(index);
+                onTrace?.({ source: "work", channel: "form", action: "case-media", value: index / Math.max(1, landmarks.length - 1) });
+              }}>{item.short}</button>)}
+            </div> : <span>{activeChapter === 2 ? copy.comparisonCapture : copy.capture}</span>}
+            <button type="button" className={styles.inspectorButton} aria-label={showGuides ? copy.hideInspection : copy.inspect} aria-pressed={showGuides} aria-controls="bluevidia-capture-view bluevidia-inspector-description" aria-describedby="bluevidia-inspector-description" onClick={() => {
+            setShowGuides((current) => !current);
+            onTrace?.({ source: "work", channel: "form", action: "case-media", value: showGuides ? 0 : 1 });
+          }}><span className={styles.inspectorToggleText}>{showGuides ? copy.hideInspection : copy.inspect}</span><span aria-hidden="true">{showGuides ? "−" : "+"}</span></button>
+          </figcaption>
+        </figure>
       </div>
-
       <footer className={styles.caseFooter}>
-        <p>{copy.delivered}</p>
-        <a
-          href="https://bluevidia.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={() => onTrace?.({ source: "work", channel: "system", action: "case-media", value: 1 })}
-        >
-          {copy.visit}<span aria-hidden="true">↗</span>
-        </a>
+        <p>{copy.attribution}</p>
+        <details className={styles.projectDetails}><summary>{copy.details}</summary><p>{copy.role}<br />{copy.stack}<br />{copy.live}</p></details>
       </footer>
     </article>
   );
 }
 
-function CreativeLab({
-  language,
-  onTrace,
-}: {
-  language: WorkLabLanguage;
-  onTrace?: WorkLabSpaceProps["onTrace"];
-}) {
-  const copy = COPY[language].lab;
-  const materialId = useId();
-  const typeId = useId();
-  const [materialDensity, setMaterialDensity] = useState(46);
-  const [typeTension, setTypeTension] = useState(38);
-  const [systemStep, setSystemStep] = useState(0);
-
-  const materialStyle: StyleWithVariables = {
-    "--density": materialDensity / 100,
-    "--material-scale": 0.72 + materialDensity / 185,
-    "--material-echo-scale": 0.9 + materialDensity / 185,
-    "--material-rotate": `${materialDensity * 0.38}deg`,
-    "--material-echo-rotate": `${materialDensity * -0.24}deg`,
-    "--material-radius": `${58 - materialDensity * 0.26}%`,
-    "--material-shadow-alpha": 0.14 + (materialDensity / 100) * 0.28,
-    "--material-saturation": 0.74 + (materialDensity / 100) * 0.7,
-    "--material-echo-opacity": 0.18 + (materialDensity / 100) * 0.36,
-    "--material-blur": `${1.5 - (materialDensity / 100)}rem`,
+function CreativeLab({ language, onTrace, composition, onCompositionChange }: { language: WorkLabLanguage } & Pick<WorkLabSpaceProps, "onTrace" | "composition" | "onCompositionChange">) {
+  const copy = COPY[language];
+  const controlId = useId();
+  const [activeStudy, setActiveStudy] = useState(0);
+  const [localComposition, setLocalComposition] = useState(INITIAL_COMPOSITION);
+  const { form: materialDensity, tension: typeTension, phase: systemStep, name: pieceName } = composition ?? localComposition;
+  const changeComposition = (next: Partial<FoldComposition>) => {
+    if (onCompositionChange) onCompositionChange(next);
+    else setLocalComposition((current) => ({ ...current, ...next }));
   };
-  const typeScale = 0.78 + typeTension / 170;
-  const typeSlant = (typeTension - 50) * -0.13;
-  const typeStyle: StyleWithVariables = {
-    "--type-space": `${-0.08 + typeTension * 0.00135}em`,
-    "--type-scale": typeScale,
-    "--type-outline-scale": typeScale * 0.97,
-    "--type-slant": `${typeSlant}deg`,
-    "--type-outline-slant": `${typeSlant * -0.7}deg`,
-    "--type-weight": 410 + typeTension * 3.8,
-    "--type-line-width": `${12 + typeScale * 12}%`,
+  const [feedback, setFeedback] = useState<"" | "exported" | "exportFailed" | "resetDone">("");
+  const [exportHref, setExportHref] = useState("");
+  const study = copy.studies[activeStudy];
+  const value = activeStudy === 0 ? materialDensity : typeTension;
+  const title = pieceName.trim() || copy.word;
+  const variables: Variables = {
+    "--type-scale": 0.9 + typeTension / 1000,
+    "--type-slant": `${(typeTension - 50) * -0.08}deg`,
+    "--type-weight": 400 + typeTension * 3.5,
+    "--title-size": `${Math.min(100, 720 / Math.max(6, title.length))}px`,
+    "--title-length": Math.max(6, title.length),
   };
-
-  const routeSignal = () => {
-    const next = (systemStep + 1) % copy.studies.system.states.length;
-    setSystemStep(next);
-    onTrace?.({
-      source: "lab",
-      channel: "system",
-      action: "system-route",
-      value: next / Math.max(1, copy.studies.system.states.length - 1),
-    });
+  const reset = () => {
+    changeComposition(INITIAL_COMPOSITION);
+    setFeedback("resetDone");
   };
-
+  const exportSvg = useMemo(() => buildCompositionSvg({ form: materialDensity, tension: typeTension, phase: systemStep, title }), [materialDensity, typeTension, systemStep, title]);
+  useEffect(() => {
+    let url = "";
+    try {
+      url = URL.createObjectURL(new Blob([exportSvg], { type: "image/svg+xml;charset=utf-8" }));
+      setExportHref(url);
+      setFeedback((current) => current === "exportFailed" ? "" : current);
+    } catch {
+      setExportHref("");
+      setFeedback("exportFailed");
+    }
+    return () => { if (url) URL.revokeObjectURL(url); };
+  }, [exportSvg]);
   return (
-    <div className={styles.labGrid}>
-      <article className={`${styles.study} ${styles.materialStudy}`}>
-        <StudyHeader index="01" label={copy.researchLabel} title={copy.studies.material.title} />
-        <p className={styles.studyDescription}>{copy.studies.material.description}</p>
-        <div className={styles.materialStage} style={materialStyle} aria-hidden="true">
-          <span className={styles.materialMass} />
-          <span className={styles.materialEcho} />
-          <span className={styles.materialCore} />
-        </div>
-        <div className={styles.studyControl}>
-          <label htmlFor={materialId}>
-            <span>{copy.gesture} · {copy.studies.material.control}</span>
-            <output htmlFor={materialId}>{materialDensity}%</output>
-          </label>
-          <input
-            id={materialId}
-            type="range"
-            min="0"
-            max="100"
-            value={materialDensity}
-            onChange={(event) => {
-              const value = Number(event.currentTarget.value);
-              setMaterialDensity(value);
-              onTrace?.({ source: "lab", channel: "form", action: "material-tune", value: value / 100 });
-            }}
-          />
-          <div className={styles.controlLegend}><span>{copy.studies.material.low}</span><span>{copy.studies.material.high}</span></div>
-        </div>
-      </article>
-
-      <article className={`${styles.study} ${styles.typeStudy}`}>
-        <StudyHeader index="02" label={copy.researchLabel} title={copy.studies.type.title} />
-        <p className={styles.studyDescription}>{copy.studies.type.description}</p>
-        <div className={styles.typeStage} style={typeStyle} aria-hidden="true">
-          <span data-outline="true">{copy.studies.type.word}</span>
-          <span>{copy.studies.type.word}</span>
-          <i />
-        </div>
-        <div className={styles.studyControl}>
-          <label htmlFor={typeId}>
-            <span>{copy.gesture} · {copy.studies.type.control}</span>
-            <output htmlFor={typeId}>{typeTension}%</output>
-          </label>
-          <input
-            id={typeId}
-            type="range"
-            min="0"
-            max="100"
-            value={typeTension}
-            onChange={(event) => {
-              const value = Number(event.currentTarget.value);
-              setTypeTension(value);
-              onTrace?.({ source: "lab", channel: "motion", action: "type-tune", value: value / 100 });
-            }}
-          />
-          <div className={styles.controlLegend}><span>{copy.studies.type.low}</span><span>{copy.studies.type.high}</span></div>
-        </div>
-      </article>
-
-      <article className={`${styles.study} ${styles.systemStudy}`}>
-        <StudyHeader index="03" label={copy.researchLabel} title={copy.studies.system.title} />
-        <p className={styles.studyDescription}>{copy.studies.system.description}</p>
-        <div className={styles.systemStage} data-step={systemStep} aria-hidden="true">
-          <div className={styles.systemNodes}>
-            <div className={styles.systemPath}>
-              {Array.from({ length: 5 }, (_, index) => (
-                <i key={index} data-active={index < systemStep} />
-              ))}
-            </div>
-            {copy.studies.system.states.map((state, index) => (
-              <span key={state} data-active={index <= systemStep}>
-                <b>0{index + 1}</b>
-                <small>{state}</small>
-              </span>
-            ))}
+    <div className={styles.labInstrument} style={variables}>
+      <figure className={styles.composition} data-composition data-form={materialDensity} data-tension={typeTension} data-phase={systemStep}>
+        <figcaption>{copy.sheet}<span>0{systemStep + 1} / 06</span></figcaption>
+        <FoldSignature className={styles.foldArtwork} form={materialDensity} tension={typeTension} phase={systemStep} tone="ink" label={copy.artworkLabel} />
+        <div className={styles.pieceTitle} aria-hidden="true">{title}</div>
+        <div className={styles.pieceCoordinates} aria-hidden="true"><span>EM / ATELIER</span><span>{materialDensity} · {typeTension} · 0{systemStep + 1}</span></div>
+      </figure>
+      <div className={styles.composerTools}>
+        <nav className={styles.studyNavigation} aria-label={copy.experiments}>
+          {copy.studies.map((item, index) => <button type="button" key={item.title} aria-pressed={activeStudy === index} aria-controls={`${controlId}-panel`} onClick={() => setActiveStudy(index)}><span>0{index + 1}</span>{item.title}</button>)}
+        </nav>
+        <article id={`${controlId}-panel`} className={styles.study} aria-label={study.title}>
+          <div className={styles.studyDescription}><h2>{study.title}</h2><p>{study.description}</p></div>
+          <div className={styles.studyControl}>
+            {activeStudy < 2 ? <>
+              <div className={styles.rangeControl}>
+                <label htmlFor={controlId}>{study.control}<output htmlFor={controlId}>{value}%</output></label>
+                <input id={controlId} type="range" min="0" max="100" value={value} onChange={(event) => {
+                  const next = Number(event.currentTarget.value);
+                  changeComposition(activeStudy === 0 ? { form: next, authored: true } : { tension: next, authored: true });
+                  setFeedback("");
+                  onTrace?.({ source: "lab", channel: CHANNELS[activeStudy], action: activeStudy === 0 ? "material-tune" : "type-tune", value: next / 100 });
+                }} />
+                <div className={styles.controlLegend}><span>{study.low}</span><span>{study.high}</span></div>
+              </div>
+              {activeStudy === 1 && <div className={styles.nameControl}><label htmlFor={`${controlId}-name`}>{copy.name}</label><input id={`${controlId}-name`} type="text" maxLength={24} value={pieceName} placeholder={copy.word} onChange={(event) => { changeComposition({ name: event.currentTarget.value, authored: true }); setFeedback(""); }} autoComplete="off" spellCheck={false} /></div>}
+            </> : <div className={styles.systemControl}>
+              <div className={styles.systemProgress} aria-hidden="true">{copy.states.map((state, index) => <span key={state} data-active={index <= systemStep} />)}</div>
+              <output aria-live="polite">{copy.states[systemStep]} · {systemStep + 1}/6</output>
+              <button type="button" data-sfx="propagate" data-sfx-intensity={((systemStep + 1) % 6) / 5} onClick={() => {
+                const next = (systemStep + 1) % 6;
+                changeComposition({ phase: next, authored: true }); setFeedback("");
+                onTrace?.({ source: "lab", channel: "system", action: "system-route", value: next / 5 });
+              }}>{copy.propagate}<span aria-hidden="true">→</span></button>
+            </div>}
           </div>
+        </article>
+        <footer className={styles.composerActions}>
+          <a className={styles.exportButton} href={exportHref || undefined} aria-disabled={!exportHref} download={`le-pli-${materialDensity}-${typeTension}-${systemStep + 1}.svg`} onClick={(event) => {
+            if (!exportHref) { event.preventDefault(); setFeedback("exportFailed"); return; }
+            setFeedback("exported");
+          }}>{copy.export}<span aria-hidden="true">↓</span></a>
+          <button type="button" className={styles.resetButton} onClick={reset}>{copy.reset}</button>
+          <p role="status" aria-live="polite">{feedback ? copy[feedback] : ""}</p>
+        </footer>
         </div>
-        <div className={`${styles.studyControl} ${styles.systemControl}`}>
-          <div>
-            <span>{copy.gesture} · {copy.studies.system.control}</span>
-            <output aria-live="polite">{copy.studies.system.states[systemStep]}</output>
-          </div>
-          <button
-            type="button"
-            data-sfx="propagate"
-            data-sfx-intensity={((systemStep + 1) % copy.studies.system.states.length) / Math.max(1, copy.studies.system.states.length - 1)}
-            onClick={routeSignal}
-          >
-            {copy.studies.system.action}<span aria-hidden="true">→</span>
-          </button>
-        </div>
-      </article>
     </div>
-  );
-}
-
-function StudyHeader({ index, label, title }: { index: string; label: string; title: string }) {
-  return (
-    <header className={styles.studyHeader}>
-      <div><span>{index}</span><span>{label}</span></div>
-      <h2>{title}</h2>
-    </header>
   );
 }
