@@ -29,7 +29,7 @@ const add = (a: Point, b: Point): Point => [a[0] + b[0], a[1] + b[1], a[2] + b[2
 const cross = (a: Point, b: Point): Point => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 
 /** A single strip, folded in space. Shared by the opening and the visitor's composition. */
-function foldFacets({ form = 52, tension = 50, phase = 0, tone = "paper" }: FoldSignatureProps): Facet[] {
+export function buildFoldGrid({ form = 52, tension = 50, phase = 0 }: Pick<FoldSignatureProps, "form" | "tension" | "phase">): Point[][] {
   const fullness = clamp(form) / 100;
   const tautness = clamp(tension) / 100;
   const state = clamp(phase, 0, 5);
@@ -63,6 +63,17 @@ function foldFacets({ form = 52, tension = 50, phase = 0, tone = "paper" }: Fold
     ]);
   }
 
+  const segments = 144;
+  const strips = 12;
+  const border = .965;
+  const edgeAt = (index: number) => index === 0 ? -1 : index === strips ? 1 : -border + (index - 1) / (strips - 2) * border * 2;
+  return Array.from({ length: segments + 1 }, (_, segment) => Array.from({ length: strips + 1 }, (_, strip) => surface(segment / segments * Math.PI * 2, edgeAt(strip))));
+}
+
+function foldFacets({ form = 52, tension = 50, phase = 0, tone = "paper" }: FoldSignatureProps): Facet[] {
+  const grid = buildFoldGrid({ form, tension, phase });
+  const segments = grid.length - 1;
+  const strips = grid[0].length - 1;
   const project = ([x, y, z]: Point) => {
     const perspective = 820 / (820 - z);
     return `${(320 + x * perspective * .9).toFixed(2)},${(280 + y * perspective * .9).toFixed(2)}`;
@@ -71,11 +82,6 @@ function foldFacets({ form = 52, tension = 50, phase = 0, tone = "paper" }: Fold
   const fillLight = normalize([.75, .15, 1]);
   const halfway = normalize(add(light, [0, 0, 1]));
   const facets: Facet[] = [];
-  const segments = 144;
-  const strips = 12;
-  const border = .965;
-  const edgeAt = (index: number) => index === 0 ? -1 : index === strips ? 1 : -border + (index - 1) / (strips - 2) * border * 2;
-  const grid = Array.from({ length: segments + 1 }, (_, segment) => Array.from({ length: strips + 1 }, (_, strip) => surface(segment / segments * Math.PI * 2, edgeAt(strip))));
   const projections = grid.map((row) => row.map(project));
   for (let segment = 0; segment < segments; segment++) {
     for (let strip = 0; strip < strips; strip++) {

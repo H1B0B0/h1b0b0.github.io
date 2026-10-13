@@ -26,7 +26,8 @@
 .rail button[aria-current="page"] span { color: #87482f; }
 .rail strong { font-size: 12px; font-weight: 500; line-height: 1.2; }
 .srStatus { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.root[data-destination="index"] .header { background: #08090c; }
+.root[data-destination="index"] .header { background: #171916; }
+.root[data-destination="lab"] .header { background: #11120f; }
 .root[data-destination="contact"] .header { color: #111318; background: #ece8df; border-color: #11131814; }
 .root[data-destination="contact"] .back, .root[data-destination="contact"] .soundToggle { color: #111318; border-color: #11131835; }
 .root[data-destination="contact"] .backIcon { border-color: #11131835; }
@@ -44,6 +45,10 @@
 .root:is([data-destination="work"], [data-destination="profile"], [data-destination="contact"]) .rail button[aria-current="page"] { color: #f4f1e9; background: #20221f; }
 .root:is([data-destination="work"], [data-destination="profile"], [data-destination="contact"]) .rail button[aria-current="page"] span { color: #dca087; }
 .root:is([data-destination="work"], [data-destination="profile"], [data-destination="contact"]) .rail button[aria-current="page"]::after { background: linear-gradient(225deg, #ece8df 49%, #62625b 50%); }
+.root[data-destination="contact"], .root[data-destination="contact"] :is(.header, .rail) { background: #d98b70; }
+.root[data-destination="contact"] .rail button:not([aria-current="page"]), .root[data-destination="contact"] .rail button:not([aria-current="page"]) span, .root[data-destination="contact"] .soundToggle em { color: #3b2920; }
+.root[data-destination="contact"] .rail button[aria-current="page"]::after { background: linear-gradient(225deg, #d98b70 49%, #62625b 50%); }
+.root:is([data-destination="work"], [data-destination="profile"], [data-destination="contact"]) :is(.back, .soundToggle, .rail button):focus-visible { outline-color: #16171b; }
 @media (max-width: 700px) {
   .header { padding-inline: 16px; gap: 12px; }
   .back > span:last-child { display: none; }

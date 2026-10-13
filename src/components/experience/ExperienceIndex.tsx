@@ -31,7 +31,8 @@ export interface ExperienceIndexProps {
   tracesLabel?: string;
   channels?: Partial<Record<"form" | "motion" | "system", number>>;
   channelLabels?: Partial<Record<"form" | "motion" | "system", string>>;
-  onNavigate: (destination: IndexDestination["id"]) => void;
+  onNavigate: (destination: IndexDestination["id"], source?: HTMLElement) => void;
+  transitionLeaf?: IndexDestination["id"];
   onPreviewDestination?: (destination: IndexDestination["id"] | null) => void;
   onPointerEnergyChange?: (energy: number) => void;
   className?: string;
@@ -40,10 +41,10 @@ export interface ExperienceIndexProps {
   onCompositionChange?: (next: Partial<FoldComposition>) => void;
 }
 
-/** The index is the object you navigate: four leaves, four direct entrances. */
+/** A physical folio: every exposed sheet is a direct entrance, never a hidden carousel. */
 export default function ExperienceIndex({
   role, eyebrow, destinations, visited = [], visitedLabel = "Visited", onNavigate,
-  onPreviewDestination, className = "", language = "fr", composition = INITIAL_COMPOSITION,
+  onPreviewDestination, className = "", language = "fr", composition = INITIAL_COMPOSITION, transitionLeaf,
 }: ExperienceIndexProps) {
   const [preview, setPreview] = useState<IndexDestination["id"] | null>(null);
   const focusedLeaf = useRef<IndexDestination["id"] | null>(null);
@@ -66,11 +67,11 @@ export default function ExperienceIndex({
         <div>
           <p className={styles.eyebrow}>{eyebrow}</p>
           <h1 id="experience-index-title" className={styles.title}>
-            {french ? "Une idée." : "An idea."}<br />
-            <em>{french ? "Mille façons de lui donner forme." : "So many ways to give it form."}</em>
+            {french ? "La créativité" : "Creativity"}<br />
+            <em>{french ? "prend forme." : "takes shape."}</em>
           </h1>
         </div>
-        <p className={styles.intent}>{french ? "J’imagine et je développe des sites qui ont quelque chose à raconter." : "I design and build websites with something to say."}</p>
+        <p className={styles.intent}>{french ? "Un portfolio à déplier. Des sites à ressentir." : "A portfolio to unfold. Websites to feel."}</p>
       </div>
 
       <nav className={styles.folio} aria-label={french ? "Explorer le portfolio" : "Explore the portfolio"}>
@@ -78,18 +79,29 @@ export default function ExperienceIndex({
           <button
             type="button" key={destination.id} className={styles.leaf} data-leaf={destination.id}
             data-selected={preview === destination.id || undefined}
+            style={{ viewTransitionName: transitionLeaf === destination.id ? "folio-sheet" : undefined }}
             aria-label={`${destination.label}${visited.includes(destination.id) ? ` · ${visitedLabel}` : ""}`}
             onPointerEnter={(event) => { if (event.pointerType === "mouse") select(destination.id); }}
-            onPointerLeave={() => select(focusedLeaf.current)}
+            onPointerMove={(event) => {
+              if (event.pointerType !== "mouse") return;
+              const bounds = event.currentTarget.getBoundingClientRect();
+              event.currentTarget.style.setProperty("--light-position", `${Math.round((event.clientX - bounds.left) / bounds.width * 100)}%`);
+              event.currentTarget.style.setProperty("--paper-tilt", `${((event.clientY - bounds.top) / bounds.height - .5) * -4}deg`);
+            }}
+            onPointerLeave={(event) => {
+              event.currentTarget.style.removeProperty("--light-position");
+              event.currentTarget.style.removeProperty("--paper-tilt");
+              select(focusedLeaf.current);
+            }}
             onFocus={() => { focusedLeaf.current = destination.id; select(destination.id); }}
             onBlur={() => { focusedLeaf.current = null; select(null); }}
-            onClick={() => onNavigate(destination.id)}
+            onClick={(event) => onNavigate(destination.id, event.currentTarget)}
           >
             <span className={styles.leafTop}><span>{String(index + 1).padStart(2, "0")}</span><span className={styles.leafHint}>{french ? "Ouvrir" : "Open"}<span aria-hidden="true"> ↗</span></span></span>
             <span className={styles.artwork} aria-hidden="true">
-              {destination.id === "work" ? <span className={styles.sitePrint}><Image src="/images/projects/bluevidia-desktop.jpg" alt="" fill sizes="(max-width: 700px) 240px, 36vw" priority className={styles.siteImage} /></span>
+              {destination.id === "work" ? <><span className={styles.printCaption}>BlueVidia<span>WEB / CLIENT</span></span><span className={styles.sitePrint}><Image src="/images/projects/bluevidia-desktop.jpg" alt="" fill sizes="(max-width: 700px) 240px, 36vw" priority className={styles.siteImage} /></span></>
               : destination.id === "lab" ? <FoldSignature as="span" className={styles.fold} form={composition.form} tension={composition.tension} phase={composition.phase} />
-              : destination.id === "profile" ? <span className={styles.portraitPrint}><Image src="/avatar.webp" alt="" fill sizes="(max-width: 700px) 160px, 24vw" className={styles.portrait} /></span>
+              : destination.id === "profile" ? <><span className={styles.authorInitials}>em.</span><span className={styles.portraitPrint}><Image src="/avatar.webp" alt="" fill sizes="(max-width: 700px) 160px, 24vw" className={styles.portrait} /></span></>
               : <span className={styles.invitation}>{french ? <>Et si<br />on lui<br />donnait<br /><em>forme ?</em></> : <>What<br />could<br />we<br /><em>make?</em></>}<span className={styles.letterFold} /></span>}
             </span>
             <span className={styles.leafBottom}><span className={styles.destinationLabel}>{destination.label}</span><span className={styles.leafNote}>{notes[destination.id]}</span></span>

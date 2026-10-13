@@ -29,13 +29,19 @@ function sourceModule(path) {
   return loaded.exports;
 }
 
-const { buildFoldSvg } = sourceModule("src/components/experience/FoldSignature.tsx");
+const { buildFoldSvg, buildFoldGrid } = sourceModule("src/components/experience/FoldSignature.tsx");
 const { buildCompositionSvg } = sourceModule("src/components/experience/compositionSvg.ts");
 let count = 0;
 for (const form of [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]) {
   for (const tension of [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100]) {
     for (let phase = 0; phase < 6; phase++) {
       const svg = buildFoldSvg({ form, tension, phase });
+      const grid = buildFoldGrid({ form, tension, phase });
+      assert.equal(grid.length, 145);
+      assert.equal(grid[0].length, 13);
+      for (let edge = 0; edge < 13; edge++) for (let axis = 0; axis < 3; axis++) {
+        assert.ok(Math.abs(grid[0][edge][axis] - grid[144][12 - edge][axis]) < 1e-6, "The studio and vector export must share one closed Möbius surface");
+      }
       const polygons = [...svg.matchAll(/points="([^"]+)"/g)];
       assert.equal(polygons.length, 1728);
       for (const [, points] of polygons) {
@@ -67,4 +73,37 @@ const longName = buildCompositionSvg({ form: 0, tension: 0, phase: 0, title: "W"
 const fontSize = Number(longName.match(/font-size="([\d.]+)" font-weight=/)?.[1]);
 assert.ok(fontSize * 24 <= 640);
 assert.notEqual(buildFoldSvg({ form: 0 }), buildFoldSvg({ form: 100 }));
+const { buildCompositionHash, parseCompositionHash, buildCompositionMailto } = sourceModule("src/components/experience/compositionShare.ts");
+const shared = { form: 83, tension: 100, phase: 5, name: "Un Pli & <ÉTÉ>", authored: true };
+const hash = buildCompositionHash(shared);
+assert.deepEqual(parseCompositionHash(hash), shared);
+assert.equal(parseCompositionHash("#lab"), null);
+for (const query of ["form=101&tension=50&phase=0", "form=-1&tension=50&phase=0", "form=1&form=2&tension=50&phase=0", "form=1&tension=NaN&phase=0", "form=1&tension=50&phase=6", "form=1.5&tension=50&phase=0"]) {
+  assert.equal(parseCompositionHash(`#lab?piece=1&${query}`), null);
+}
+assert.equal(parseCompositionHash(hash.replace("#lab", "#work")), null);
+const mail = buildCompositionMailto("etienne.mentrel@gmail.com", shared, "https://example.org/folio/?tracking=secret#contact", "fr");
+const mailParams = new URLSearchParams(mail.split("?")[1]);
+const body = mailParams.get("body");
+assert.ok(body.includes("Un Pli & <ÉTÉ>"));
+assert.ok(body.includes(`https://example.org/folio/${hash}`));
+assert.ok(!body.includes("tracking"));
+assert.ok(mailParams.get("subject").includes("mon pli"));
+assert.equal(buildCompositionMailto("etienne.mentrel@gmail.com", { ...shared, authored: false }, "https://example.org", "fr"), "mailto:etienne.mentrel@gmail.com");
+assert.ok(buildCompositionMailto("etienne.mentrel@gmail.com", { ...shared, name: "x\ud800y\r\nSubject: surprise" }, "https://example.org", "en").startsWith("mailto:"));
+const { buildEmailSignatureSvg, buildSignedEmail } = sourceModule("src/components/experience/compositionEmail.ts");
+const signatureSvg = buildEmailSignatureSvg(shared, "fr");
+assert.equal((signatureSvg.match(/<polygon /g) ?? []).length, 1728);
+assert.ok(signatureSvg.includes("Un Pli &amp; &lt;ÉTÉ&gt;"));
+const png = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+const eml = buildSignedEmail({ composition: shared, png, pieceUrl: `https://example.org/${hash}`, language: "fr" });
+assert.ok(eml.startsWith("X-Unsent: 1\r\nTo: Etienne Mentrel <etienne.mentrel@gmail.com>\r\n"));
+assert.ok(eml.includes("Content-ID: <fold-signature@portfolio.local>"));
+assert.ok(eml.includes('Content-Disposition: inline; filename="signature-pli.png"'));
+const htmlPart = eml.split("Content-Type: text/html; charset=UTF-8\r\nContent-Transfer-Encoding: base64\r\n\r\n")[1].split("\r\n--__fold_alternative__--")[0];
+assert.ok(Buffer.from(htmlPart.replace(/\r\n/g, ""), "base64").toString("utf8").includes('src="cid:fold-signature@portfolio.local"'));
+const pngPart = eml.split('Content-Disposition: inline; filename="signature-pli.png"\r\n\r\n')[1].split("\r\n--__fold_related__--")[0];
+assert.deepEqual(new Uint8Array(Buffer.from(pngPart.replace(/\r\n/g, ""), "base64")), png);
 console.log(`PASS: ${count} geometries, export structure, escaped title and long-name bounds.`);
+console.log("PASS: shared piece round-trip, invalid links rejected, encoded email and plain-email fallback.");
+console.log("PASS: signed MIME draft, inline PNG round-trip and visual signature geometry.");

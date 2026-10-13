@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useId, useMemo, useState, type CSSProperties, type Ref } from "react";
-import FoldSignature from "../experience/FoldSignature";
+import FoldStudio from "../experience/FoldStudio";
 import { buildCompositionSvg } from "../experience/compositionSvg";
 import { INITIAL_COMPOSITION, type FoldComposition } from "@/context/ExperienceContext";
 import styles from "./work-lab.module.css";
@@ -61,7 +61,7 @@ const COPY = {
     labEyebrow: "02 / Laboratoire · atelier ouvert", labTitle: "À vous de plier.",
     labIntro: "Une feuille, trois gestes. Faites-en une pièce à emporter.", experiments: "Choisir un outil de composition",
     studies: [
-      { title: "Matière", description: "Une même surface. Du ruban ouvert au pli serré.", control: "Plier la matière", low: "Ouverte", high: "Serrée" },
+      { title: "Matière", description: "Glissez le pli de gauche à droite, ou réglez sa forme ci-dessous.", control: "Plier la matière", low: "Ouverte", high: "Serrée" },
       { title: "Typographie", description: "La tension de la forme devient celle du mot.", control: "Régler la tension", low: "Calme", high: "Radicale" },
       { title: "Système", description: "Six positions. Chaque passage recompose la pièce et monte d’un ton.", control: "Faire circuler le signal", low: "", high: "" },
     ],
@@ -100,7 +100,7 @@ const COPY = {
     labEyebrow: "02 / Laboratory · open studio", labTitle: "Your turn to fold.",
     labIntro: "One sheet, three gestures. Make a piece to take with you.", experiments: "Choose a composition tool",
     studies: [
-      { title: "Material", description: "One surface. From an open ribbon to a tight fold.", control: "Fold the material", low: "Open", high: "Tight" },
+      { title: "Material", description: "Drag the fold from side to side, or adjust its shape below.", control: "Fold the material", low: "Open", high: "Tight" },
       { title: "Typography", description: "The shape’s tension becomes the word’s tension.", control: "Adjust the tension", low: "Calm", high: "Radical" },
       { title: "System", description: "Six positions. Each move recomposes the piece and raises its pitch.", control: "Move the signal through the system", low: "", high: "" },
     ],
@@ -135,6 +135,12 @@ function BlueVidiaCase({ language, onTrace, initialChapter = 0 }: { language: Wo
   const landmarks = copy.landmarks[activeChapter];
   const landmark = landmarks[activeLandmark];
   const [guideX, guideY, guideWidth, guideHeight] = landmark.bounds;
+  const zoom = showGuides && activeChapter < 2 ? Math.max(1, Math.min(2.6, 1440 / guideWidth * .72, 900 / guideHeight * .72)) : 1;
+  const zoomX = Math.min(0, Math.max(100 - zoom * 100, 50 - (guideX + guideWidth / 2) / 1440 * 100 * zoom));
+  const zoomY = Math.min(0, Math.max(100 - zoom * 100, 50 - (guideY + guideHeight / 2) / 900 * 100 * zoom));
+  const inspectionTransform = showGuides && activeChapter < 2
+    ? `translate(${zoomX}%, ${zoomY}%) scale(${zoom})`
+    : undefined;
   return (
     <article className={styles.caseStudy} aria-label="BlueVidia" data-chapter={activeChapter}>
       <nav className={styles.chapterNavigation} aria-label={copy.chaptersLabel}>
@@ -157,6 +163,7 @@ function BlueVidiaCase({ language, onTrace, initialChapter = 0 }: { language: Wo
         </div>
         <figure className={styles.projectFigure} data-case-frame data-case-inspection={showGuides ? landmark.id : "interface"}>
           <div id="bluevidia-capture-view" className={styles.mediaViewport} data-case-viewport data-mobile={activeChapter === 2 && showGuides && landmark.id === "mobile"}>
+            <div className={styles.captureSheet} style={{ transform: inspectionTransform }}>
             {activeChapter === 2 && !showGuides ? <div className={styles.breakpointComparison}>
               <div className={styles.desktopOverview}><Image src="/images/projects/bluevidia-desktop.jpg" alt={copy.chapters[0].alt} fill sizes="(max-width: 760px) 60vw, 36vw" className={styles.projectImage} /><span aria-hidden="true">1440</span></div>
               <div className={styles.mobileOverview}><Image src="/images/projects/bluevidia-mobile.jpg" alt={chapter.alt} fill sizes="(max-width: 760px) 28vw, 16vw" className={styles.projectImage} /><span aria-hidden="true">390</span></div>
@@ -167,6 +174,7 @@ function BlueVidiaCase({ language, onTrace, initialChapter = 0 }: { language: Wo
                 <rect width="1440" height="900" fill="#08090c" fillOpacity=".72" mask={`url(#${guideId}-focus)`} />
                 <rect x={guideX} y={guideY} width={guideWidth} height={guideHeight} fill="none" stroke="currentColor" strokeWidth="1" vectorEffect="non-scaling-stroke" />
               </svg>
+            </div>
             </div>
           </div>
           <figcaption data-inspecting={showGuides}>
@@ -234,7 +242,10 @@ function CreativeLab({ language, onTrace, composition, onCompositionChange }: { 
     <div className={styles.labInstrument} style={variables}>
       <figure className={styles.composition} data-composition data-form={materialDensity} data-tension={typeTension} data-phase={systemStep}>
         <figcaption>{copy.sheet}<span>0{systemStep + 1} / 06</span></figcaption>
-        <FoldSignature className={styles.foldArtwork} form={materialDensity} tension={typeTension} phase={systemStep} tone="ink" label={copy.artworkLabel} />
+        <FoldStudio className={styles.foldArtwork} form={materialDensity} tension={typeTension} phase={systemStep} tone="ink" label={copy.artworkLabel} interactive onFormChange={(form) => {
+          changeComposition({ form, authored: true }); setFeedback("");
+          onTrace?.({ source: "lab", channel: "form", action: "material-tune", value: form / 100 });
+        }} />
         <div className={styles.pieceTitle} aria-hidden="true">{title}</div>
         <div className={styles.pieceCoordinates} aria-hidden="true"><span>EM / ATELIER</span><span>{materialDensity} · {typeTension} · 0{systemStep + 1}</span></div>
       </figure>

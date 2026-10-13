@@ -12,7 +12,7 @@ async function openPortfolio(page: Page, hash = "", reducedMotion = true) {
 
 test("the living index is immediately understandable without a hidden WebGL loop", async ({ page }) => {
   await openPortfolio(page);
-  await expect(page.getByRole("heading", { name: /Une idée\. Mille façons/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "La créativité prend forme." })).toBeVisible();
   await expect(page.getByRole("main")).toHaveCount(1);
   await expect(page.locator("canvas")).toHaveCount(0);
 
@@ -197,7 +197,7 @@ test("sound effects are controllable and persist the visitor preference", async 
 
 test("the portrait stays centred in one consistent frame across breakpoints", async ({ page }) => {
   await openPortfolio(page, "#profile");
-  for (const [width, portraitWidth] of [[375, 160], [768, 240], [1440, 280]]) {
+  for (const [width, portraitWidth] of [[375, 220], [768, 260], [1440, 340]]) {
     await page.setViewportSize({ width, height: 900 });
     const portrait = page.getByRole("img", { name: "Etienne Mentrel", exact: true });
     await expect(portrait).toBeVisible();
@@ -217,6 +217,23 @@ test("the portrait stays centred in one consistent frame across breakpoints", as
   }
 });
 
+test("the studio is demand-rendered on desktop and vector-only on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openPortfolio(page, "#lab", false);
+  const studio = page.locator("[data-fold-renderer]");
+  await expect(studio).toBeVisible();
+  await expect(studio).toHaveAttribute("data-fold-renderer", "webgl", { timeout: 10000 });
+  const frame = studio.locator("canvas");
+  const before = await frame.getAttribute("data-render-frames");
+  await page.waitForTimeout(400);
+  expect(await frame.getAttribute("data-render-frames")).toBe(before);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await expect(studio).toHaveAttribute("data-fold-renderer", "svg");
+  await page.getByRole("slider", { name: "Plier la matière" }).press("End");
+  await expect(page.locator("[data-composition]")).toHaveAttribute("data-form", "100");
+  await expect(page.locator("[data-composition] polygon")).toHaveCount(1728);
+});
+
 test("Profile makes three personal design convictions explorable", async ({ page }) => {
   await openPortfolio(page, "#profile");
   const profile = page.locator('[data-space="profile-v2"]');
@@ -229,8 +246,13 @@ test("Profile makes three personal design convictions explorable", async ({ page
     await expect(profile).toHaveAttribute("data-profile-step", id);
     await expect(process.getByRole("button", { name: new RegExp(step) })).toHaveAttribute("aria-pressed", "true");
   }
-  await expect(profile.getByRole("figure", { name: "Exemple réel du choix de design sélectionné" })).toBeVisible();
+  await expect(profile.locator('[data-portrait-turned]')).toBeVisible();
   await expect(profile.locator('[data-profile-proof="precision"] img')).toHaveAttribute("src", /bluevidia-mobile.jpg/);
+  await expect(profile.getByRole("img", { name: "Etienne Mentrel", exact: true })).toHaveCount(0);
+  await profile.getByRole("button", { name: "Revenir au portrait", exact: true }).click();
+  await expect(profile.locator('[data-portrait-turned]')).toHaveCount(0);
+  await expect(profile.getByRole("img", { name: "Etienne Mentrel", exact: true })).toBeVisible();
+  await expect(process.getByRole("button", { name: "Précision", exact: true })).toHaveAttribute("aria-pressed", "false");
 });
 
 test("Contact keeps direct actions without a session dashboard", async ({ page }) => {
@@ -470,7 +492,7 @@ test("sculpting in the laboratory becomes the contact signature", async ({ page 
   const points = await sculpture.locator("polygon").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("points")));
   const navigation = page.getByRole("navigation", { name: "Navigation principale" });
   await navigation.getByRole("button", { name: "Contact", exact: true }).click();
-  await expect(page.getByText("Signée par votre pli", { exact: true })).toBeVisible();
+  await expect(page.getByText("Votre pli accompagne le message", { exact: true })).toBeVisible();
   const signature = page.locator('[data-space="contact-v2"] [data-fold-signature]');
   expect(await signature.locator("polygon").evaluateAll((nodes) => nodes.map((node) => node.getAttribute("points")))).toEqual(points);
 });
@@ -524,7 +546,7 @@ test("the folio preview keeps the laboratory piece across routes", async ({ page
   await page.getByRole("button", { name: "Geste", exact: true }).click();
   expect(await page.locator('[data-profile-proof="gesture"] polygon').evaluateAll((nodes) => nodes.map((node) => node.getAttribute("points")))).toEqual(points);
   await nav.getByRole("button", { name: "Index", exact: true }).click();
-  await expect(page.getByRole("heading", { name: /Une idée\. Mille façons/ })).toBeFocused();
+  await expect(page.locator('[data-leaf="profile"]')).toBeFocused();
   expect(await index.locator('[data-leaf="lab"] polygon').evaluateAll((nodes) => nodes.map((node) => node.getAttribute("points")))).toEqual(points);
   await expect(page.locator("[data-route-surface]")).toHaveCount(1);
 });
@@ -627,7 +649,7 @@ test("Escape returns to the living index", async ({ page }) => {
   await openPortfolio(page, "#contact");
   await page.keyboard.press("Escape");
   await expect(page).not.toHaveURL(/#contact$/);
-  await expect(page.getByRole("heading", { name: /Une idée\. Mille façons/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "La créativité prend forme." })).toBeVisible();
 });
 
 test("full-motion navigation reports no runtime errors or blocking overlay", async ({ page }) => {

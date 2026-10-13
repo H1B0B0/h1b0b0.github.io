@@ -1214,7 +1214,16 @@ body {
 }
 
 /* Respect users who prefer reduced motion. Critical for Awwwards a11y. */
+/* The selected folio leaf becomes the page; returning folds it back into its place. */
+::view-transition-group(folio-sheet) { animation-duration: 520ms; animation-timing-function: cubic-bezier(.22, 1, .36, 1); perspective: 1600px; }
+::view-transition-old(folio-sheet) { animation: folio-print-out 180ms ease-out both; mix-blend-mode: normal; }
+::view-transition-new(folio-sheet) { animation: folio-print-in 440ms 60ms cubic-bezier(.22, 1, .36, 1) both; transform-origin: left center; mix-blend-mode: normal; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 180ms; }
+@keyframes folio-print-out { to { opacity: 0; } }
+@keyframes folio-print-in { from { opacity: 0; transform: rotateY(-5deg); } to { opacity: 1; transform: rotateY(0); } }
+
 @media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation-duration: .001ms !important; animation-delay: 0ms !important; }
   *,
   *::before,
   *::after {

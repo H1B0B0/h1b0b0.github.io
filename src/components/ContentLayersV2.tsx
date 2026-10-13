@@ -2,11 +2,13 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 
 import ExperienceIndex, {
   type IndexDestination,
 } from "@/components/experience/ExperienceIndex";
 import LanguageSelector from "@/components/LanguageSelector";
+import { parseCompositionHash } from "@/components/experience/compositionShare";
 import ContactSpaceV2 from "@/components/spaces/ContactSpaceV2";
 import ProfileSpaceV2 from "@/components/spaces/ProfileSpaceV2";
 import WorkLabSpace, {
@@ -73,6 +75,12 @@ export default function ContentLayersV2() {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const hasEnteredSpace = useRef(false);
   const [caseChapter, setCaseChapter] = useState<0 | 1 | 2>(0);
+  const [foldRoute, setFoldRoute] = useState<Exclude<ExperienceDestination, "index"> | null>(null);
+  const [unfoldedFrom, setUnfoldedFrom] = useState<Exclude<ExperienceDestination, "index"> | null>(null);
+  const [foldDirection, setFoldDirection] = useState<"open" | "close" | null>(null);
+  const navigationVersion = useRef(0);
+  const returnLeaf = useRef<Exclude<ExperienceDestination, "index"> | null>(null);
+  const foldNavigation = useRef<{ transition: ViewTransition; source: HTMLElement } | null>(null);
   const language = currentLanguage === "fr" ? "fr" : "en";
   const resumeUrl = language === "fr" ? FRENCH_RESUME_URL : ENGLISH_RESUME_URL;
   const traceLevel = (trace.form + trace.motion + trace.system) / 3;
@@ -139,13 +147,64 @@ export default function ContentLayersV2() {
     window.history.pushState(null, "", url);
   }, [setDestination]);
 
-  const travelTo = useCallback((next: ExperienceDestination, writeHistory = true) => {
-    if (next !== destination) commitDestination(next, writeHistory);
-  }, [commitDestination, destination]);
+  const clearFoldNavigation = useCallback(() => {
+    const current = foldNavigation.current;
+    current?.transition.skipTransition();
+    current?.source.style.removeProperty("view-transition-name");
+    foldNavigation.current = null;
+    setFoldRoute(null);
+  }, []);
+
+  const travelTo = useCallback((next: ExperienceDestination, writeHistory = true, source?: HTMLElement) => {
+    if (next === destination) return;
+    returnLeaf.current = next === "index" && destination !== "index" ? destination : null;
+    const version = ++navigationVersion.current;
+    const wasMoving = Boolean(foldNavigation.current);
+    if (wasMoving) clearFoldNavigation();
+    const unfolding = destination === "index" || next === "index";
+    if (wasMoving || reducedMotion || !unfolding || typeof document.startViewTransition !== "function") {
+      commitDestination(next, writeHistory);
+      return;
+    }
+    const route = (next === "index" ? destination : next) as Exclude<ExperienceDestination, "index">;
+    const sheet = source ?? document.querySelector<HTMLElement>(destination === "index" ? `[data-leaf="${next}"]` : "[data-route-surface]");
+    if (!sheet) { commitDestination(next, writeHistory); return; }
+    sheet.style.setProperty("view-transition-name", "folio-sheet");
+    try {
+      const transition = document.startViewTransition(() => {
+        if (version !== navigationVersion.current) return;
+        flushSync(() => { setFoldRoute(route); commitDestination(next, writeHistory); });
+        if (next === "index") {
+          document.querySelector<HTMLElement>(`[data-leaf="${route}"]`)?.scrollIntoView({ block: "nearest", behavior: "auto" });
+          document.querySelector<HTMLElement>('[data-space="index"]')?.scrollTo({ left: 0, behavior: "auto" });
+        }
+      });
+      foldNavigation.current = { transition, source: sheet };
+      void transition.ready.then(() => {
+        if (version === navigationVersion.current) { setUnfoldedFrom(route); setFoldDirection(next === "index" ? "close" : "open"); }
+      }).catch(() => {});
+      void transition.finished.catch(() => {}).then(() => {
+        sheet.style.removeProperty("view-transition-name");
+        if (version === navigationVersion.current) { foldNavigation.current = null; setFoldRoute(null); }
+      });
+    } catch {
+      sheet.style.removeProperty("view-transition-name");
+      commitDestination(next, writeHistory);
+    }
+  }, [clearFoldNavigation, commitDestination, destination, reducedMotion]);
+
+  useEffect(() => () => {
+    foldNavigation.current?.transition.skipTransition();
+    foldNavigation.current?.source.style.removeProperty("view-transition-name");
+  }, []);
 
   useEffect(() => {
     const syncFromLocation = () => {
-      const rawHash = window.location.hash.replace("#", "").toLowerCase();
+      ++navigationVersion.current;
+      clearFoldNavigation();
+      const sharedPiece = parseCompositionHash(window.location.hash);
+      if (sharedPiece) updateComposition(sharedPiece);
+      const rawHash = window.location.hash.replace("#", "").split("?")[0].toLowerCase();
       const [routeHash, chapterHash] = rawHash.split("/");
       const normalized = routeHash === "bluevidia" ? "work" : routeHash || "index";
       const next = isDestination(normalized) ? normalized : "index";
@@ -160,7 +219,7 @@ export default function ContentLayersV2() {
       window.removeEventListener("popstate", syncFromLocation);
       window.removeEventListener("hashchange", syncFromLocation);
     };
-  }, [commitDestination]);
+  }, [clearFoldNavigation, commitDestination, updateComposition]);
 
   useEffect(() => {
     setPointerEnergy(0.08);
@@ -170,18 +229,21 @@ export default function ContentLayersV2() {
       const spaceName = destination === "profile" || destination === "contact"
         ? `${destination}-v2`
         : destination;
-      document.querySelector<HTMLElement>(`[data-space="${spaceName}"]`)?.scrollTo({
-        top: 0,
-        left: 0,
-        behavior: "auto",
-      });
+      const leaf = destination === "index" && returnLeaf.current ? document.querySelector<HTMLElement>(`[data-leaf="${returnLeaf.current}"]`) : null;
+      if (leaf) {
+        leaf.scrollIntoView({ block: "nearest", behavior: "auto" });
+        document.querySelector<HTMLElement>('[data-space="index"]')?.scrollTo({ left: 0, behavior: "auto" });
+      }
+      else document.querySelector<HTMLElement>(`[data-space="${spaceName}"]`)?.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      returnLeaf.current = null;
       if (destination !== "index") hasEnteredSpace.current = true;
       const heading = destination === "index"
         ? hasEnteredSpace.current ? document.getElementById("experience-index-title") : null
         : document.querySelector<HTMLElement>(`[data-space="${spaceName}"] h1`);
-      if (heading) {
-        heading.tabIndex = -1;
-        heading.focus({ preventScroll: true });
+      const focusTarget = leaf ?? heading;
+      if (focusTarget) {
+        if (!leaf) focusTarget.tabIndex = -1;
+        focusTarget.focus({ preventScroll: true });
       }
     });
     return () => window.cancelAnimationFrame(frame);
@@ -230,6 +292,9 @@ export default function ContentLayersV2() {
       tabIndex={-1}
       className={styles.root}
       data-destination={destination}
+      data-fold-navigation={foldRoute ?? undefined}
+      data-unfolded-from={unfoldedFrom ?? undefined}
+      data-fold-direction={foldDirection ?? undefined}
       style={{
         "--trace-form": trace.form,
         "--trace-motion": trace.motion,
@@ -297,7 +362,8 @@ export default function ContentLayersV2() {
         key={destination}
         className={styles.space}
         data-route-surface={destination}
-        initial={reducedMotion ? false : { opacity: .4, rotateY: -7, x: 16 }}
+        style={{ viewTransitionName: foldRoute && destination !== "index" ? "folio-sheet" : undefined }}
+        initial={reducedMotion || foldRoute ? false : { opacity: .4, rotateY: -7, x: 16 }}
         animate={{ opacity: 1, rotateY: 0, x: 0 }}
         transition={{ duration: reducedMotion ? 0 : .32, ease: [0.22, 1, 0.36, 1] }}
       >
@@ -305,6 +371,7 @@ export default function ContentLayersV2() {
             <ExperienceIndex
               language={language}
               composition={composition}
+              transitionLeaf={foldRoute ?? undefined}
               onCompositionChange={updateComposition}
               role={copy.role}
               eyebrow={copy.eyebrow}
@@ -321,8 +388,8 @@ export default function ContentLayersV2() {
               tracesLabel={copy.traces}
               channels={trace}
               channelLabels={copy.channelLabels}
-              onNavigate={(next) => {
-                if (isDestination(next)) travelTo(next);
+              onNavigate={(next, source) => {
+                if (isDestination(next)) travelTo(next, true, source);
               }}
               onPreviewDestination={(next) => {
                 setPreviewDestination(next && isDestination(next) ? next : null);

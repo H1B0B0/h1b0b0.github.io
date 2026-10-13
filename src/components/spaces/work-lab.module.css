@@ -38,6 +38,7 @@
 .visitLink span { color: var(--accent); }
 .projectFigure { grid-column: 1; grid-row: 1; min-width: 0; margin: 0; padding: 14px 38px 0 0; }
 .mediaViewport { position: relative; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; background: #141616; box-shadow: 0 12px 20px -17px #24251f80; }
+.captureSheet { position: absolute; inset: 0; transform-origin: 0 0; transition: transform 420ms cubic-bezier(.22,1,.36,1); }
 .projectImage { object-fit: contain; }
 .captureGuide { position: absolute; inset: 0; color: #ff8b62; opacity: 0; pointer-events: none; transition: opacity 160ms ease-out; }
 .captureGuide[data-visible="true"] { opacity: 1; }

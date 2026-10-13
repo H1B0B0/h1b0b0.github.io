@@ -47,22 +47,25 @@ export default function ProfileSpaceV2({ resumeUrl, onTrace, composition = INITI
   const language = currentLanguage === "fr" ? "fr" : "en";
   const copy = language === "fr" ? {
     eyebrow: "Profil", title: "Etienne", titleAccent: "Mentrel.",
-    belief: "La créativité, au centre du web.",
+    belief: "Le beau n’est pas un supplément.",
     conviction: "Un bon site doit être beau, bien construit et simple à parcourir. Mais surtout, il doit raconter quelque chose qui lui appartient.",
     method: "Notes de travail.", process: "Explorer mes choix de design", illustration: "Exemple réel du choix de design sélectionné",
     colophon: "Direction visuelle / interaction / production",
     authorRole: "Développeur créatif · Ingénieur", resume: "Voir mon CV", github: "Profil GitHub",
+    turn: "Les idées derrière le portrait", return: "Revenir au portrait", recto: "Recto / La personne", verso: "Verso / Les idées",
     desktopAlt: "Interface de l’accueil BlueVidia conçue par Etienne Mentrel, avec le nom du studio et la matière bleue", mobileAlt: "Interface de l’accueil BlueVidia adaptée au format mobile", foldLabel: "Le pli conservé depuis l’accueil ou le laboratoire",
   } : {
     eyebrow: "Profile", title: "Etienne", titleAccent: "Mentrel.",
-    belief: "Creativity, at the heart of the web.",
+    belief: "Beauty is not an afterthought.",
     conviction: "A good website should be beautiful, well built and easy to explore. Above all, it should tell a story of its own.",
     method: "Working notes.", process: "Explore my design choices", illustration: "An actual example of the selected design choice",
     colophon: "Visual direction / interaction / production",
     authorRole: "Creative developer · Engineer", resume: "View resume", github: "GitHub profile",
+    turn: "The ideas behind the portrait", return: "Return to the portrait", recto: "Front / The person", verso: "Back / The ideas",
     desktopAlt: "BlueVidia homepage interface designed by Etienne Mentrel, with the studio name and blue material", mobileAlt: "BlueVidia homepage interface adapted for mobile", foldLabel: "The fold kept from the homepage or the laboratory",
   };
   const [activePrincipleId, setActivePrincipleId] = useState<PrincipleId>("intention");
+  const [portraitTurned, setPortraitTurned] = useState(false);
   const principles = PRINCIPLES[language];
   const activePrinciple = principles.find((principle) => principle.id === activePrincipleId) ?? principles[0];
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -76,40 +79,50 @@ export default function ProfileSpaceV2({ resumeUrl, onTrace, composition = INITI
           <div className={styles.profileCopy}>
             <h1 id="profile-v2-title" ref={headingRef} tabIndex={-1} className={styles.profileTitle}>{copy.title}{" "}<em>{copy.titleAccent}</em></h1>
           </div>
-          <figure className={styles.authorCard}>
-            <div className={styles.authorPortrait}>
-              <Image src="/avatar.webp" alt="Etienne Mentrel" fill sizes="(max-width: 700px) 160px, (max-width: 900px) 240px, 280px" className={styles.authorImage} />
+          <figure className={styles.authorCard} data-portrait-turned={portraitTurned || undefined}>
+            <div id="profile-portrait" className={styles.portraitStage}>
+              <div className={styles.portraitSheet}>
+                <div className={styles.authorPortrait} aria-hidden={portraitTurned}>
+                  <Image src="/avatar.webp" alt="Etienne Mentrel" fill sizes="(max-width: 700px) 220px, (max-width: 900px) 260px, 340px" className={styles.authorImage} />
+                  <span className={styles.portraitMark} aria-hidden="true">em.</span>
+                </div>
+                <div className={styles.portraitVerso} aria-hidden={!portraitTurned} data-principle={activePrinciple.id}>
+                  <span className={styles.versoIndex} aria-hidden="true">0{principles.indexOf(activePrinciple) + 1} / {activePrinciple.label}</span>
+                  <div className={styles.decisionProof} data-profile-proof={activePrinciple.id}>
+                    {activePrinciple.id === "gesture" ? <div className={styles.proofFold}><FoldSignature form={composition.form} tension={composition.tension} phase={composition.phase} tone="ink" label={copy.foldLabel} /></div> : <div className={activePrinciple.id === "precision" ? styles.proofMobile : styles.proofDesktop}>
+                      <Image src={`/images/projects/bluevidia-${activePrinciple.id === "precision" ? "mobile" : "desktop"}.jpg`} alt={activePrinciple.id === "precision" ? copy.mobileAlt : copy.desktopAlt} fill sizes={activePrinciple.id === "precision" ? "180px" : "340px"} className={styles.proofImage} />
+                    </div>}
+                  </div>
+                  <p className={styles.versoCaption}>{activePrinciple.note}</p>
+                </div>
+              </div>
             </div>
-            <figcaption className={styles.profileRole}>{copy.authorRole}</figcaption>
+            <figcaption className={styles.portraitColophon}>
+              <span>{portraitTurned ? copy.verso : copy.recto}</span>
+              <button type="button" className={styles.turnPortrait} aria-pressed={portraitTurned} aria-controls="profile-portrait" onClick={() => { setPortraitTurned(!portraitTurned); onTrace?.(0.08); }}>{portraitTurned ? copy.return : copy.turn}<span aria-hidden="true">↶</span></button>
+              <nav className={styles.processRail} aria-label={copy.process}>
+                {principles.map((principle, index) => (
+                  <button key={principle.id} type="button" aria-pressed={principle.id === activePrinciple.id && portraitTurned} aria-controls="profile-portrait profile-principle-panel" className={styles.processButton} onClick={() => {
+                    setPortraitTurned(true);
+                    if (principle.id !== activePrincipleId) { setActivePrincipleId(principle.id); onTrace?.(0.08); }
+                  }}><span className={styles.noteNumber} aria-hidden="true">0{index + 1}</span>{principle.label}</button>
+                ))}
+              </nav>
+            </figcaption>
           </figure>
-          <div className={styles.convictionBlock}><p className={styles.belief}>{copy.belief}</p><p className={styles.conviction}>{copy.conviction}</p></div>
+          <div className={styles.convictionBlock}><p className={styles.profileRole}>{copy.authorRole}</p><p className={styles.belief}>{copy.belief}</p><p className={styles.conviction}>{copy.conviction}</p></div>
         </header>
 
-        <section className={styles.methodSection} aria-label={copy.method}>
+        <section className={styles.methodSection} aria-label={copy.method} hidden={!portraitTurned}>
           <div className={styles.methodHeading}>
             <h2>{copy.method}</h2>
-            <nav className={styles.processRail} aria-label={copy.process}>
-              {principles.map((principle, index) => (
-                <button key={principle.id} type="button" aria-pressed={principle.id === activePrinciple.id} aria-controls="profile-principle-panel" className={styles.processButton} onClick={() => {
-                  if (principle.id !== activePrincipleId) { setActivePrincipleId(principle.id); onTrace?.(0.08); }
-                }}><span className={styles.noteNumber} aria-hidden="true">0{index + 1}</span>{principle.label}<span className={styles.noteArrow} aria-hidden="true">↗</span></button>
-              ))}
-            </nav>
           </div>
           <div id="profile-principle-panel" className={styles.profileInstrument}>
             <article className={styles.evidencePanel} aria-live="polite" aria-atomic="true">
               <h3>{activePrinciple.title}</h3>
               <p>{activePrinciple.description}</p>
-            </article>
-            <figure className={styles.decisionStage} data-principle={activePrinciple.id} aria-label={copy.illustration}>
-              <div className={styles.decisionProof} data-profile-proof={activePrinciple.id}>
-                {activePrinciple.id === "gesture" ? <div className={styles.proofFold}><FoldSignature form={composition.form} tension={composition.tension} phase={composition.phase} tone="ink" label={copy.foldLabel} /></div> : <div className={activePrinciple.id === "precision" ? styles.proofMobile : styles.proofDesktop}>
-                  <Image src={`/images/projects/bluevidia-${activePrinciple.id === "precision" ? "mobile" : "desktop"}.jpg`} alt={activePrinciple.id === "precision" ? copy.mobileAlt : copy.desktopAlt} fill sizes={activePrinciple.id === "precision" ? "180px" : "(max-width: 700px) 92vw, 40vw"} className={styles.proofImage} />
-                </div>}
-              </div>
-              <figcaption>{activePrinciple.note}</figcaption>
               <a className={styles.specimenAction} href={`#${activePrinciple.destination}${activePrinciple.id === "precision" ? "/delivery" : ""}`} onClick={() => onTrace?.(0.08)}>{activePrinciple.action}<span aria-hidden="true">→</span></a>
-            </figure>
+            </article>
           </div>
         </section>
 

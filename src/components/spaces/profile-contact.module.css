@@ -20,36 +20,49 @@
 .folioMasthead > span { max-width: 42ch; text-align: right; }
 .eyebrow, .contactEyebrow { display: flex; align-items: center; gap: 20px; margin: 0; color: var(--ink); font: 11px var(--font-geist-mono), monospace; text-transform: uppercase; }
 .eyebrow > span, .contactEyebrow > span { color: #a14b34; }
-.profileHeader { display: grid; grid-template-columns: minmax(220px, .68fr) minmax(0, 1.32fr); column-gap: 64px; row-gap: 28px; align-items: start; padding-bottom: 36px; }
-.profileCopy { grid-column: 2; min-width: 0; }
+.profileHeader { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(260px, .7fr); column-gap: 72px; row-gap: 28px; align-items: start; padding-bottom: 44px; }
+.profileCopy { grid-column: 1; min-width: 0; }
 .profileTitle, .contactTitle { margin: 0; font-weight: 500; line-height: 1.02; text-wrap: balance; }
-.profileTitle { max-width: 12ch; font-size: clamp(60px, 6.4vw, 86px); font-weight: 470; line-height: .94; }
+.profileTitle { max-width: 12ch; font-size: clamp(72px, 8vw, 112px); font-weight: 470; line-height: .88; letter-spacing: -.055em; }
 .profileTitle em, .contactTitle em { display: block; font-family: var(--font-instrument-serif), Georgia, serif; font-weight: 400; line-height: 1.03; }
 .profileTitle:focus, .contactTitle:focus { outline: none; }
 .profileTitle em { line-height: .95; }
-.profileRole { margin: 16px 0 0; color: #16171b99; font: 10px var(--font-geist-mono), monospace; line-height: 1.6; text-wrap: pretty; }
-.convictionBlock { grid-column: 2; }
-.belief { max-width: 31ch; margin: 0; font-size: clamp(24px, 2.25vw, 32px); font-weight: 450; line-height: 1.2; text-wrap: balance; }
+.profileRole { margin: 0 0 22px; color: #16171b99; font: 10px var(--font-geist-mono), monospace; line-height: 1.6; text-wrap: pretty; }
+.convictionBlock { grid-column: 1; }
+.belief { max-width: 24ch; margin: 0; font-family: var(--font-instrument-serif), Georgia, serif; font-size: clamp(30px, 3vw, 42px); font-style: italic; font-weight: 400; line-height: 1.05; text-wrap: balance; }
 .conviction { max-width: 46ch; margin: 18px 0 0; color: #16171bb3; font-size: 16px; line-height: 1.65; text-wrap: pretty; }
-.authorCard { grid-column: 1; grid-row: 1 / span 2; width: min(100%, 280px); min-width: 0; margin: 0; align-self: center; }
-.authorPortrait { position: relative; width: 100%; aspect-ratio: 4 / 5; overflow: hidden; background: #d0d6de; border: 1px solid #16171b26; border-radius: 0; transform: rotate(-1.5deg); }
-.authorImage { object-fit: cover; object-position: 50% 50%; filter: saturate(.5); }
+.authorCard { grid-column: 2; grid-row: 1 / span 2; width: min(100%, 340px); min-width: 0; margin: 0; justify-self: end; align-self: center; }
+.portraitStage { width: 100%; aspect-ratio: 4 / 5; perspective: 1200px; }
+.portraitSheet { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transform: rotate(-3deg); transition: transform 680ms cubic-bezier(.22,1,.36,1); }
+.authorCard[data-portrait-turned] .portraitSheet { transform: rotate(2deg) rotateY(180deg); }
+.authorPortrait, .portraitVerso { position: absolute; inset: 0; overflow: hidden; backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: 0 18px 24px -22px #16171b80; }
+.authorPortrait { background: #d0d6de; }
+.authorImage { object-fit: cover; object-position: 50% 50%; filter: grayscale(1); }
+.portraitMark { position: absolute; bottom: 14px; left: 18px; color: #f4f1e9; font: italic 80px/.8 var(--font-instrument-serif), Georgia, serif; letter-spacing: -.06em; }
+.portraitVerso { display: flex; flex-direction: column; justify-content: space-between; padding: 24px; transform: rotateY(180deg); color: var(--ink); background: #e0d9cb; }
+.versoIndex { font: 10px var(--font-geist-mono), monospace; color: #a14b34; }
+.versoCaption { margin: 0; font: 9px/1.7 var(--font-geist-mono), monospace; color: #16171b99; }
+.portraitColophon { display: grid; gap: 4px; margin-top: 22px; }
+.portraitColophon > span { color: #16171b80; font: 9px var(--font-geist-mono), monospace; }
+.turnPortrait { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; padding: 4px 0; border: 0; background: transparent; color: var(--ink); font-size: 11px; text-align: left; cursor: pointer; }
+.turnPortrait > span { font-size: 22px; }
 .methodSection { display: grid; grid-template-columns: minmax(150px, .34fr) minmax(0, 1.66fr); gap: 48px; padding: 28px 0 30px; border-top: 1px solid var(--rule); }
+.methodSection[hidden] { display: none; }
 .methodHeading { display: flex; align-items: start; flex-direction: column; gap: 18px; margin-bottom: 0; }
 .methodHeading h2 { max-width: 24ch; margin: 0; color: #16171b99; font: 10px var(--font-geist-mono), monospace; line-height: 1.5; text-wrap: balance; }
-.processRail { display: flex; flex-direction: column; gap: 0; width: 100%; min-width: 0; }
-.processButton { display: flex; justify-content: start; gap: 12px; align-items: center; min-height: 44px; padding: 10px 0; border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; color: #16171b80; background: transparent; font-size: 12px; text-align: left; cursor: pointer; }
-.processButton[aria-pressed="true"] { color: var(--ink); }
+.processRail { display: flex; gap: 14px; width: 100%; min-width: 0; }
+.processButton { display: flex; justify-content: start; flex: 1; gap: 6px; align-items: center; min-height: 44px; padding: 10px 0; border: 0; border-bottom: 1px solid var(--rule); border-radius: 0; color: #16171b99; background: transparent; font-size: 10px; text-align: left; cursor: pointer; }
+.processButton[aria-pressed="true"] { color: var(--ink); border-color: #a14b34; }
 .processButton:hover { color: var(--ink); }
 .noteNumber { font: 9px var(--font-geist-mono), monospace; color: #16171b80; }
 .processButton[aria-pressed="true"] .noteNumber { color: #a14b34; }
 .noteArrow { margin-left: auto; opacity: 0; }
 .processButton[aria-pressed="true"] .noteArrow { opacity: 1; }
-.profileInstrument { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .8fr); gap: 40px; align-items: start; }
+.profileInstrument { min-width: 0; }
 .decisionStage { min-width: 0; position: relative; margin: 0; }
-.decisionProof { display: flex; align-items: center; justify-content: center; height: 164px; overflow: hidden; }
+.decisionProof { display: flex; align-items: center; justify-content: center; height: 260px; overflow: hidden; }
 .proofDesktop { position: relative; width: 100%; height: 100%; }
-.proofMobile { position: relative; width: 76px; height: 100%; }
+.proofMobile { position: relative; width: 120px; height: 100%; }
 .proofImage { object-fit: contain; object-position: center; }
 .proofFold { width: min(100%, 260px); height: 100%; }
 .proofFold > div { width: 100%; height: 100%; }
@@ -59,17 +72,20 @@
 .decisionStage figcaption { min-height: 44px; display: flex; align-items: center; color: #16171b99; font: 9px var(--font-geist-mono), monospace; line-height: 1.6; }
 .processButton:active, .specimenAction:active, .copyButton:active { transform: translateY(1px); }
 .evidencePanel { min-width: 0; }
+.evidencePanel { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 16px 36px; }
 .evidencePanel h3 { max-width: 17ch; margin: 0; font-size: clamp(24px, 2.15vw, 30px); font-weight: 450; line-height: 1.12; text-wrap: balance; }
-.evidencePanel p { max-width: 38ch; margin: 16px 0 0; color: #16171bb3; font-size: 13px; line-height: 1.7; text-wrap: pretty; }
+.evidencePanel p { max-width: 42ch; margin: 0; color: #16171bb3; font-size: 13px; line-height: 1.7; text-wrap: pretty; }
+.evidencePanel .specimenAction { grid-column: 2; }
 .profileFooter, .contactFooter { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 12px; border-top: 1px solid var(--rule); font-size: 11px; }
 .profileFooter a, .contactFooter a { display: inline-flex; min-height: 44px; align-items: center; gap: 16px; color: inherit; text-decoration: none; }
 .profileFooter a:hover { color: var(--accent); }
-.contactRoot { color: #16171b; background: #ece8df; }
+.contactRoot { color: #16171b; background: #d98b70; }
+.contactRoot .folioMasthead, .contactRoot .contactEyebrow > span { color: #3b2920; }
 .contactShell { width: min(100%, 1100px); }
 .contactHeader { display: grid; grid-template-columns: minmax(0, 1fr) minmax(160px, 230px); column-gap: 72px; margin-bottom: 40px; align-items: end; }
 .contactTitle { max-width: 16ch; font-size: clamp(44px, 5.8vw, 74px); }
-.contactIntroduction { max-width: 27ch; margin: 0 0 6px; color: #16171ba6; font-size: 15px; line-height: 1.65; text-wrap: pretty; }
-.contactConsole { position: relative; padding: 28px 40px 24px; border: 1px solid #16171b26; background: var(--paper); clip-path: polygon(0 0, calc(100% - 32px) 0, 100% 32px, 100% 100%, 0 100%); }
+.contactIntroduction { max-width: 27ch; margin: 0 0 6px; color: #3b2920; font-size: 15px; line-height: 1.65; text-wrap: pretty; }
+.contactConsole { position: relative; padding: 28px 40px 24px; border: 1px solid #16171b26; background: var(--paper); clip-path: polygon(0 0, calc(100% - 32px) 0, 100% 32px, 100% 100%, 0 100%); box-shadow: 0 18px 28px -24px #57372980; }
 .contactConsole::before { content: ""; position: absolute; top: 0; right: 0; width: 32px; height: 32px; background: #d8d3c9; clip-path: polygon(0 0, 100% 100%, 0 100%); pointer-events: none; }
 .letterHeading { display: flex; justify-content: space-between; gap: 16px; padding-right: 142px; color: #16171bb3; font: 10px var(--font-geist-mono), monospace; }
 .emailLink { position: relative; display: grid; align-content: center; gap: 24px; min-height: 188px; margin-top: 18px; padding-right: 142px; color: #16171b; text-decoration: none; }
@@ -84,21 +100,36 @@
 .copyButton { display: inline-flex; min-height: 44px; gap: 12px; align-items: center; margin-top: 8px; padding: 10px 0; border: 0; border-radius: 0; color: #16171ba6; background: transparent; font-size: 12px; text-align: left; cursor: pointer; }
 .copyButton:hover { color: #16171b; }
 .copyIcon { width: 16px; height: 16px; flex: 0 0 16px; }
+.foldDelivery { max-width: 68ch; margin: 0 142px 12px 0; padding-top: 16px; border-top: 1px solid var(--rule); }
+.foldDelivery p { margin: 0; color: #16171bb3; font-size: 12px; line-height: 1.6; }
+.foldDelivery a { display: inline-flex; min-height: 44px; align-items: center; gap: 16px; color: #16171b; font-size: 12px; text-decoration: underline; text-underline-offset: 4px; }
+.signatureActions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 24px; margin-block: 8px; }
+.signatureActions button { min-height: 44px; padding: 0; color: #16171b; font-size: 12px; background: transparent; border: 0; cursor: pointer; text-decoration: underline; text-underline-offset: 4px; }
+.foldDelivery [role="status"] { min-height: 3.2em; }
+.signatureActions :is(button:disabled, a[aria-disabled="true"]) { opacity: .55; cursor: default; }
+.signatureHelp { margin-block: 4px 8px; }
+.signatureHelp summary { display: flex; align-items: center; gap: 10px; min-height: 44px; color: #16171b99; font-size: 11px; cursor: pointer; }
+.signatureHelp summary::before { content: "+"; font-family: var(--font-geist-mono), monospace; }
+.signatureHelp[open] summary::before { content: "−"; }
+.signatureHelp summary:focus-visible { outline: 2px solid #16171b; outline-offset: 4px; }
 .copyStatus { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .copyFallback { margin-top: 20px; font-size: 13px; line-height: 1.6; }
 .copyFallback label { display: block; margin-bottom: 8px; }
 .copyFallback input { width: 100%; min-height: 44px; padding: 10px; border: 1px solid #16171b80; color: #16171b; background: #ece8df; font-size: 14px; }
-.contactFooter { margin-top: 24px; border-color: #16171b26; color: #16171bb3; }
+.contactFooter { margin-top: 24px; border-color: #16171b26; color: #3b2920; }
 .contactFooter p { margin: 0; font-size: 11px; text-wrap: pretty; }
 .contactFooter > div { display: flex; gap: 28px; }
 .profileRoot button:focus-visible, .profileRoot a:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
 .contactRoot button:focus-visible, .contactRoot a:focus-visible, .contactRoot input:focus-visible { outline: 2px solid #16171b; outline-offset: 4px; }
 @media (max-width: 900px) {
   .profileRoot, .contactRoot { padding-inline: 32px; }
-  .profileHeader { grid-template-columns: 240px minmax(0, 1fr); column-gap: 40px; }
-  .profileTitle { font-size: 64px; }
+  .profileHeader { grid-template-columns: minmax(0, 1fr) 260px; column-gap: 32px; }
+  .profileTitle { font-size: 76px; }
+  .belief { font-size: 32px; }
+  .authorCard { width: 260px; }
   .profileInstrument { grid-template-columns: 1fr; gap: 20px; }
-  .evidencePanel { min-height: 180px; }
+  .evidencePanel { display: block; min-height: 240px; }
+  .evidencePanel p { margin-top: 16px; }
   .methodSection { gap: 32px; grid-template-columns: 160px minmax(0, 1fr); }
   .decisionStage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 24px; align-items: center; }
   .decisionProof { grid-column: 1; grid-row: 1 / 3; height: 164px; }
@@ -114,30 +145,34 @@
   .eyebrow, .contactEyebrow { gap: 12px; font-size: 10px; }
   .profileHeader { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-bottom: 28px; }
   .profileCopy { grid-column: 1; grid-row: 1; }
-  .profileTitle { max-width: none; font-size: clamp(44px, 12vw, 64px); }
+  .profileTitle { max-width: none; font-size: clamp(54px, 15vw, 88px); }
   .profileTitle em { display: inline; }
   .contactTitle { font-size: clamp(40px, 11.5vw, 60px); }
-  .profileRole { max-width: 26ch; font-size: 9px; margin-top: 12px; }
+  .profileRole { max-width: 36ch; font-size: 9px; margin-bottom: 18px; }
   .convictionBlock { grid-column: 1; }
-  .belief { max-width: 26ch; font-size: 26px; }
+  .belief { max-width: 26ch; font-size: 32px; }
   .conviction { max-width: 42ch; font-size: 14px; margin-top: 14px; }
-  .authorCard { grid-column: 1; grid-row: 2; width: 160px; justify-self: start; }
+  .authorCard { grid-column: 1; grid-row: 3; width: 220px; justify-self: center; margin-block: 12px; }
+  .convictionBlock { grid-row: 2; }
+  .portraitMark { font-size: 64px; }
+  .portraitVerso { padding: 18px; }
+  .portraitColophon { margin-top: 18px; }
   .methodSection { grid-template-columns: minmax(0, 1fr); gap: 24px; padding-top: 24px; padding-bottom: 28px; }
   .methodHeading { gap: 12px; }
   .methodHeading h2 { font-size: 10px; }
-  .processRail { flex-direction: row; width: 100%; gap: 12px; }
-  .processButton { flex: 1; gap: 6px; padding-inline: 0; font-size: 11px; }
+  .processRail { gap: 10px; }
+  .processButton { gap: 4px; font-size: 10px; }
   .noteNumber { font-size: 8px; }
   .noteArrow { display: none; }
   .profileInstrument { gap: 20px; }
   .decisionStage { display: block; }
-  .decisionProof { height: 160px; }
+  .decisionProof { height: 180px; }
   .proofMobile { width: 74px; }
   .specimenAction { gap: 16px; font-size: 11px; }
   .decisionStage figcaption { font-size: 9px; }
   .evidencePanel h3 { font-size: 25px; }
   .evidencePanel p { max-width: 42ch; font-size: 13px; margin-top: 14px; }
-  .evidencePanel { min-height: 194px; }
+  .evidencePanel { min-height: 254px; }
   .contactHeader { margin-bottom: 28px; }
   .contactIntroduction { font-size: 14px; margin-top: 20px; }
   .contactConsole { padding: 22px 24px 16px; }
@@ -150,15 +185,16 @@
   .letterFold { width: 80px; height: 64px; }
   .writeLabel { font-size: 12px; }
   .copyButton { margin-top: 8px; font-size: 12px; }
+  .foldDelivery { margin-right: 0; }
   .contactFooter { flex-direction: column; align-items: start; gap: 10px; margin-top: 24px; }
   .contactFooter > div { width: 100%; justify-content: space-between; }
 }
 @media (max-width: 360px) {
   .processButton { font-size: 10px; }
-  .evidencePanel { min-height: 212px; }
+  .evidencePanel { min-height: 280px; }
   .contactConsole { padding-inline: 20px; }
   .letterSignature { right: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .specimenAction span, .writeLabel span { transition: none; }
+  .specimenAction span, .writeLabel span, .portraitSheet { transition: none; }
 }
