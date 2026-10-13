@@ -1,0 +1,5 @@
+.signature { position: relative; display: block; width: 100%; min-width: 0; aspect-ratio: 8 / 7; }
+.signature[data-sculptable] { touch-action: pan-y; cursor: grab; user-select: none; }
+.signature[data-sculptable]:active { cursor: grabbing; }
+.object { display: block; width: 100%; height: 100%; overflow: visible; transform: translate3d(calc(var(--fold-x, 0) * 12px), calc(var(--fold-y, 0) * 10px), 0) rotate(calc(var(--fold-x, 0) * 3deg)); transition: transform 180ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .object { transform: none; transition: none; } }
