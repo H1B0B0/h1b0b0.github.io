@@ -26,8 +26,8 @@ export default function ContactSpaceV2({ resumeUrl, onTrace, composition = INITI
     recipient: "À Etienne Mentrel", letter: composition.authored ? "Votre pli accompagne le message" : "Une lettre ouverte",
     signature: composition.authored ? "La pièce de votre visite." : "Une forme, avant les mots.", colophon: "Fin du folio / début de la conversation",
     write: "Écrire un email", copy: "Copier l’adresse", copying: "Copie en cours…",
-    draft: "Préparer le mail signé (.eml)", signatureCopy: "Copier la signature", signatureCopied: "Signature copiée : collez-la dans votre email.", signatureFailed: "Votre messagerie peut utiliser l’image PNG ci-dessous.", signatureDownload: "Télécharger la signature PNG", attachmentHint: "Votre pli est inclus dans le mail, en image.", attachmentUnavailable: "La préparation de la signature est indisponible ici ; vous pouvez écrire un email avec le lien de votre pli.", preparing: "Préparation du mail signé…",
-    mailHelp: "Comment envoyer le mail signé ?", mailInstructions: "Dans Mail sur Mac : ouvrez le fichier .eml, puis Message → Envoyer à nouveau. Dans Gmail ou une autre messagerie web : copiez la signature et collez-la dans votre message.",
+    draft: "Préparer ma lettre signée", draftFormat: "Téléchargement .eml · signature incluse", signatureCopy: "Copier ma signature", signatureCopied: "Signature copiée : collez-la dans votre email.", signatureFailed: "La copie est indisponible ici. Téléchargez votre signature PNG ci-dessus.", signatureDownload: "Emporter la signature PNG", attachmentHint: "Votre pli devient la signature de cette lettre.", attachmentUnavailable: "La signature ne peut pas être préparée ici. L’adresse ouvre toujours votre messagerie avec le lien de votre pli.", preparing: "Préparation de votre lettre…",
+    mailHelp: "Signature & options d’envoi", mailInstructions: "Mail sur Mac : ouvrez le fichier .eml, puis choisissez Message → Envoyer à nouveau.", webmailInstructions: "Gmail ou autre messagerie web : copiez votre signature et collez-la dans votre email. Vous pouvez aussi joindre l’image PNG.",
     copied: "Adresse copiée — à vous d’écrire.", copyLabel: "Copier l’adresse email d’Etienne Mentrel",
     fallback: "La copie automatique est indisponible. Copiez l’adresse ci-dessous.",
     fallbackLabel: "Adresse email à copier manuellement",
@@ -39,8 +39,8 @@ export default function ContactSpaceV2({ resumeUrl, onTrace, composition = INITI
     recipient: "To Etienne Mentrel", letter: composition.authored ? "Your fold accompanies the message" : "An open letter",
     signature: composition.authored ? "The piece from your visit." : "A form, before the words.", colophon: "End of the folio / start of a conversation",
     write: "Write an email", copy: "Copy address", copying: "Copying…",
-    draft: "Prepare the signed email (.eml)", signatureCopy: "Copy signature", signatureCopied: "Signature copied: paste it into your email.", signatureFailed: "Your email app can use the PNG image below.", signatureDownload: "Download signature PNG", attachmentHint: "Your fold is included in the email as an image.", attachmentUnavailable: "The signature cannot be prepared here; you can still email the link to your fold.", preparing: "Preparing the signed email…",
-    mailHelp: "How do I send the signed email?", mailInstructions: "In Mail on Mac: open the .eml file, then choose Message → Send Again. In Gmail or other webmail: copy the signature and paste it into your message.",
+    draft: "Prepare my signed letter", draftFormat: ".eml download · signature included", signatureCopy: "Copy my signature", signatureCopied: "Signature copied: paste it into your email.", signatureFailed: "Copying is unavailable here. Download your PNG signature above.", signatureDownload: "Take the PNG signature", attachmentHint: "Your fold becomes this letter’s signature.", attachmentUnavailable: "The signature cannot be prepared here. The address still opens your email app with a link to your fold.", preparing: "Preparing your letter…",
+    mailHelp: "Signature & sending options", mailInstructions: "Mail on Mac: open the .eml file, then choose Message → Send Again.", webmailInstructions: "Gmail or other webmail: copy your signature and paste it into your email. You can also attach the PNG image.",
     copied: "Address copied — your move.", copyLabel: "Copy Etienne Mentrel’s email address",
     fallback: "Automatic copy is unavailable. Copy the address below.",
     fallbackLabel: "Email address to copy manually",
@@ -121,19 +121,29 @@ export default function ContactSpaceV2({ resumeUrl, onTrace, composition = INITI
         <div className={styles.contactConsole} data-letter-authored={composition.authored}>
           <div className={styles.letterHeading}><span>{copy.recipient}</span><span>{copy.letter}</span></div>
           <div className={styles.letterSignature}><div className={styles.letterFold} aria-hidden="true"><FoldSignature form={composition.form} tension={composition.tension} phase={composition.phase} tone="ink" /></div><p>{composition.authored && composition.name ? composition.name : copy.signature}</p></div>
-          <a className={styles.emailLink} href={preparingSignature ? undefined : emailFiles?.draft ?? mailto} download={emailFiles ? "mon-email-signe.eml" : undefined} aria-busy={preparingSignature || undefined} aria-disabled={preparingSignature || undefined} aria-label={`${preparingSignature ? copy.preparing : emailFiles ? copy.draft : copy.write} — ${EMAIL}`} onClick={() => onTrace?.(0.12)}>
+          <a className={styles.emailLink} href={mailto} aria-label={`${copy.write} — ${EMAIL}`} onClick={() => onTrace?.(0.12)}>
             <strong>etienne.mentrel<wbr />@gmail.com</strong>
-            <span className={styles.writeLabel}>{preparingSignature ? copy.preparing : emailFiles ? copy.draft : copy.write}<span aria-hidden="true">{emailFiles ? "↓" : "↗"}</span></span>
+            <span className={styles.writeLabel}>{copy.write}<span aria-hidden="true">↗</span></span>
           </a>
           {composition.authored && <div className={styles.foldDelivery}>
-            <p>{signatureError ? copy.attachmentUnavailable : copy.attachmentHint}</p>
-            <div className={styles.signatureActions}>
-              <a href={preparingSignature ? undefined : mailto} aria-disabled={preparingSignature || undefined}>{copy.write}<span aria-hidden="true">↗</span></a>
-              <button type="button" onClick={copySignature} disabled={!emailFiles || signatureState === "copying"}>{signatureState === "copying" ? copy.copying : copy.signatureCopy}</button>
-            </div>
-            {!signatureError && <details className={styles.signatureHelp}><summary>{copy.mailHelp}</summary><p>{copy.mailInstructions}</p></details>}
-            <p role="status" aria-live="polite">{signatureState === "copied" ? copy.signatureCopied : signatureState === "failed" ? copy.signatureFailed : ""}</p>
-            {signatureState === "failed" && emailFiles && <a href={emailFiles.png} download="signature-pli.png">{copy.signatureDownload}<span aria-hidden="true">↓</span></a>}
+            {signatureError ? <p role="status">{copy.attachmentUnavailable}</p> : <>
+              <a className={styles.signedLetterAction} href={emailFiles?.draft} download={emailFiles ? "mon-email-signe.eml" : undefined} aria-busy={preparingSignature || undefined} aria-disabled={preparingSignature || undefined} aria-label={`${preparingSignature ? copy.preparing : copy.draft} — ${copy.draftFormat}`} onClick={() => { if (emailFiles) onTrace?.(0.12); }}>
+                <span><strong>{preparingSignature ? copy.preparing : copy.draft}</strong><small>{copy.draftFormat}</small></span><span aria-hidden="true">↓</span>
+              </a>
+              <p className={styles.signedLetterHint}>{copy.attachmentHint}</p>
+              <details className={styles.signatureHelp}>
+                <summary>{copy.mailHelp}</summary>
+                <div className={styles.signatureOptions}>
+                  <p>{copy.mailInstructions}</p>
+                  <p>{copy.webmailInstructions}</p>
+                  <div className={styles.signatureActions}>
+                    <button type="button" onClick={copySignature} disabled={!emailFiles || signatureState === "copying"}>{signatureState === "copying" ? copy.copying : copy.signatureCopy}</button>
+                    <a href={emailFiles?.png} download={emailFiles ? "signature-pli.png" : undefined} aria-disabled={!emailFiles || undefined}>{copy.signatureDownload}<span aria-hidden="true">↓</span></a>
+                  </div>
+                  <p role="status" aria-live="polite">{signatureState === "copied" ? copy.signatureCopied : signatureState === "failed" ? copy.signatureFailed : ""}</p>
+                </div>
+              </details>
+            </>}
           </div>}
           <button type="button" className={styles.copyButton} onClick={handleCopy} aria-label={copy.copyLabel} disabled={copyState === "copying"}>
             <svg className={styles.copyIcon} viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true" focusable="false">{copyState === "copied" ? <path d="m4 10 4 4 8-8" /> : <><rect x="7" y="7" width="10" height="10" rx="1" /><path d="M12 7V3H3v9h4" /></>}</svg>

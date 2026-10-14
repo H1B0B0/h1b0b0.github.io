@@ -260,6 +260,10 @@ export default function ContentLayersV2() {
   }, [destination, travelTo]);
 
   const handleWorkTrace = (event: WorkLabTrace) => {
+    if (event.source === "work" && event.action === "case-chapter" && event.value !== undefined) {
+      const chapterHash = ["#work", "#work/composition", "#work/delivery"][event.value];
+      if (chapterHash && window.location.hash !== chapterHash) window.history.pushState(null, "", chapterHash);
+    }
     const amount = event.value === undefined ? 0.06 : 0.05 + Math.abs(event.value) * 0.05;
     addTrace(event.channel, amount);
   };
